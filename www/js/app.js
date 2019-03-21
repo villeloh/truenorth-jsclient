@@ -71,7 +71,8 @@ const app = {
         mapTypeControlOptions: { style: google.maps.MapTypeControlStyle.DROPDOWN_MENU },
         rotateControl: false,
         scaleControl: false,
-        tilt: 0
+        tilt: 0,
+        disableDoubleClickZoom: true // it needs to be disabled because doubletap is used to clear the map
       };
 
       const map = new google.maps.Map(document.getElementById('map'), mapOptions);
@@ -187,16 +188,22 @@ const app = {
     
     const marker = new google.maps.Marker({ position: position, map: app.map, draggable: true });
     marker.addListener('dragend', app.onMarkerDragEnd);
+    marker.addListener('click', app.onMarkerTap);
 
     app.markers.push(marker);
   },
 
-  onMarkerDragEnd: function (event) {
+  onMarkerDragEnd: function(event) {
     
     // console.log("called onMarkerDragEnd");
 
     app.clearMap();
     app.fetchRouteTo(event);
+  },
+
+  onMarkerTap: function (event) {
+    
+    console.log("tap event: " + JSON.stringify(event));
   },
 
   // Bind any cordova events here. Common events are:
