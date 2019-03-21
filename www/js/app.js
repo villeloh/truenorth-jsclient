@@ -1,5 +1,6 @@
 const DEFAULT_ZOOM = 7;
 const MIN_ZOOM = 4;
+const ROUTE_COLOR = '#2B7CFF';
 
 const app = {
 
@@ -76,8 +77,6 @@ const app = {
       const map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
       app.map = map;
-      const marker = new google.maps.Marker({position: position, map: app.map});
-      app.markers.push(marker);
 
       app.map.addListener('click', this.fetchRouteTo);
       app.map.addListener('dblclick', this.clearMap);
@@ -100,7 +99,7 @@ const app = {
     const buttonHolderDiv = document.createElement('div');
     const locButton = new LocationButton(buttonHolderDiv, app.onLocButtonClick);
 
-    buttonHolderDiv.index = 1; // wtf does this do ??
+    // buttonHolderDiv.index = 1; // wtf does this do ?? is it the same as z-index ?
     app.map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(buttonHolderDiv);
   },
 
@@ -137,23 +136,28 @@ const app = {
       
       const decodedRoutePoints = app.decodePolyPoints(resAsJson.points);
       app.drawPolyLine(decodedRoutePoints);
+      app.placeMarker({ lat: toLat, lng: toLng });
+
     }).catch(e => {
       console.log("error! " + e);
     })
   }, // fetchRouteTo
 
+  // TODO: remove listeners also?
   clearMap: function() {
 
     app.markers.forEach(marker => {
 
       marker.setMap(null);
     });
-    app.markers = [];
+
+    // removes the references to the markers
+    app.markers.length = 0;
 
     app.polyLines.forEach(line => { 
       line.setMap(null);
     });
-    app.polyLines = [];
+    app.polyLines.length = 0;
   }, // clearMap
 
   decodePolyPoints: function(encodedPoints) {
@@ -169,7 +173,7 @@ const app = {
 
     const line = new google.maps.Polyline({
       path: points,
-      strokeColor: '#FF0000',
+      strokeColor: ROUTE_COLOR,
       strokeOpacity: 1.0,
       strokeWeight: 4,
       zIndex: 5,
@@ -178,6 +182,22 @@ const app = {
 
     app.polyLines.push(line);
   }, // drawPolyLine
+
+  placeMarker: function (position) {
+    
+    const marker = new google.maps.Marker({ position: position, map: app.map, draggable: true });
+    marker.addListener('dragend', app.onMarkerDragEnd);
+
+    app.markers.push(marker);
+  },
+
+  onMarkerDragEnd: function (event) {
+    
+    // console.log("called onMarkerDragEnd");
+
+    app.clearMap();
+    app.fetchRouteTo(event);
+  },
 
   // Bind any cordova events here. Common events are:
   // 'pause', 'resume', etc.
