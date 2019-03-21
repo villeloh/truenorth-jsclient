@@ -1,0 +1,9 @@
+
+# Make-shift '.env file' for PERSONAL use
+env.js
+
+# Dependency directories
+node_modules/
+
+# it should be auto-rebuilt by Cordova
+platforms/android/
