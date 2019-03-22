@@ -4,8 +4,8 @@ function LocationButton(parentDiv, callback) {
 
   // Set CSS for the control border.
   const button = document.createElement('div');
-  button.style.backgroundColor = '#fff';
-  button.style.border = '2px solid #808080';
+  button.style.backgroundColor = '#fff'; // light grey
+  button.style.border = '2px solid #808080'; // dark grey
   button.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
   button.style.cursor = 'pointer';
   // button.style.marginBottom = '22px';
@@ -22,7 +22,7 @@ function LocationButton(parentDiv, callback) {
   innerButtonDiv.style.backgroundColor = 'black';
   innerButtonDiv.style.width = '1.2rem';
   innerButtonDiv.style.height = '1.2rem';
-  innerButtonDiv.style.display = 'inline-block';
+  innerButtonDiv.style.display = 'inline-block'; // centers it within the parent div (together with the parent's 'textAlign = center' property)
   /* 
   innerButtonDiv.style.marginLeft = '15%';
   innerButtonDiv.style.marginRight = '15%';

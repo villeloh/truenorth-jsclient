@@ -1,8 +1,19 @@
 const DEFAULT_ZOOM = 7;
 const MIN_ZOOM = 4;
 const ROUTE_COLOR = '#2B7CFF'; // darkish blue
-const CAMERA_MOVE_THRESHOLD = 0.00001; // the right value must be found experimentally
+const CAMERA_MOVE_THRESHOLD = 0.001; // the right value must be found experimentally
+const PLACE_MARKER_URL = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png';
 
+const MAP_TYPE = {
+
+  NORMAL: 0,
+  SATELLITE: 1,
+  TERRAIN: 2,
+  CYCLING: 3
+};
+
+// I guess things don't really need to be a part of it, but it's too much trouble to move
+// everything out now
 const app = {
 
   google: null,
@@ -13,25 +24,17 @@ const app = {
   },
   polyLines: [],
   markers: [],
+  posMarker: null,
+  destMarker: null,
   locTracker: null,
+  bikeLayer: null,
+  bikeLayerOn: false,
 
   geoLocationOptions: { 
     maximumAge: 3000, // use cached results that are max this old
     timeout: 5000, // call onGeoLocError if no success in this amount of ms
     enableHighAccuracy: true 
   },
-
-  /*
-  // called once to set up the map
-  onInitialGeoLocSuccess: position => {
-
-        app.currentPos.lat = position.coords.latitude;
-        app.currentPos.lng = position.coords.longitude;
-    
-        if (app.map !== null) return;
-    
-        app.initMap(app.currentPos);
-  }, */
 
   onGeoLocSuccess: position => {
 
@@ -40,14 +43,16 @@ const app = {
       lng: position.coords.longitude
     };
 
+    // must be called before resetting currentPos below!
     if (app.diffIsOverCameraMoveThreshold(app.currentPos, newPos)) {
 
-      app.reCenterMap(newPos); // must be called before resetting currentPos below!
+      app.reCenterMap(newPos); 
     }
 
     app.currentPos = newPos;
+    app.updatePosMarker();
     console.log("location: " + app.currentPos.lat + ", " + app.currentPos.lng);
-  },
+  }, // onGeoLocSuccess
 
   onGeoLocError: function (error) {
       
@@ -98,7 +103,8 @@ const app = {
         minZoom: MIN_ZOOM, 
         fullscreenControl: false,
         gestureHandling: 'greedy',
-        mapTypeControlOptions: { style: google.maps.MapTypeControlStyle.DROPDOWN_MENU },
+        // mapTypeControlOptions: { style: google.maps.MapTypeControlStyle.DROPDOWN_MENU },
+        mapTypeControl: false,
         rotateControl: false,
         scaleControl: false,
         tilt: 0,
@@ -112,10 +118,8 @@ const app = {
       app.map.addListener('click', this.fetchRouteTo);
       app.map.addListener('dblclick', this.clearMap);
 
-      const bikeLayer = new google.maps.BicyclingLayer();
-      bikeLayer.setMap(app.map);
-
       app.addLocationButton();
+      app.addMapStyleToggleButtons();
 
         /*
       const mapDiv = document.getElementById('map');
@@ -133,6 +137,48 @@ const app = {
     // buttonHolderDiv.index = 1; // wtf does this do ?? is it the same as z-index ?
     app.map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(buttonHolderDiv);
   },
+
+  addMapStyleToggleButtons: function () {
+    
+    const buttonHolderDiv = document.createElement('div');
+    MapStyleToggleButton(buttonHolderDiv, 'NORMAL', MAP_TYPE.NORMAL, app.onMapStyleToggleButtonClick);
+    MapStyleToggleButton(buttonHolderDiv, 'SAT.', MAP_TYPE.SATELLITE, app.onMapStyleToggleButtonClick);
+    MapStyleToggleButton(buttonHolderDiv, 'TERRAIN', MAP_TYPE.TERRAIN, app.onMapStyleToggleButtonClick);
+    MapStyleToggleButton(buttonHolderDiv, 'CYCL.', MAP_TYPE.CYCLING, app.onMapStyleToggleButtonClick);
+    buttonHolderDiv.style.display = 'flex'; // to spread the buttons out horizontally
+    buttonHolderDiv.style.justifyContent = 'space-evenly';
+    buttonHolderDiv.style.width = '80%';
+    buttonHolderDiv.style.marginTop = '0.6rem';
+    app.map.controls[google.maps.ControlPosition.TOP_CENTER].push(buttonHolderDiv);
+  },
+
+  onMapStyleToggleButtonClick: function (event) {
+
+    console.log("clicked on a map style button!");
+    console.log("button id: " + event.id);
+    
+    switch (event.id) {
+      case MAP_TYPE.NORMAL:
+        
+        app.map.setMapTypeId(app.google.maps.MapTypeId.ROAD_MAP);
+        break;
+      case MAP_TYPE.SATELLITE:
+        
+        app.map.setMapTypeId(app.google.maps.MapTypeId.HYBRID);
+        break;
+      case MAP_TYPE.TERRAIN:
+        
+        app.map.setMapTypeId(app.google.maps.MapTypeId.TERRAIN);
+        break;
+      case MAP_TYPE.CYCLING:
+        
+        app.toggleBikeLayer();
+        break;
+    
+      default:
+        break;
+    }
+  }, // onMapStyleToggleButtonClick
 
   onLocButtonClick: function() {
 
@@ -167,7 +213,7 @@ const app = {
       
       const decodedRoutePoints = app.decodePolyPoints(resAsJson.points);
       app.drawPolyLine(decodedRoutePoints);
-      app.placeMarker({ lat: toLat, lng: toLng });
+      app.updateDestMarker({ lat: toLat, lng: toLng });
 
     }).catch(e => {
       console.log("error! " + e);
@@ -177,13 +223,14 @@ const app = {
   // TODO: remove listeners also?
   clearMap: function() {
 
+    /*
     app.markers.forEach(marker => {
 
       marker.setMap(null);
-    });
+    }); */
 
     // removes the references to the markers
-    app.markers.length = 0;
+    // app.markers.length = 0;
 
     app.polyLines.forEach(line => { 
       line.setMap(null);
@@ -214,14 +261,30 @@ const app = {
     app.polyLines.push(line);
   }, // drawPolyLine
 
-  placeMarker: function (position) {
-    
-    const marker = new google.maps.Marker({ position: position, map: app.map, draggable: true });
-    marker.addListener('dragend', app.onMarkerDragEnd);
-    marker.addListener('click', app.onMarkerTap);
+  updateDestMarker: function (position) {
 
-    app.markers.push(marker);
-  },
+    if (app.destMarker !== null) {
+      
+      app.destMarker.setPosition(position);
+    } else {
+    
+      app.destMarker = new google.maps.Marker({ position: position, map: app.map, draggable: true, crossOnDrag: false });
+      app.destMarker.addListener('dragend', app.onMarkerDragEnd); // should these listeners be deleted explicitly when clearing the marker?
+      app.destMarker.addListener('click', app.onMarkerTap);
+    }
+    // app.markers.push(marker); // the array is unnecessary i guess... keeping it for now
+  }, // updateDestMarker
+
+  updatePosMarker: function () {
+    
+    if (app.posMarker !== null) {
+
+      app.posMarker.setPosition(app.currentPos);
+    } else {
+      
+      app.posMarker = new google.maps.Marker({ position: app.currentPos, map: app.map, draggable: false, icon: PLACE_MARKER_URL });
+    }
+  }, // updatePosMarker
 
   onMarkerDragEnd: function(event) {
     
@@ -242,6 +305,25 @@ const app = {
 
     app.locTracker = navigator.geolocation.watchPosition(app.onGeoLocSuccess, app.onGeoLocError, app.geoLocationOptions);
   },
+
+  toggleBikeLayer: function () {
+
+    if (app.bikeLayerOn) {
+
+      app.bikeLayer.setMap(null);
+      app.bikeLayerOn = false;
+    } else {
+
+      if (app.bikeLayer === null) {
+
+        app.bikeLayer = new google.maps.BicyclingLayer();
+      }
+      app.bikeLayer.setMap(app.map);
+      app.bikeLayerOn = true;
+    }
+  },
+
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX HELPERS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LIFECYCLE METHODS ETC XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -306,6 +388,6 @@ const app = {
     // event.preventDefault();
     console.log("touch end: " + event);
   }
-};
+}; // app
 
 app.initialize();
