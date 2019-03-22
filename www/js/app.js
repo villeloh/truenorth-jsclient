@@ -1,6 +1,7 @@
 const DEFAULT_ZOOM = 7;
 const MIN_ZOOM = 4;
-const ROUTE_COLOR = '#2B7CFF';
+const ROUTE_COLOR = '#2B7CFF'; // darkish blue
+const CAMERA_MOVE_THRESHOLD = 0.00001; // the right value must be found experimentally
 
 const app = {
 
@@ -20,6 +21,8 @@ const app = {
     enableHighAccuracy: true 
   },
 
+  /*
+  // called once to set up the map
   onInitialGeoLocSuccess: position => {
 
         app.currentPos.lat = position.coords.latitude;
@@ -28,12 +31,21 @@ const app = {
         if (app.map !== null) return;
     
         app.initMap(app.currentPos);
-  },
+  }, */
 
   onGeoLocSuccess: position => {
 
-    app.currentPos.lat = position.coords.latitude;
-    app.currentPos.lng = position.coords.longitude;
+    const newPos = {
+      lat: position.coords.latitude,
+      lng: position.coords.longitude
+    };
+
+    if (app.diffIsOverCameraMoveThreshold(app.currentPos, newPos)) {
+
+      app.reCenterMap(newPos); // must be called before resetting currentPos below!
+    }
+
+    app.currentPos = newPos;
     console.log("location: " + app.currentPos.lat + ", " + app.currentPos.lng);
   },
 
@@ -41,6 +53,24 @@ const app = {
       
     console.log("Error! Code: " + error.code);
     console.log("Error! Msg: " + error.message);
+  },
+
+  reCenterMap: function (pos) {
+    
+    app.map.setCenter(pos);
+  },
+
+  // make the camera auto-follow the user only if the change in position is significant enough (i.e., they're cycling).
+  // TODO: implement Position objects which have a magnitude comparison method on them?
+  diffIsOverCameraMoveThreshold: function(oldPos, newPos) {
+
+    const absLatDiff = Math.abs(Math.abs(oldPos.lat) - Math.abs(newPos.lat));
+    const absLngDiff = Math.abs(Math.abs(oldPos.lng) - Math.abs(newPos.lng));
+
+    if ( absLatDiff > CAMERA_MOVE_THRESHOLD || absLngDiff > CAMERA_MOVE_THRESHOLD ) {
+      return true;
+    }
+    return false;
   },
 
   // Application Constructor
@@ -106,7 +136,7 @@ const app = {
 
   onLocButtonClick: function() {
 
-    app.map.setCenter(app.currentPos);
+    app.reCenterMap(app.currentPos);
   },
 
   fetchRouteTo: function(event) {
@@ -204,10 +234,17 @@ const app = {
   onMarkerTap: function (event) {
     
     console.log("tap event: " + JSON.stringify(event));
+    // TODO: open an info window with place info. where to get it though? 
+    // the event object doesn't contain it...
   },
 
-  // Bind any cordova events here. Common events are:
-  // 'pause', 'resume', etc.
+  trackLocation: function() {
+
+    app.locTracker = navigator.geolocation.watchPosition(app.onGeoLocSuccess, app.onGeoLocError, app.geoLocationOptions);
+  },
+
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LIFECYCLE METHODS ETC XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
   onDeviceReady: function() {
 
     this.receivedEvent('deviceready');
@@ -216,8 +253,9 @@ const app = {
     document.addEventListener("resume", app.onResume, false);
 
     // TODO: handle not having GPS on
-    navigator.geolocation.getCurrentPosition(this.onInitialGeoLocSuccess, this.onGeoLocError, this.geoLocationOptions);
+    // navigator.geolocation.getCurrentPosition(this.onGeoLocSuccess, this.onGeoLocError, this.geoLocationOptions);
     app.trackLocation();
+    app.initMap(app.currentPos);
   },
 
   onPause: function() {
@@ -229,11 +267,6 @@ const app = {
   onResume: function () {
     
     app.trackLocation();
-  },
-
-  trackLocation: function() {
-
-    app.locTracker = navigator.geolocation.watchPosition(app.onGeoLocSuccess, app.onGeoLocError, app.geoLocationOptions);
   },
 
   // Update DOM on a Received Event
