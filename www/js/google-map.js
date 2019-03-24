@@ -50,8 +50,14 @@ const GoogleMap = {
 
     this._map = new App.google.maps.Map(document.getElementById('map'), mapOptions);
 
-    this._map.addListener('click', Route.to);
-    this._map.addListener('dblclick', GoogleMap.clear()); // TODO: fix single click firing at the same time (if possible...)
+    this._map.addListener('click', function(e) {
+      e.id = ClickHandler.SINGLE;
+      ClickHandler.handle(e);
+    });
+    this._map.addListener('dblclick', function(e) { 
+      e.id = ClickHandler.DOUBLE;
+      ClickHandler.handle(e);
+    }); // TODO: fix single click firing at the same time (if possible...)
   }, // init
 
   reCenter: function (pos) {
@@ -89,17 +95,13 @@ const GoogleMap = {
     // this.reCenter(GeoLoc.currentPos);
   },
 
-  // TODO: remove listeners also?
   clear: function() {
 
-    /*
-    app.markers.forEach(marker => {
-
-      marker.setMap(null);
-    }); */
-
-    // removes the references to the markers
-    // app.markers.length = 0;
+    if (this._destMarker === null) return; // this should always work, but i'm a bit wary about it still...
+    
+    App.google.maps.event.clearInstanceListeners(this._destMarker);
+    this._destMarker.setMap(null);
+    this._destMarker = null;
 
     this._polyLines.forEach(line => { 
       line.setMap(null);
