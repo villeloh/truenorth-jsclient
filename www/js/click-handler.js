@@ -6,11 +6,13 @@
 
 const ClickHandler = {
 
-  doubleClickTimeOut: 500,
-  singleClickTimeOut: 300,
+  // accessed when sending the click events from GoogleMap
   SINGLE: 1,
   DOUBLE: 2,
-  doubleClickInProgress: false,
+
+  _doubleClickTimeOut: 500,
+  _singleClickTimeOut: 300,
+  _doubleClickInProgress: false,
 
   // i'm sure there's a simpler way to do it, but whatever, it works
   handle: function(event) {
@@ -19,19 +21,19 @@ const ClickHandler = {
 
       setTimeout(() => {
 
-        if (!ClickHandler.doubleClickInProgress) {
+        if (!ClickHandler._doubleClickInProgress) {
           
           Route.to(event);
         }
-      }, ClickHandler.singleClickTimeOut);
+      }, ClickHandler._singleClickTimeOut);
     } else if (event.id === ClickHandler.DOUBLE) {
 
-      ClickHandler.doubleClickInProgress = true;
+      ClickHandler._doubleClickInProgress = true;
       GoogleMap.clear();
       setTimeout(() => {
 
-        ClickHandler.doubleClickInProgress = false;
-      }, ClickHandler.doubleClickTimeOut);
+        ClickHandler._doubleClickInProgress = false;
+      }, ClickHandler._doubleClickTimeOut);
     } else {
       console.log("error processing click (should never happen...)!");
     }

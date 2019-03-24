@@ -10,7 +10,7 @@ const Distance = {
 
   init: function() {
 
-    this.service = new App.google.maps.DistanceMatrixService()
+    this.service = new App.google.maps.DistanceMatrixService();
     this.options = {
       origins: [],
       destinations: [],
@@ -18,7 +18,7 @@ const Distance = {
       unitSystem: App.google.maps.UnitSystem.METRIC,
       avoidHighways: true,
       avoidTolls: false
-    }
+    };
   }, // init
 
   // takes latLngs, and the speed in km/h

@@ -10,10 +10,12 @@ const UIButton = {
 
     // Set CSS for the control border.
     const button = document.createElement('div');
+    button.id = 'outer-holder';
     this._styleDiv(button, outerStyleMap);
 
     // Set CSS for the control interior.
     const innerButtonDiv = document.createElement('div');
+    innerButtonDiv.id = 'text-holder'; // for changing button texts dynamically, this div must be 'findable'
     this._styleDiv(innerButtonDiv, innerStyleMap);
 
     // to make textless buttons possible with the same 'class'
@@ -37,5 +39,5 @@ const UIButton = {
       div.style[styleAttr] = value;
     });
   }
-  
+
 }; // UIButton

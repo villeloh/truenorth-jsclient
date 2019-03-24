@@ -26,6 +26,8 @@ const GoogleMap = {
   _destMarker: null,
   _bikeLayer: null,
   _bikeLayerOn: false,
+  _menu: null,
+  _menuButtonTextHolderDiv: null,
 
   _map: null,
 
@@ -59,6 +61,13 @@ const GoogleMap = {
       ClickHandler.handle(e);
     }); // TODO: fix single click firing at the same time (if possible...)
   }, // init
+
+  // must be called after UI.init in app.js, to prevent dependency issues
+  initMenu: function() {
+
+    this._menu = document.getElementById(Menu.DIV_ID);
+    this._menuButtonTextHolderDiv = document.getElementById(MenuButton.DIV_ID).childNodes[0].childNodes[0];
+  },
 
   reCenter: function (pos) {
     
@@ -94,6 +103,26 @@ const GoogleMap = {
     GoogleMap.reCenter(GeoLoc.currentPos);
     // this.reCenter(GeoLoc.currentPos);
   },
+
+  // toggles the right-hand corner menu
+  onMenuButtonClick: function() {
+
+    GoogleMap._toggleMenuVisibility();
+  },
+
+  _toggleMenuVisibility: function() {
+
+    const visib = GoogleMap._menu.style.visibility;
+    
+    if (visib === 'visible') {
+
+      GoogleMap._menu.style.visibility = 'hidden';
+      GoogleMap._menuButtonTextHolderDiv.textContent = MenuButton.closedSymbol;
+    } else {
+      GoogleMap._menu.style.visibility = 'visible';
+      GoogleMap._menuButtonTextHolderDiv.textContent = MenuButton.openSymbol;
+    }
+  }, // _toggleMenuVisibility
 
   clear: function() {
 

@@ -29,6 +29,12 @@ const App = {
       Distance.init();
       GoogleMap.init();
       UI.init();
+
+      // this way we only have to find the menu controls once from the DOM
+      setTimeout(() => {
+        
+        GoogleMap.initMenu(); // must be called after Ui.init() !!
+      }, 1000); // it's a bit ridiculous that it takes a full second for the DOM to load... but ehh, whatever
     }); // GoogleMapsLoader.load
   }, // _initServices
 
