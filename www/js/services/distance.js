@@ -5,11 +5,16 @@
 
 const Distance = {
 
+  DEFAULT_SPEED: 15, // km/h
+  MAX_SPEED: 50,
+  currentSpeed: null,
+
   service: null,
   options: null,
 
   init: function() {
 
+    this.currentSpeed = this.DEFAULT_SPEED;
     this.service = new App.google.maps.DistanceMatrixService();
     this.options = {
       origins: [],
@@ -22,7 +27,7 @@ const Distance = {
   }, // init
 
   // takes latLngs, and the speed in km/h
-  between: function(from, to, speed) {
+  between: function(from, to) {
 
     this.options.origins[0] = from;
     this.options.destinations[0] = to;
@@ -47,10 +52,19 @@ const Distance = {
         distance = response.rows[0].elements[0].distance.text;
 
         const distInKm = response.rows[0].elements[0].distance.value / 1000; // it arrives as meters
-        const duraInDecimHours = distInKm / speed;
-        duration = Distance._formatDuration(duraInDecimHours);
 
-        console.log("distance: " + distance + "; " + "duration: " + duration);
+        let duraInDecimHours = 0;
+
+        if (Distance.currentSpeed < 1 || Distance.currentSpeed === null || Distance.currentSpeed === "" || Distance.currentSpeed === undefined) {
+
+          duraInDecimHours = 'N/A';
+          console.log("distance: " + distance + "; " + "duration: " + duraInDecimHours);
+
+        } else {
+          duraInDecimHours = distInKm / Distance.currentSpeed;
+          duration = Distance._formatDuration(duraInDecimHours);
+          console.log("distance: " + distance + "; " + "duration: " + duration);
+        }
       }}); // getDistanceMatrix
     
       return { distance: distance, duration: duration, address: address };

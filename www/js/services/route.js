@@ -13,7 +13,7 @@ const Route = {
     const toLng = event.latLng.lng();
 
     // rn it only console.logs stuff. TODO: display distance & duration in ui
-    Distance.between({ lat: fromLat, lng: fromLng}, { lat: toLat, lng: toLng }, 15);
+    Distance.between({ lat: fromLat, lng: fromLng}, { lat: toLat, lng: toLng });
 
     // TODO: replace with client-side directions api call ??
     // ideally, objects would be used here, but i don't know how to properly include them in query strings like this one.

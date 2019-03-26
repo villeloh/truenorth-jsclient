@@ -5,6 +5,9 @@
  // extends UIButton
 const LocationButton = {
 
+  BORDER_DIV_ID: 'loc-btn-border',
+  INNER_DIV_ID: 'loc-btn-inner',
+
   make: function(parentDiv, callback) {
 
     const outerStyles = new Map();
@@ -27,7 +30,7 @@ const LocationButton = {
     innerStyles.set('borderRadius', '50%');
 
     // pass null for id and text, as neither is needed with this button
-    UIButton.make(parentDiv, outerStyles, innerStyles, null, callback, null);
+    UIButton.make(parentDiv, outerStyles, innerStyles, null, callback, null, LocationButton.BORDER_DIV_ID, LocationButton.INNER_DIV_ID);
   } // make
   
 }; // LocationButton

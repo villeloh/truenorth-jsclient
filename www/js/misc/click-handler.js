@@ -1,7 +1,7 @@
 
 /**
  * Differentiates between single and double clicks on the map, so that only the appropriate
- * event gets fired (wtf google?).
+ * event gets fired (wtf Google?).
  */
 
 const ClickHandler = {
@@ -10,7 +10,7 @@ const ClickHandler = {
   SINGLE: 1,
   DOUBLE: 2,
 
-  _doubleClickTimeOut: 500,
+  _doubleClickTimeOut: 300,
   _singleClickTimeOut: 300,
   _doubleClickInProgress: false,
 
@@ -35,7 +35,7 @@ const ClickHandler = {
         ClickHandler._doubleClickInProgress = false;
       }, ClickHandler._doubleClickTimeOut);
     } else {
-      console.log("error processing click (should never happen...)!");
+      console.log("error processing map click (should never happen...)!");
     }
   } // handle
 

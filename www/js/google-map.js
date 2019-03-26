@@ -26,10 +26,16 @@ const GoogleMap = {
   _destMarker: null,
   _bikeLayer: null,
   _bikeLayerOn: false,
+
+  // ui refs
   _menu: null,
   _menuButtonTextHolderDiv: null,
+  _cyclingLayerToggleButton: null,
+  _speedInput: null,
 
   _map: null,
+
+  _firstMenuOpen: true,
 
   init: function () {
 
@@ -59,14 +65,17 @@ const GoogleMap = {
     this._map.addListener('dblclick', function(e) { 
       e.id = ClickHandler.DOUBLE;
       ClickHandler.handle(e);
-    }); // TODO: fix single click firing at the same time (if possible...)
+    });
   }, // init
 
   // must be called after UI.init in app.js, to prevent dependency issues
-  initMenu: function() {
+  setUIrefs: function() {
 
     this._menu = document.getElementById(Menu.DIV_ID);
-    this._menuButtonTextHolderDiv = document.getElementById(MenuButton.DIV_ID).childNodes[0].childNodes[0];
+    this._menuButtonTextHolderDiv = document.getElementById(MenuButton.INNER_DIV_ID); // .childNodes[0].childNodes[0];
+    this._cyclingLayerToggleButton = document.getElementById(CyclingLayerToggleButton.BORDER_DIV_ID);
+    this._speedInput = document.getElementById(SpeedInput.DIV_ID);
+    // this._speedInput = document.getElementById(SpeedInput.DIV_ID);
   },
 
   reCenter: function (pos) {
@@ -89,13 +98,11 @@ const GoogleMap = {
         
         GoogleMap._map.setMapTypeId(App.google.maps.MapTypeId.TERRAIN);
         break;
-      case GoogleMap.MAP_TYPE.CYCLING:
-        
-        GoogleMap._toggleBikeLayer();
-        break;
       default:
+
+        console.log("something is badly wrong with map style toggle clicks...");
         break;
-    }
+    } // switch
   }, // onMapStyleToggleButtonClick
 
   onLocButtonClick: () => {
@@ -110,38 +117,75 @@ const GoogleMap = {
     GoogleMap._toggleMenuVisibility();
   },
 
+  // TODO: clean up this mess asap...
   _toggleMenuVisibility: function() {
 
-    const visib = GoogleMap._menu.style.visibility;
+    //console.log("called toggle visib!");
     
-    if (visib === 'visible') {
+    // GoogleMap._menu.style.top = '15%'; // needs to be set here to work; there's some weird issue with auto-derived styles
 
+    const visib = GoogleMap._menu.style.visibility;
+    // console.log("visibility: " + visib);
+    
+    // bandaid to prevent an issue with the menu displaying incorrectly. fix ASAP!
+    if (this._firstMenuOpen) {
+
+      this._firstMenuOpen = false;
+      // console.log("trying to show menu!");
+      GoogleMap._menu.style.visibility = 'visible';
+      this._menu.style.display = 'flex';
+      GoogleMap._menuButtonTextHolderDiv.textContent = MenuButton.openSymbol;
+
+    } else if (visib === 'visible' || visib === null || visib === undefined || visib === "") {
+
+      // console.log("trying to hide menu!");
       GoogleMap._menu.style.visibility = 'hidden';
       GoogleMap._menuButtonTextHolderDiv.textContent = MenuButton.closedSymbol;
     } else {
+      // console.log("trying to show menu!");
       GoogleMap._menu.style.visibility = 'visible';
       GoogleMap._menuButtonTextHolderDiv.textContent = MenuButton.openSymbol;
     }
   }, // _toggleMenuVisibility
 
-  clear: function() {
+  onCyclingLayerToggleButtonClick: function() {
 
-    if (this._destMarker === null) return; // this should always work, but i'm a bit wary about it still...
-    
-    App.google.maps.event.clearInstanceListeners(this._destMarker);
-    this._destMarker.setMap(null);
-    this._destMarker = null;
+    GoogleMap._toggleBikeLayer();
+  },
 
-    this._polyLines.forEach(line => { 
-      line.setMap(null);
-    });
-    this._polyLines.length = 0;
-  }, // clear
+  onSpeedInputValueChange: function(event) {
+
+    const value = event.target.value;
+
+    if (value > Distance.MAX_SPEED) {
+
+      this._speedInput.value = Distance.MAX_SPEED;
+    } else if (value < 0) {
+
+      this._speedInput.value = 0;
+    }
+
+    Distance.currentSpeed = this._speedInput.value;
+  }, // onSpeedInputValueChange
+
+  onWalkingCyclingToggleButtonClick: function(event) {
+
+    // TODO: use the selected travel mode in route fetching
+    if (event.target.value === WalkingCyclingToggleButton.CYCLING_ID) {
+
+      console.log("selected: " + event.target.value);
+    } else {
+
+      console.log("selected: " + event.target.value);
+    }
+  }, // onWalkingCyclingToggleButtonClick
 
   _toggleBikeLayer: function () {
 
     if (this._bikeLayerOn) {
 
+      this._cyclingLayerToggleButton.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_OFF;
+      this._cyclingLayerToggleButton.style.border = CyclingLayerToggleButton.BORDER_OFF;
       this._bikeLayer.setMap(null);
       this._bikeLayerOn = false;
     } else {
@@ -150,6 +194,8 @@ const GoogleMap = {
 
         this._bikeLayer = new App.google.maps.BicyclingLayer();
       }
+      this._cyclingLayerToggleButton.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_ON;
+      this._cyclingLayerToggleButton.style.border = CyclingLayerToggleButton.BORDER_ON;
       this._bikeLayer.setMap(this._map);
       this._bikeLayerOn = true;
     }
@@ -163,7 +209,7 @@ const GoogleMap = {
     } else {
     
       this._destMarker = new App.google.maps.Marker({ position: position, map: this._map, draggable: true, crossOnDrag: false });
-      this._destMarker.addListener('dragend', GoogleMap.onMarkerDragEnd); // should these listeners be deleted explicitly when clearing the marker?
+      this._destMarker.addListener('dragend', GoogleMap.onMarkerDragEnd);
       this._destMarker.addListener('click', GoogleMap.onMarkerTap);
     }
     // this.markers.push(marker); // the array is unnecessary i guess... keeping it for now
@@ -194,6 +240,20 @@ const GoogleMap = {
     // TODO: open an info window with place info. where to get it though? 
     // the event object doesn't contain it...
   },
+
+  clear: function() {
+
+    if (this._destMarker === null) return; // this should always work, but i'm a bit wary about it still...
+    
+    App.google.maps.event.clearInstanceListeners(this._destMarker);
+    this._destMarker.setMap(null);
+    this._destMarker = null;
+
+    this._polyLines.forEach(line => { 
+      line.setMap(null);
+    });
+    this._polyLines.length = 0;
+  }, // clear
 
   // should be somewhere else, perhaps
   decodePolyPoints: function(encodedPoints) {

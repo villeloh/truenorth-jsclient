@@ -1,11 +1,18 @@
+
 /**
- * These buttons toggle the map's style (terrain / normal / satellite).
+ * Make the main right-hand corner menu button.
  */
 
-// extends UIButton
-const MapStyleToggleButton = {
+const MenuButton = {
 
-  make: function(parentDiv, text, id, callback) {
+  // DIV_ID: 'menu-button',
+  closedSymbol: 'ˇ',
+  openSymbol: '^',
+
+  BORDER_DIV_ID: 'menu-btn-border',
+  INNER_DIV_ID: 'menu-btn-inner',
+
+  make: function(parentDiv, callback) { 
 
     const outerStyles = new Map();
     outerStyles.set('backgroundColor', '#fff');
@@ -20,10 +27,10 @@ const MapStyleToggleButton = {
     innerStyles.set('display', 'inline-block');
     innerStyles.set('color', 'rgb(25,25,25)');
     innerStyles.set('fontFamily', 'Roboto,Arial,sans-serif');
-    innerStyles.set('fontSize', '14px');
+    innerStyles.set('fontSize', '30px');
     innerStyles.set('lineHeight', '38px');
-  
-    UIButton.make(parentDiv, outerStyles, innerStyles, id, callback, text);
+
+    UIButton.make(parentDiv, outerStyles, innerStyles, null, callback, MenuButton.closedSymbol, MenuButton.BORDER_DIV_ID, MenuButton.INNER_DIV_ID);
   } // make
-  
-}; // MapStyleToggleButton
+
+}; // MenuButton

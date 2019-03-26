@@ -6,16 +6,17 @@
 
 const UIButton = {
 
-  make: function(parentDiv, outerStyleMap, innerStyleMap, id, callback, text) {
+  // do you have enough parameters yet ??!
+  make: function(parentDiv, outerStyleMap, innerStyleMap, eventId, callback, text, borderDivId, innerDivId) {
 
     // Set CSS for the control border.
-    const button = document.createElement('div');
-    button.id = 'outer-holder';
-    this._styleDiv(button, outerStyleMap);
+    const outerButtonDiv = document.createElement('div');
+    outerButtonDiv.id = borderDivId;
+    this._styleDiv(outerButtonDiv, outerStyleMap);
 
     // Set CSS for the control interior.
     const innerButtonDiv = document.createElement('div');
-    innerButtonDiv.id = 'text-holder'; // for changing button texts dynamically, this div must be 'findable'
+    innerButtonDiv.id = innerDivId; // for changing button texts dynamically, this div must be 'findable'
     this._styleDiv(innerButtonDiv, innerStyleMap);
 
     // to make textless buttons possible with the same 'class'
@@ -23,13 +24,13 @@ const UIButton = {
 
       innerButtonDiv.innerHTML = text;
     }
-    button.appendChild(innerButtonDiv);
+    outerButtonDiv.appendChild(innerButtonDiv);
 
-    button.addEventListener('click', function(event) {
-      event.id = id; // to uniquely identify the clicked button
+    outerButtonDiv.addEventListener('click', function(event) {
+      event.id = eventId; // to uniquely identify the clicked button
       callback(event);
     });
-    parentDiv.appendChild(button); // this is needed because apparently using return statements loses the styles somehow
+    parentDiv.appendChild(outerButtonDiv); // this is needed because apparently using return statements loses the styles somehow
   }, // make
 
   _styleDiv: function(div, styleMap) {
