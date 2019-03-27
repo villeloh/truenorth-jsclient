@@ -12,7 +12,6 @@ const Route = {
     const toLat = event.latLng.lat(); // why in blazes they are functions is anyone's guess...
     const toLng = event.latLng.lng();
 
-    // rn it only console.logs stuff. TODO: display distance & duration in ui
     Distance.between({ lat: fromLat, lng: fromLng}, { lat: toLat, lng: toLng });
 
     // TODO: replace with client-side directions api call ??
@@ -30,11 +29,10 @@ const Route = {
     fetch(url, options).then( res => res.json() )
     .then(resAsJson => {
       
+      GoogleMap.clear(false); // only clear on proper response (clicking on water won't lose the old route)
       // console.log("response: " + resAsJson.points);
-
-      GoogleMap.clear();
       
-      const decodedRoutePoints = GoogleMap.decodePolyPoints(resAsJson.points);
+      const decodedRoutePoints = Utils.decodePolyPoints(resAsJson.points);
       GoogleMap.drawPolyLine(decodedRoutePoints);
       GoogleMap.updateDestMarker({ lat: toLat, lng: toLng });
 

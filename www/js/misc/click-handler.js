@@ -29,7 +29,9 @@ const ClickHandler = {
     } else if (event.id === ClickHandler.DOUBLE) {
 
       ClickHandler._doubleClickInProgress = true;
-      GoogleMap.clear();
+      GoogleMap.clear(true); // full clear; i.e., reset the top info header
+      Distance.currentDist = 0;
+      Distance.currentSpeed = 0;
       setTimeout(() => {
 
         ClickHandler._doubleClickInProgress = false;

@@ -27,15 +27,9 @@ const GoogleMap = {
   _bikeLayer: null,
   _bikeLayerOn: false,
 
-  // ui refs
-  _menu: null,
-  _menuButtonTextHolderDiv: null,
-  _cyclingLayerToggleButton: null,
-  _speedInput: null,
-
   _map: null,
 
-  _firstMenuOpen: true,
+  _menuIsVisible: false,
 
   init: function () {
 
@@ -67,16 +61,6 @@ const GoogleMap = {
       ClickHandler.handle(e);
     });
   }, // init
-
-  // must be called after UI.init in app.js, to prevent dependency issues
-  setUIrefs: function() {
-
-    this._menu = document.getElementById(Menu.DIV_ID);
-    this._menuButtonTextHolderDiv = document.getElementById(MenuButton.INNER_DIV_ID); // .childNodes[0].childNodes[0];
-    this._cyclingLayerToggleButton = document.getElementById(CyclingLayerToggleButton.BORDER_DIV_ID);
-    this._speedInput = document.getElementById(SpeedInput.DIV_ID);
-    // this._speedInput = document.getElementById(SpeedInput.DIV_ID);
-  },
 
   reCenter: function (pos) {
     
@@ -112,45 +96,34 @@ const GoogleMap = {
   },
 
   // toggles the right-hand corner menu
-  onMenuButtonClick: function() {
+  onMenuButtonClick: function(event) {
 
-    GoogleMap._toggleMenuVisibility();
+    GoogleMap._toggleMenuVisibility(event);
   },
 
-  // TODO: clean up this mess asap...
-  _toggleMenuVisibility: function() {
+  // technically, it removes / recreates the menu with each click.
+  // this is needed because zoom events 'reset' the map, which makes 
+  // the menu become visible with each zoom if it's present in the DOM.
+  _toggleMenuVisibility: function(event) {
 
-    //console.log("called toggle visib!");
-    
-    // GoogleMap._menu.style.top = '15%'; // needs to be set here to work; there's some weird issue with auto-derived styles
+    const menuBtnTextHolderDiv = event.target.childNodes[0];
 
-    const visib = GoogleMap._menu.style.visibility;
-    // console.log("visibility: " + visib);
-    
-    // bandaid to prevent an issue with the menu displaying incorrectly. fix ASAP!
-    if (this._firstMenuOpen) {
+    if (this._menuIsVisible) {
 
-      this._firstMenuOpen = false;
-      // console.log("trying to show menu!");
-      GoogleMap._menu.style.visibility = 'visible';
-      this._menu.style.display = 'flex';
-      GoogleMap._menuButtonTextHolderDiv.textContent = MenuButton.openSymbol;
-
-    } else if (visib === 'visible' || visib === null || visib === undefined || visib === "") {
-
-      // console.log("trying to hide menu!");
-      GoogleMap._menu.style.visibility = 'hidden';
-      GoogleMap._menuButtonTextHolderDiv.textContent = MenuButton.closedSymbol;
+      this._menuIsVisible = false;
+      UI.removeElement(Menu.DIV_ID);
+      menuBtnTextHolderDiv.textContent = MenuButton.closedSymbol;
     } else {
-      // console.log("trying to show menu!");
-      GoogleMap._menu.style.visibility = 'visible';
-      GoogleMap._menuButtonTextHolderDiv.textContent = MenuButton.openSymbol;
+
+      this._menuIsVisible = true;
+      UI.addMenu();
+      menuBtnTextHolderDiv.textContent = MenuButton.openSymbol;
     }
   }, // _toggleMenuVisibility
 
-  onCyclingLayerToggleButtonClick: function() {
+  onCyclingLayerToggleButtonClick: function(event) {
 
-    GoogleMap._toggleBikeLayer();
+    GoogleMap._toggleBikeLayer(event);
   },
 
   onSpeedInputValueChange: function(event) {
@@ -159,13 +132,24 @@ const GoogleMap = {
 
     if (value > Distance.MAX_SPEED) {
 
-      this._speedInput.value = Distance.MAX_SPEED;
+      event.target.value = Distance.MAX_SPEED;
     } else if (value < 0) {
 
-      this._speedInput.value = 0;
+      event.target.value = 0;
     }
 
-    Distance.currentSpeed = this._speedInput.value;
+    if (Utils.isValidSpeed(event.target.value)) {
+
+      Distance.currentSpeed = event.target.value;
+    } else {
+      Distance.currentSpeed = 0;
+    }
+    console.log("distance.currentSpeed: " + Distance.currentSpeed);
+    console.log("distance.currentDist: " + Distance.currentDist);
+
+    const formattedDuraText = Duration.calc(Distance.currentDist, Distance.currentSpeed);
+    const text = InfoHeader.formattedText(Distance.currentDist, formattedDuraText);
+    InfoHeader.update(text);
   }, // onSpeedInputValueChange
 
   onWalkingCyclingToggleButtonClick: function(event) {
@@ -180,12 +164,14 @@ const GoogleMap = {
     }
   }, // onWalkingCyclingToggleButtonClick
 
-  _toggleBikeLayer: function () {
+  _toggleBikeLayer: function (event) {
+
+    const toggleBtn = event.target.parentNode; // the target is the inner text div for some reason
 
     if (this._bikeLayerOn) {
 
-      this._cyclingLayerToggleButton.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_OFF;
-      this._cyclingLayerToggleButton.style.border = CyclingLayerToggleButton.BORDER_OFF;
+      toggleBtn.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_OFF;
+      toggleBtn.style.border = CyclingLayerToggleButton.BORDER_OFF;
       this._bikeLayer.setMap(null);
       this._bikeLayerOn = false;
     } else {
@@ -194,8 +180,8 @@ const GoogleMap = {
 
         this._bikeLayer = new App.google.maps.BicyclingLayer();
       }
-      this._cyclingLayerToggleButton.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_ON;
-      this._cyclingLayerToggleButton.style.border = CyclingLayerToggleButton.BORDER_ON;
+      toggleBtn.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_ON;
+      toggleBtn.style.border = CyclingLayerToggleButton.BORDER_ON;
       this._bikeLayer.setMap(this._map);
       this._bikeLayerOn = true;
     }
@@ -230,7 +216,7 @@ const GoogleMap = {
     
     // console.log("called onMarkerDragEnd");
 
-    GoogleMap.clear();
+    GoogleMap.clear(false);
     Route.to(event);
   },
 
@@ -241,7 +227,7 @@ const GoogleMap = {
     // the event object doesn't contain it...
   },
 
-  clear: function() {
+  clear: function(fullClear) {
 
     if (this._destMarker === null) return; // this should always work, but i'm a bit wary about it still...
     
@@ -253,14 +239,15 @@ const GoogleMap = {
       line.setMap(null);
     });
     this._polyLines.length = 0;
+
+    // the header should only be reset on clearing all routes -- not when
+    // clearing an old route and recalculating a new one
+    if (fullClear) {
+
+      // reset the distance & duration in the upper screen display
+      InfoHeader.update(InfoHeader.DEFAULT_TEXT);
+    }
   }, // clear
-
-  // should be somewhere else, perhaps
-  decodePolyPoints: function(encodedPoints) {
-
-    // console.log("decoded stuffs: " + app.google.maps.geometry.encoding.decodePath(encodedPoints));
-    return App.google.maps.geometry.encoding.decodePath(encodedPoints);
-  },
 
   drawPolyLine: function(points) {
 

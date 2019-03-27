@@ -7,7 +7,12 @@ const Distance = {
 
   DEFAULT_SPEED: 15, // km/h
   MAX_SPEED: 50,
-  currentSpeed: null,
+  currentSpeed: 0,
+  currentDist: 0,
+
+  DEFAULT_DIST: 0.0,
+  DEFAULT_DUR: 0,
+  DEFAULT_ADDR: 'n/a',
 
   service: null,
   options: null,
@@ -26,14 +31,15 @@ const Distance = {
     };
   }, // init
 
-  // takes latLngs, and the speed in km/h
+  // takes latLngs
   between: function(from, to) {
 
     this.options.origins[0] = from;
     this.options.destinations[0] = to;
-    let distance = 'N/A';
-    let duration = 'N/A';
-    let address = 'N/A';
+
+    let distance = Distance.DEFAULT_DIST;
+    let duration = Distance.DEFAULT_DUR;
+    let address = Distance.DEFAULT_ADDR;
   
     this.service.getDistanceMatrix(this.options, function(response, status) {
 
@@ -44,39 +50,24 @@ const Distance = {
         console.log('Error calculating distance!');
         console.log('status: ' + status);
         console.log('response status: ' + responseStatus);
+        duration = Duration.calc(0, 0); // the 'calculation' is needed in order to format the result correctly
       } else {
 
         // console.log("res: " + JSON.stringify(response));
   
         address = response.destinationAddresses[0];
-        distance = response.rows[0].elements[0].distance.text;
+        // distance = response.rows[0].elements[0].distance.text;
+        distance = response.rows[0].elements[0].distance.value / 1000; // it arrives as meters
+        Distance.currentDist = distance;
 
-        const distInKm = response.rows[0].elements[0].distance.value / 1000; // it arrives as meters
-
-        let duraInDecimHours = 0;
-
-        if (Distance.currentSpeed < 1 || Distance.currentSpeed === null || Distance.currentSpeed === "" || Distance.currentSpeed === undefined) {
-
-          duraInDecimHours = 'N/A';
-          console.log("distance: " + distance + "; " + "duration: " + duraInDecimHours);
-
-        } else {
-          duraInDecimHours = distInKm / Distance.currentSpeed;
-          duration = Distance._formatDuration(duraInDecimHours);
-          console.log("distance: " + distance + "; " + "duration: " + duration);
-        }
-      }}); // getDistanceMatrix
-    
-      return { distance: distance, duration: duration, address: address };
+        duration = Duration.calc(distance, Distance.currentSpeed);
+          
+        // the async / obscure nature of getDistanceMatrix means this has to be done here.
+        // only update the dist/dura if the new route is valid (otherwise the old one remains active)
+        const infoText = InfoHeader.formattedText(distance, duration);
+        InfoHeader.update(infoText); // between() could take this as a callback, but it's more confusing that way imo
+      } // if-else
+    }); // getDistanceMatrix
   }, // between
-
-  // convert the duration to a more readable format (hours + minutes)
-  _formatDuration: function(duraInDecimHours) {
-    
-    const hours = Math.trunc(duraInDecimHours);
-    const decimPart = duraInDecimHours - hours;
-    const minutes = Math.round(decimPart * 60);
-    return `${hours} h ${minutes} m`;
-  }
 
 }; // Distance
