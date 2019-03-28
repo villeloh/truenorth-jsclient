@@ -7,7 +7,7 @@ const Menu = {
 
   DIV_ID: 'menu',
 
-  make: function(parentDiv) {
+  addTo: function(parentDiv) {
 
     Menu._addMapStyleToggleButtons(parentDiv);
     Menu._addCyclingLayerToggleButton(parentDiv);
@@ -15,31 +15,35 @@ const Menu = {
     Menu._addSpeedInput(parentDiv);
   }, // make
 
+  // if called first, no extra holder div is needed
   _addMapStyleToggleButtons: function (parentDiv) {
     
-    MapStyleToggleButton.make(parentDiv, MapStyleToggleButton.NORMAL_TXT, GoogleMap.MAP_TYPE.NORMAL, GoogleMap.onMapStyleToggleButtonClick);
-    MapStyleToggleButton.make(parentDiv, MapStyleToggleButton.SAT_TXT, GoogleMap.MAP_TYPE.SATELLITE, GoogleMap.onMapStyleToggleButtonClick);
-    MapStyleToggleButton.make(parentDiv, MapStyleToggleButton.TERRAIN_TXT, GoogleMap.MAP_TYPE.TERRAIN, GoogleMap.onMapStyleToggleButtonClick);
+    MapStyleToggleButton.addTo(parentDiv, MapStyleToggleButton.NORMAL_TXT);
+    MapStyleToggleButton.addTo(parentDiv, MapStyleToggleButton.SAT_TXT);
+    MapStyleToggleButton.addTo(parentDiv, MapStyleToggleButton.TERRAIN_TXT);
   }, // addMapStyleToggleButtons
 
   _addCyclingLayerToggleButton: function(parentDiv) {
-
-    /*
+    
     const buttonHolderDiv = document.createElement('div');
-    // buttonHolderDiv.id = CyclingLayerToggleButton.DIV_ID;
     buttonHolderDiv.style.marginTop = '20%'; // separate it from the other buttons
-    parentDiv.appendChild(buttonHolderDiv); */
-    CyclingLayerToggleButton.make(parentDiv, CyclingLayerToggleButton.TEXT, GoogleMap.onCyclingLayerToggleButtonClick);
+    CyclingLayerToggleButton.addTo(buttonHolderDiv);
+    parentDiv.appendChild(buttonHolderDiv);
   },
 
   _addWalkingCyclingToggleButton: function(parentDiv) {
 
-    WalkingCyclingToggleButton.make(parentDiv);
+    // we need a holder div because otherwise the .innerHTML assignment in addTo() erases all other menu items
+    const buttonHolderDiv = document.createElement('div'); 
+    WalkingCyclingToggleButton.addTo(buttonHolderDiv);
+    parentDiv.appendChild(buttonHolderDiv);
   },
 
   _addSpeedInput: function(parentDiv) {
 
-    SpeedInput.make(parentDiv);
+    const holderDiv = document.createElement('div');
+    SpeedInput.addTo(holderDiv);
+    parentDiv.appendChild(holderDiv);
   }
 
 }; // Menu

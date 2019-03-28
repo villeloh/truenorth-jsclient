@@ -17,7 +17,7 @@ const UI = {
     const buttonHolderDiv = document.createElement('div');
     // buttonHolderDiv.id = MenuButton.DIV_ID; // it seems like it can just be an invisible holder, so no id is needed
     buttonHolderDiv.style.margin = '2.5%';
-    MenuButton.make(buttonHolderDiv, GoogleMap.onMenuButtonClick);
+    MenuButton.addTo(buttonHolderDiv);
     GoogleMap.addUIControl(App.google.maps.ControlPosition.TOP_RIGHT, buttonHolderDiv);
   },
 
@@ -34,7 +34,7 @@ const UI = {
     menuHolderDiv.style.alignItems = 'flex-end';
     menuHolderDiv.style.marginTop = '20%';
     menuHolderDiv.style.marginBottom = '75%';
-    Menu.make(menuHolderDiv);
+    Menu.addTo(menuHolderDiv);
     GoogleMap.addUIControl(App.google.maps.ControlPosition.RIGHT_CENTER, menuHolderDiv);
   }, // _addMenu
 
@@ -42,7 +42,7 @@ const UI = {
   _addLocationButton: function() {
 
     const buttonHolderDiv = document.createElement('div');
-    LocationButton.make(buttonHolderDiv, GoogleMap.onLocButtonClick);
+    LocationButton.addTo(buttonHolderDiv);
 
     // buttonHolderDiv.index = 1; // wtf does this do ?? is it the same as z-index ?
     GoogleMap.addUIControl(App.google.maps.ControlPosition.RIGHT_BOTTOM, buttonHolderDiv);
@@ -54,7 +54,7 @@ const UI = {
     holderDiv.style.width = '65%';
     holderDiv.style.height = '8%';
     holderDiv.style.marginTop = '1.5%';
-    InfoHeader.make(holderDiv);
+    InfoHeader.addTo(holderDiv);
     GoogleMap.addUIControl(App.google.maps.ControlPosition.TOP_CENTER, holderDiv);
   },
 

@@ -1,6 +1,9 @@
 
 /**
  * Overall holder for app initialization. GoogleMap.js is the real heart of the app.
+ * NOTE: However, i'm not sure whether that's good or not... Atm, everything is sort of 
+ * like a static class with static functions. maybe having instances created in App.js
+ * would be better? Then make App.js the 'main controller' of the project.
  * @author Ville Lohkovuori (2019)
  */
 

@@ -28,6 +28,7 @@ const Duration = {
 
     // all invalid speed values should lead to 0 here
     if (duraInDecimHours === 0) {
+
       text = Duration._NA_TEXT;
     } else {
       

@@ -69,22 +69,26 @@ const GoogleMap = {
 
   onMapStyleToggleButtonClick: function (event) {
     
-    switch (event.id) {
-      case GoogleMap.MAP_TYPE.NORMAL:
+    const textHolderDiv = event.target;
+    const value = textHolderDiv.innerText; // supposedly expensive... but .textContent refuses to work with the switch, even though the type is string!
+ 
+    switch (value) {
+      case MapStyleToggleButton.NORMAL_TXT:
         
         GoogleMap._map.setMapTypeId(App.google.maps.MapTypeId.ROADMAP);
         break;
-      case GoogleMap.MAP_TYPE.SATELLITE:
+      case MapStyleToggleButton.SAT_TXT:
         
         GoogleMap._map.setMapTypeId(App.google.maps.MapTypeId.HYBRID);
         break;
-      case GoogleMap.MAP_TYPE.TERRAIN:
+      case MapStyleToggleButton.TERRAIN_TXT:
         
         GoogleMap._map.setMapTypeId(App.google.maps.MapTypeId.TERRAIN);
         break;
       default:
 
         console.log("something is badly wrong with map style toggle clicks...");
+        console.log("text value in default statement: " + value);
         break;
     } // switch
   }, // onMapStyleToggleButtonClick
@@ -106,18 +110,20 @@ const GoogleMap = {
   // the menu become visible with each zoom if it's present in the DOM.
   _toggleMenuVisibility: function(event) {
 
-    const menuBtnTextHolderDiv = event.target.childNodes[0];
+    const menuBtnTextHolderDiv = event.target;
 
     if (this._menuIsVisible) {
 
       this._menuIsVisible = false;
       UI.removeElement(Menu.DIV_ID);
-      menuBtnTextHolderDiv.textContent = MenuButton.closedSymbol;
+      menuBtnTextHolderDiv.textContent = MenuButton.CLOSED_SYMBOL;
+      menuBtnTextHolderDiv.style.fontSize = '26px';
     } else {
 
       this._menuIsVisible = true;
       UI.addMenu();
-      menuBtnTextHolderDiv.textContent = MenuButton.openSymbol;
+      menuBtnTextHolderDiv.textContent = MenuButton.OPEN_SYMBOL;
+      menuBtnTextHolderDiv.style.fontSize = '20px';
     }
   }, // _toggleMenuVisibility
 
@@ -125,32 +131,6 @@ const GoogleMap = {
 
     GoogleMap._toggleBikeLayer(event);
   },
-
-  onSpeedInputValueChange: function(event) {
-
-    const value = event.target.value;
-
-    if (value > Distance.MAX_SPEED) {
-
-      event.target.value = Distance.MAX_SPEED;
-    } else if (value < 0) {
-
-      event.target.value = 0;
-    }
-
-    if (Utils.isValidSpeed(event.target.value)) {
-
-      Distance.currentSpeed = event.target.value;
-    } else {
-      Distance.currentSpeed = 0;
-    }
-    console.log("distance.currentSpeed: " + Distance.currentSpeed);
-    console.log("distance.currentDist: " + Distance.currentDist);
-
-    const formattedDuraText = Duration.calc(Distance.currentDist, Distance.currentSpeed);
-    const text = InfoHeader.formattedText(Distance.currentDist, formattedDuraText);
-    InfoHeader.update(text);
-  }, // onSpeedInputValueChange
 
   onWalkingCyclingToggleButtonClick: function(event) {
 
@@ -166,7 +146,7 @@ const GoogleMap = {
 
   _toggleBikeLayer: function (event) {
 
-    const toggleBtn = event.target.parentNode; // the target is the inner text div for some reason
+    const toggleBtn = event.target.parentElement; // it really should be simply the target... but whatever
 
     if (this._bikeLayerOn) {
 

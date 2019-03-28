@@ -5,32 +5,17 @@
 
 const MenuButton = {
 
-  // DIV_ID: 'menu-button',
-  closedSymbol: 'ˇ',
-  openSymbol: '^',
+  CLOSED_SYMBOL: 'ˇ',
+  OPEN_SYMBOL: '^',
 
-  BORDER_DIV_ID: 'menu-btn-border',
-  INNER_DIV_ID: 'menu-btn-inner',
+  _OUTER_DIV_ID: 'menu-btn-outer',
+  _INNER_DIV_ID: 'menu-btn-inner',
 
-  make: function(parentDiv, callback) { 
-
-    const outerStyles = new Map();
-    outerStyles.set('backgroundColor', '#fff');
-    outerStyles.set('border', '2px solid #808080');
-    outerStyles.set('boxShadow', '0 2px 6px rgba(0,0,0,.3)');
-    outerStyles.set('width', '4.3rem'); // TODO: adapt it to various screens based on their size
-    outerStyles.set('height', '2.2rem');
-    outerStyles.set('textAlign', 'center');
-    outerStyles.set('borderRadius', '5%');
-  
-    const innerStyles = new Map();
-    innerStyles.set('display', 'inline-block');
-    innerStyles.set('color', 'rgb(25,25,25)');
-    innerStyles.set('fontFamily', 'Roboto,Arial,sans-serif');
-    innerStyles.set('fontSize', '30px');
-    innerStyles.set('lineHeight', '38px');
-
-    UIButton.make(parentDiv, outerStyles, innerStyles, null, callback, MenuButton.closedSymbol, MenuButton.BORDER_DIV_ID, MenuButton.INNER_DIV_ID);
-  } // make
+  addTo: function (parentDiv) {
+    
+    parentDiv.innerHTML += `<div id=${MenuButton._OUTER_DIV_ID} onclick="GoogleMap.onMenuButtonClick(event)">
+      <div id=${MenuButton._INNER_DIV_ID}>${MenuButton.CLOSED_SYMBOL}</div>
+    </div>`;
+  }
 
 }; // MenuButton
