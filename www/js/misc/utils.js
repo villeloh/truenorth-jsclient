@@ -18,6 +18,6 @@ const Utils = {
 
     // console.log("decoded stuffs: " + app.google.maps.geometry.encoding.decodePath(encodedPoints));
     return App.google.maps.geometry.encoding.decodePath(encodedPoints);
-  },
+  }
 
 };

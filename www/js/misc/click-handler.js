@@ -14,7 +14,7 @@ const ClickHandler = {
 
   _doubleClickTimeOut: 300,
   _singleClickTimeOut: 300,
-  _longPressTimeOut: 1500, // find the right value by experiment
+  _longPressTimeOut: 1000, // find the right value by experiment
   _doubleClickInProgress: false,
   _isLongPress: false,
 
@@ -49,18 +49,30 @@ const ClickHandler = {
         }, ClickHandler._doubleClickTimeOut);
         break;
       case ClickHandler.LONG_START:
-        
-        ClickHandler._isLongPress = false;
-        // console.log("started long click!");
+
+        // clear as day, ehh. this is needed in order to allow
+        // markerDragInProgress to update at the start of a drag 
+        // event (by default, the long press fires before the drag event).
         setTimeout(() => {
           
-            ClickHandler._isLongPress = true;
-            // console.log("set _isLongPress to: " + ClickHandler._isLongPress);
-
-        }, ClickHandler._longPressTimeOut);
+          console.log("markerDrag in LONG_START: " + GoogleMap.markerDragInProgress);
+          if (GoogleMap.markerDragInProgress) return;
+          
+          ClickHandler._isLongPress = false;
+          // console.log("started long click!");
+          setTimeout(() => {
+            
+              ClickHandler._isLongPress = true;
+              // console.log("set _isLongPress to: " + ClickHandler._isLongPress);
+  
+          }, ClickHandler._longPressTimeOut);
+        }, 700);
         break;
       case ClickHandler.LONG_END:
         
+        console.log("markerDrag in LONG_END: " + GoogleMap.markerDragInProgress);
+        if (GoogleMap.markerDragInProgress) return; // should not be needed, but just in case
+
         // console.log("ended long click!");
         if (ClickHandler._isLongPress) {
 

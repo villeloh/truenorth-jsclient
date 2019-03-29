@@ -31,6 +31,9 @@ const GoogleMap = {
 
   _menuIsVisible: false,
 
+  // needed in order not to fire a superfluous route fetch on marker drag
+  markerDragInProgress: false,
+
   init: function () {
 
     // this.reCenter.bind(this); // useless for some reason -.-
@@ -219,6 +222,7 @@ const GoogleMap = {
     } else {
     
       this._destMarker = new App.google.maps.Marker({ position: position, map: this._map, draggable: true, crossOnDrag: false });
+      this._destMarker.addListener('dragstart', GoogleMap.onMarkerDragStart);
       this._destMarker.addListener('dragend', GoogleMap.onMarkerDragEnd);
       this._destMarker.addListener('click', GoogleMap.onMarkerTap);
     }
@@ -236,12 +240,24 @@ const GoogleMap = {
     }
   }, // updatePosMarker
 
+  onMarkerDragStart: function(event) {
+
+    GoogleMap.markerDragInProgress = true;
+    console.log("markedDrag in dragStart: " + GoogleMap.markerDragInProgress);
+  },
+
   onMarkerDragEnd: function(event) {
     
     // console.log("called onMarkerDragEnd");
 
     GoogleMap.clear(false);
     Route.to(event);
+
+    setTimeout(() => {
+      
+      GoogleMap.markerDragInProgress = false;
+      console.log("markedDrag in dragEnd: " + GoogleMap.markerDragInProgress);
+    }, 700);
   },
 
   onMarkerTap: function (event) {
