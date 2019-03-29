@@ -28,7 +28,7 @@ const ClickHandler = {
         
         // capture the google map event so that it can be used in the LONG_START case that fires afterwards
         ClickHandler._gMapClickEvent = event; 
-        // do not delete! single clicks will be used later!
+        // do not delete! single clicks will be used later
         /* setTimeout(() => {
           
           if (!ClickHandler._doubleClickInProgress) {
