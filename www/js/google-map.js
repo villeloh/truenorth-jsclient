@@ -31,8 +31,10 @@ const GoogleMap = {
 
   _menuIsVisible: false,
 
-  // needed in order not to fire a superfluous route fetch on marker drag
-  markerDragInProgress: false,
+  _mapHolderDiv: null,
+
+  // needed in order not to fire a superfluous route fetch on long press
+  markerDragEventJustStopped: false,
 
   init: function () {
 
@@ -53,41 +55,13 @@ const GoogleMap = {
       disableDoubleClickZoom: true // it needs to be disabled because doubletap is used to clear the map
     }; // mapOptions
 
-    const mapHolderDiv = document.getElementById('map');
+    this._mapHolderDiv = document.getElementById('map');
 
-    this._map = new App.google.maps.Map(mapHolderDiv, mapOptions);
+    this._map = new App.google.maps.Map(this._mapHolderDiv, mapOptions);
 
     this._bikeLayer = new App.google.maps.BicyclingLayer();
 
-    this._map.addListener('click', function(e) {
-      e.id = ClickHandler.SINGLE;
-      ClickHandler.handle(e);
-    });
-    this._map.addListener('dblclick', function(e) { 
-      e.id = ClickHandler.DOUBLE;
-      ClickHandler.handle(e);
-    });
-
-    App.google.maps.event.addDomListener(mapHolderDiv, 'touchstart', function(e) {
-
-      e.id = ClickHandler.LONG_START;
-      ClickHandler.handle(e);
-    });
-
-    App.google.maps.event.addDomListener(mapHolderDiv, 'touchend', function(e) {
-      
-      e.id = ClickHandler.LONG_END;
-      ClickHandler.handle(e);
-    });
-/*
-    this._map.addDomListener('touchstart', function(e) {
-      e.id = ClickHandler.LONG_START;
-      ClickHandler.handle(e);
-    });
-    this._map.addDomListener('touchend', function(e) {
-      e.id = ClickHandler.LONG_END;
-      ClickHandler.handle(e);
-    }); */
+    GoogleMap.setListeners();
   }, // init
 
   reCenter: function (pos) {
@@ -222,7 +196,8 @@ const GoogleMap = {
     } else {
     
       this._destMarker = new App.google.maps.Marker({ position: position, map: this._map, draggable: true, crossOnDrag: false });
-      this._destMarker.addListener('dragstart', GoogleMap.onMarkerDragStart);
+      // this._destMarker.addListener('dragstart', GoogleMap.onMarkerDragStart);
+      // this._destMarker.addListener('dragmove', GoogleMap.onMarkerDragMove);
       this._destMarker.addListener('dragend', GoogleMap.onMarkerDragEnd);
       this._destMarker.addListener('click', GoogleMap.onMarkerTap);
     }
@@ -242,22 +217,22 @@ const GoogleMap = {
 
   onMarkerDragStart: function(event) {
 
-    GoogleMap.markerDragInProgress = true;
-    console.log("markedDrag in dragStart: " + GoogleMap.markerDragInProgress);
+  },
+
+  onMarkerDragMove: function(event) {
+
   },
 
   onMarkerDragEnd: function(event) {
     
-    // console.log("called onMarkerDragEnd");
+    console.log("called onMarkerDragEnd");
 
     GoogleMap.clear(false);
     Route.to(event);
-
+    GoogleMap.markerDragEventJustStopped = true;
     setTimeout(() => {
-      
-      GoogleMap.markerDragInProgress = false;
-      console.log("markedDrag in dragEnd: " + GoogleMap.markerDragInProgress);
-    }, 700);
+      GoogleMap.markerDragEventJustStopped = false;
+    }, 100);
   },
 
   onMarkerTap: function (event) {
@@ -312,6 +287,58 @@ const GoogleMap = {
   addUIControl: function(position, control) {
 
     GoogleMap._map.controls[position].push(control);
-  }
+  },
+
+  // tucking this mess away at the bottom
+  setListeners: function() {
+
+    this._map.addListener('click', function(e) {
+      e.id = ClickHandler.SINGLE;
+      ClickHandler.handle(e);
+    });
+    this._map.addListener('dblclick', function(e) { 
+      e.id = ClickHandler.DOUBLE;
+      ClickHandler.handle(e);
+    });
+
+    this._map.addListener('heading_changed', function(e) {
+
+      console.log("heading changed event: " + JSON.stringify(e)); // doesn't seem to work... read up on it
+    });
+
+    this._map.addListener('zoom_changed', function(e) {
+
+      ClickHandler.isLongPress = false;
+    });
+
+    this._map.addListener('dragstart', function() {
+
+      ClickHandler.isLongPress = false;
+    });
+
+    this._map.addListener('drag', function() {
+
+      ClickHandler.isLongPress = false;
+    });
+
+    this._map.addListener('dragend', function() {
+
+      ClickHandler.isLongPress = false;
+    });
+    
+    // DOM events seem to be the only option for listening to 'long press' type of events.
+    // these fire on *every* click though, which makes things messy to say the least
+    App.google.maps.event.addDomListener(GoogleMap._mapHolderDiv, 'touchstart', function(e) {
+
+      e.id = ClickHandler.LONG_START;
+      ClickHandler.handle(e);
+    });
+
+    App.google.maps.event.addDomListener(GoogleMap._mapHolderDiv, 'touchend', function(e) {
+      
+      e.id = ClickHandler.LONG_END;
+      ClickHandler.handle(e);
+    });
+  } // setListeners
 
 }; // GoogleMap

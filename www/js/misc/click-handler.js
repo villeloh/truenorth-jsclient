@@ -12,11 +12,14 @@ const ClickHandler = {
   LONG_START: 3,
   LONG_END: 4,
 
+  // set from GoogleMap on various events, as a guard against the
+  // interference of DOM touch events with map click events
+  isLongPress: false,
+
   _doubleClickTimeOut: 300,
   _singleClickTimeOut: 300,
-  _longPressTimeOut: 1000, // find the right value by experiment
+  _longPressTimeOut: 1500, // find the right value by experiment
   _doubleClickInProgress: false,
-  _isLongPress: false,
 
   _gMapClickEvent: null,
 
@@ -47,39 +50,32 @@ const ClickHandler = {
 
           ClickHandler._doubleClickInProgress = false;
         }, ClickHandler._doubleClickTimeOut);
-        break;
+        break; 
       case ClickHandler.LONG_START:
+         
+        // console.log("markerDrag in LONG_START: " + GoogleMap.markerDragInProgress);
+        // if (GoogleMap.markerDragInProgress) return;
 
-        // clear as day, ehh. this is needed in order to allow
-        // markerDragInProgress to update at the start of a drag 
-        // event (by default, the long press fires before the drag event).
+        // console.log("called LONG_START");
+        
+        ClickHandler.isLongPress = false;
+        // console.log("set isLongPress to: " + ClickHandler._isLongPress);
         setTimeout(() => {
           
-          console.log("markerDrag in LONG_START: " + GoogleMap.markerDragInProgress);
-          if (GoogleMap.markerDragInProgress) return;
-          
-          ClickHandler._isLongPress = false;
-          // console.log("started long click!");
-          setTimeout(() => {
-            
-              ClickHandler._isLongPress = true;
-              // console.log("set _isLongPress to: " + ClickHandler._isLongPress);
-  
-          }, ClickHandler._longPressTimeOut);
-        }, 700);
+            ClickHandler.isLongPress = true;
+            // console.log("set _isLongPress to: " + ClickHandler._isLongPress);
+
+        }, ClickHandler._longPressTimeOut);
         break;
       case ClickHandler.LONG_END:
         
-        console.log("markerDrag in LONG_END: " + GoogleMap.markerDragInProgress);
-        if (GoogleMap.markerDragInProgress) return; // should not be needed, but just in case
+        // console.log("called LONG_END");
 
-        // console.log("ended long click!");
-        if (ClickHandler._isLongPress) {
+        if ( ClickHandler.isLongPress && !GoogleMap.markerDragEventJustStopped ) { // do not re-fetch if the marker drag event just did it
 
           // console.log("fetching route");
           // set by the google map click event that fires before this regular DOM event
           Route.to(ClickHandler._gMapClickEvent);
-          ClickHandler._isLongPress = false; // should not be needed, but leaving it for now, just in case
         }
         break; 
       default:
