@@ -29,7 +29,15 @@ const Menu = {
     buttonHolderDiv.style.marginTop = '20%'; // separate it from the other buttons
     CyclingLayerToggleButton.addTo(buttonHolderDiv);
     parentDiv.appendChild(buttonHolderDiv);
-  },
+
+    // this call is needed to 'remember' the state of the cycling layer button on each menu recreation...
+    // not ideal and should be fixed; the menu's visibility should be altered instead of destroying or
+    // recreating it with every click.
+    setTimeout(() => {
+      
+      GoogleMap.setInitialCyclingLayerToggleButtonStyles(); // wait for the DOM to update...
+    }, 50);
+  }, // _addCyclingLayerToggleButton
 
   _addWalkingCyclingToggleButton: function(parentDiv) {
 

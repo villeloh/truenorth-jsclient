@@ -50,7 +50,11 @@ const GoogleMap = {
       disableDoubleClickZoom: true // it needs to be disabled because doubletap is used to clear the map
     }; // mapOptions
 
-    this._map = new App.google.maps.Map(document.getElementById('map'), mapOptions);
+    const mapHolderDiv = document.getElementById('map');
+
+    this._map = new App.google.maps.Map(mapHolderDiv, mapOptions);
+
+    this._bikeLayer = new App.google.maps.BicyclingLayer();
 
     this._map.addListener('click', function(e) {
       e.id = ClickHandler.SINGLE;
@@ -60,6 +64,27 @@ const GoogleMap = {
       e.id = ClickHandler.DOUBLE;
       ClickHandler.handle(e);
     });
+
+    App.google.maps.event.addDomListener(mapHolderDiv, 'touchstart', function(e) {
+
+      e.id = ClickHandler.LONG_START;
+      ClickHandler.handle(e);
+    });
+
+    App.google.maps.event.addDomListener(mapHolderDiv, 'touchend', function(e) {
+      
+      e.id = ClickHandler.LONG_END;
+      ClickHandler.handle(e);
+    });
+/*
+    this._map.addDomListener('touchstart', function(e) {
+      e.id = ClickHandler.LONG_START;
+      ClickHandler.handle(e);
+    });
+    this._map.addDomListener('touchend', function(e) {
+      e.id = ClickHandler.LONG_END;
+      ClickHandler.handle(e);
+    }); */
   }, // init
 
   reCenter: function (pos) {
@@ -146,7 +171,7 @@ const GoogleMap = {
 
   _toggleBikeLayer: function (event) {
 
-    const toggleBtn = event.target.parentElement; // it really should be simply the target... but whatever
+    const toggleBtn = event.target.parentElement;
 
     if (this._bikeLayerOn) {
 
@@ -156,16 +181,35 @@ const GoogleMap = {
       this._bikeLayerOn = false;
     } else {
 
-      if (this._bikeLayer === null) {
+      /* if (this._bikeLayer === null) {
 
         this._bikeLayer = new App.google.maps.BicyclingLayer();
-      }
+      } */
       toggleBtn.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_ON;
       toggleBtn.style.border = CyclingLayerToggleButton.BORDER_ON;
       this._bikeLayer.setMap(this._map);
       this._bikeLayerOn = true;
     }
-  }, // toggleBikeLayer
+  }, // _toggleBikeLayer
+
+  // does what it says... called when recreating the menu
+  // (as it's not a click event, it needs its own method)
+  setInitialCyclingLayerToggleButtonStyles: function() {
+
+    const toggleBtn = document.getElementById('cyc-layer-btn-outer');
+
+    if (this._bikeLayerOn) { 
+
+      toggleBtn.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_ON;
+      toggleBtn.style.border = CyclingLayerToggleButton.BORDER_ON;
+      // this._bikeLayer.setMap(this._map); // should not be needed
+    } else {
+
+      toggleBtn.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_OFF;
+      toggleBtn.style.border = CyclingLayerToggleButton.BORDER_OFF;
+      // this._bikeLayer.setMap(null);
+    }
+  }, // setInitialCyclingLayerToggleButtonStyles
 
   updateDestMarker: function (position) {
 
@@ -240,7 +284,9 @@ const GoogleMap = {
       strokeOpacity: 1.0,
       strokeWeight: 4,
       zIndex: 5,
-      map: this._map
+      map: this._map,
+      // editable: true,
+      geodesic: true    
     });
 
     this._polyLines.push(line);

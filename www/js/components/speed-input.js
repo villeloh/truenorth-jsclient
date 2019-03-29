@@ -10,7 +10,15 @@ const SpeedInput = {
 
   addTo: function(parentDiv) {
 
-    parentDiv.innerHTML = `<input type="number" id=${SpeedInput.INPUT_ID} step=1 min=${Distance.MIN_SPEED} max=${Distance.MAX_SPEED} value=${Distance.DEFAULT_SPEED} oninput="SpeedInput.onValueChange(event)">`;
+    parentDiv.innerHTML = `<input 
+      type="number" 
+      id=${SpeedInput.INPUT_ID} 
+      step=1 
+      min=${Distance.MIN_SPEED} 
+      max=${Distance.MAX_SPEED} 
+      value=${Distance.currentSpeed} 
+      oninput="SpeedInput.onValueChange(event)"
+    >`;
   },
 
   // it doesn't need to be a part of GoogleMap, so i'm putting it here.
