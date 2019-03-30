@@ -6,7 +6,7 @@
 const Route = {
 
   wayPoints: [],
-  destination: null,
+  currentDest: null,
 
   DEFAULT_SPEED: 15, // km/h
   MAX_SPEED: 50,
@@ -15,7 +15,7 @@ const Route = {
   currentDura: 0,
 
   DEFAULT_DIST: 0.0,
-  DEFAULT_DUR: 0,
+  DEFAULT_DURA: 0,
   DEFAULT_ADDR: 'n/a',
 
   _directionsService: null,
@@ -23,16 +23,28 @@ const Route = {
 
   init: function() {
 
+    Route.currentDist = Route.DEFAULT_DIST;
     Route.currentSpeed = Route.DEFAULT_SPEED;
-    console.log("route.currenspeed: " + Route.currentSpeed);
 
     Route._directionsService = new App.google.maps.DirectionsService();
     Route._directionsRenderer = new App.google.maps.DirectionsRenderer({
-      draggable: true,
-      map: GoogleMap.getMap()
+      draggable: false, // the dragging is way too sensitive to light presses, so I'm disabling it for now
+      suppressMarkers: true,
+      suppressBicyclingLayer: true,
+      map: GoogleMap.getMap(),
+      polylineOptions: {
+        // path: points,
+        strokeColor: GoogleMap._ROUTE_COLOR,
+        strokeOpacity: 1.0,
+        strokeWeight: 4,
+        zIndex: 5,
+        map: GoogleMap.getMap(),
+        // editable: true,
+        geodesic: true    
+      }
     });
-
-    // dragging the route triggers this event, I guess
+/*
+    // dragging the route triggers this event
     Route._directionsRenderer.addListener('directions_changed', function() {
 
       const route = Route._directionsRenderer.getDirections().routes[0];
@@ -40,10 +52,9 @@ const Route = {
       Route.currentDist = Route.distanceInKm(route);
       InfoHeader.updateDistance(); // uses the currentDist
 
-      Route.currentDura = Duration.calc(Route.currentDist, Route.currentSpeed);
+      Route.currentDura = Utils.calcDuration(Route.currentDist, Route.currentSpeed);
       InfoHeader.updateDuration(); // uses the currentDura
-    });  
-
+    }); */
   }, // init
 
   fetch: function(destination) {
@@ -52,7 +63,7 @@ const Route = {
 
       origin: GeoLoc.currentPos,
       destination: destination,
-      travelMode: 'WALKING', // TODO: get it from the travel mode toggle button
+      travelMode: 'BICYCLING', // TODO: get it from the travel mode toggle button
       optimizeWaypoints: false,
       avoidHighways: true,
       waypoints: Route.wayPoints
@@ -76,8 +87,10 @@ const Route = {
         /**
          * waypoint: { location: LatLng }
          */
-        GoogleMap.clear(); // this leads to double clears if you re-fetch after clearing the route manually (with double click), but ehh, whatever
-        Route._directionsRenderer.setMap(GoogleMap.getMap()); // the map is set to null in GoogleMap.clear
+        Route.currentDest = destination;
+
+        GoogleMap.clearRoute(); // this leads to double clears if you re-fetch after clearing the route manually, but ehh, whatever
+        Route._directionsRenderer.setMap(GoogleMap.getMap()); // the map is set to null in GoogleMap.clearRoute
         Route._directionsRenderer.setDirections(result); // renders polyline on the map
 
         GoogleMap.updateDestMarker(destination);
@@ -86,7 +99,7 @@ const Route = {
         Route.currentDist = Route.distanceInKm(route);
         InfoHeader.updateDistance(); // uses the currentDist
 
-        Route.currentDura = Duration.calc(Route.currentDist, Route.currentSpeed);
+        Route.currentDura = Utils.calcDuration(Route.currentDist, Route.currentSpeed);
         InfoHeader.updateDuration(); // uses the currentDura
 
       } else {
@@ -95,43 +108,6 @@ const Route = {
       }
     }); // Route._directionsService.route
   }, // fetch
-
-  to: function(event) {
-
-    const fromLat = GeoLoc.currentPos.lat;
-    const fromLng = GeoLoc.currentPos.lng;
-    const toLat = event.latLng.lat(); // why in blazes they are functions is anyone's guess...
-    const toLng = event.latLng.lng();
-
-    Distance.between({ lat: fromLat, lng: fromLng}, { lat: toLat, lng: toLng });
-
-    // TODO: replace with client-side directions api call ??
-    // ideally, objects would be used here, but i don't know how to properly include them in query strings like this one.
-    // maybe try a POST query with an object body on it?
-    const url = `https://us-central1-truenorth-backend.cloudfunctions.net/route/?fromLat=${fromLat}&fromLng=${fromLng}&toLat=${toLat}&toLng=${toLng}`;
-
-    const options = {
-      method: 'GET',
-      headers: {
-          'Content-Type': 'application/json'
-      }
-    };
-
-    fetch(url, options).then( res => res.json() )
-    .then(resAsJson => {
-      
-      GoogleMap.clear(); // only clear on proper response (clicking on water won't lose the old route)
-      // console.log("response: " + resAsJson.points);
-      
-      const decodedRoutePoints = Utils.decodePolyPoints(resAsJson.points);
-      GoogleMap.drawPolyLine(decodedRoutePoints);
-      GoogleMap.updateDestMarker({ lat: toLat, lng: toLng });
-
-    }).catch(e => {
-
-      console.log("error! " + e);
-    })
-  }, // to
 
   distanceInKm: function(route) {
 

@@ -15,9 +15,10 @@ const InfoHeader = {
 
   addTo: function(parentDiv) {
 
+    // &nbsp; = space... funny guy, whoever thought up html
     parentDiv.innerHTML = `<div id=${InfoHeader._OUTER_DIV_ID}>
       <p id=${InfoHeader._INNER_P_ID_DIST}>${InfoHeader.DEFAULT_DIST}</p>
-      <p id=${InfoHeader._INNER_P_ID_DIVISOR}> | </p>
+      <p id=${InfoHeader._INNER_P_ID_DIVISOR}>&nbsp;|&nbsp;</p>
       <p id=${InfoHeader._INNER_P_ID_DURA}>${InfoHeader.DEFAULT_DURA}</p>
     <div>`;
   },
@@ -40,20 +41,7 @@ const InfoHeader = {
 
     const innerP = document.getElementById(InfoHeader._INNER_P_ID_DURA);
 
-    let duraText;
-
-    if (Route.currentDura === 0) {
-
-      duraText = InfoHeader.DEFAULT_DURA;
-    } else {
-      
-      const hours = Math.trunc(Route.currentDura);
-      const decimPart = Route.currentDura - hours;
-      const minutes = Math.round(decimPart * 60);
-      duraText = `${hours} h ${minutes} m`;
-    }
-
-    innerP.textContent = duraText;
+    innerP.textContent = Utils.formatDuration(Route.currentDura);
   }, // updateDuration
 
 }; // InfoHeader

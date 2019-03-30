@@ -21,7 +21,7 @@ const GoogleMap = {
   _PLACE_MARKER_URL: 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png',
 
   _polyLines: [],
-  // markers: [],
+  _wayPointmarkers: [],
   _posMarker: null,
   _destMarker: null,
   _bikeLayer: null,
@@ -129,11 +129,6 @@ const GoogleMap = {
     }
   }, // _toggleMenuVisibility
 
-  onCyclingLayerToggleButtonClick: function(event) {
-
-    GoogleMap._toggleBikeLayer(event);
-  },
-
   onWalkingCyclingToggleButtonClick: function(event) {
 
     // TODO: use the selected travel mode in route fetching
@@ -145,6 +140,11 @@ const GoogleMap = {
       console.log("selected: " + event.target.value);
     }
   }, // onWalkingCyclingToggleButtonClick
+
+  onCyclingLayerToggleButtonClick: function(event) {
+
+    GoogleMap._toggleBikeLayer(event);
+  },
 
   _toggleBikeLayer: function (event) {
 
@@ -211,6 +211,18 @@ const GoogleMap = {
     }
   }, // updatePosMarker
 
+  // takes a LatLng
+  addWayPoint: function(position) {
+
+    if (this._destMarker === null) return;
+
+    const wayPointMarker = new App.google.maps.Marker({ position: position, map: this._map, draggable: true });
+    GoogleMap._wayPointmarkers.push(wayPointMarker);
+    const wayPointObject = { location: position };
+    Route.wayPoints.push(wayPointObject);
+    Route.fetch(Route.currentDest);
+  },
+
   _onMarkerDragStart: function(event) {
 
   },
@@ -223,14 +235,13 @@ const GoogleMap = {
     
     // console.log("called _onMarkerDragEnd");
 
-    GoogleMap.clear();
+    GoogleMap.clearRoute();
 
     const toLat = event.latLng.lat();
     const toLng = event.latLng.lng();
     const destination = { lat: toLat, lng: toLng };
     Route.fetch(destination);
 
-    // Route.to(event);
     GoogleMap.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
     setTimeout(() => {
       GoogleMap.markerDragEventJustStopped = false;
@@ -244,24 +255,50 @@ const GoogleMap = {
     // the event object doesn't contain it...
   },
 
-  clear: function() {
+  onClearButtonClick: function() {
+
+    GoogleMap.fullClear();
+    Route.currentDist = Route.DEFAULT_DIST;
+    Route.currentDura = Route.DEFAULT_DURA;
+
+    // reset the distance & duration in the upper screen display
+    InfoHeader.updateDistance();
+    InfoHeader.updateDuration();
+  }, // onClearButtonClick
+
+  fullClear: function() {
 
     if (this._destMarker === null) return; // this should always work, but i'm a bit wary about it still...
 
-    Route.getRenderer().setDirections(null);
+    GoogleMap.clearRoute();
+    GoogleMap.clearWayPoints();
+  }, // fullClear
+
+  clearRoute: function() {
+
+    if (this._destMarker === null) return;
+
+     // it produces an error to call it with null. it seems it's not needed to clear the map, but i'm
+     // leaving it for now in case it's needed later.
+    // Route.getRenderer().setDirections(null);
     Route.getRenderer().setMap(null); // clear the old route
     
     App.google.maps.event.clearInstanceListeners(this._destMarker);
     this._destMarker.setMap(null);
     this._destMarker = null;
+  }, // clearRoute
 
-    /*
-    this._polyLines.forEach(line => { 
-      line.setMap(null);
+  clearWayPoints: function() {
+    
+    Route.wayPoints.length = 0; // erase all the waypoints
+
+    this._wayPointmarkers.forEach(marker => { 
+      marker.setMap(null);
     });
-    this._polyLines.length = 0; */
-  }, // clear
+    this._wayPointmarkers.length = 0;
+  }, // clearWayPoints
 
+  /*
   drawPolyLine: function(points) {
 
     // should never happen, but just in case
@@ -279,12 +316,18 @@ const GoogleMap = {
     });
 
     this._polyLines.push(line);
-  }, // drawPolyLine
+  }, // drawPolyLine */
 
   // called from ui.js to add the map ui controls
   addUIControl: function(position, control) {
 
     GoogleMap._map.controls[position].push(control);
+  },
+
+  // called in Route.js to get a reference to the map
+  getMap: function() {
+
+    return GoogleMap._map;
   },
 
   // tucking this mess away at the bottom
@@ -337,12 +380,6 @@ const GoogleMap = {
       e.id = ClickHandler.LONG_END;
       ClickHandler.handle(e);
     });
-  }, // setListeners
-
-  // called in Route.js to get a reference to the map
-  getMap: function() {
-
-    return GoogleMap._map;
-  }
+  } // setListeners
 
 }; // GoogleMap

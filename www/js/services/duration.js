@@ -1,11 +1,9 @@
 
 /**
- * Although very simple, conceptually this 'class' is a 'service' as well, so I'm putting it in the services folder.
+ * The existence of this 'class' is up for questioning. May delete it and move its functionalities elsewhere.
  */
 
 const Duration = {
-
-  _NA_TEXT: 'n/a',
 
   calc: function(distance, speed) {
 
@@ -22,14 +20,14 @@ const Duration = {
   }, // calc
 
   // convert the duration to a more readable format (hours + minutes)
-  _format: function(duraInDecimHours) {
+  format: function(duraInDecimHours) {
 
     let text;
 
     // all invalid speed values should lead to 0 here
     if (duraInDecimHours === 0) {
 
-      text = Duration._NA_TEXT;
+      text = InfoHeader.DEFAULT_DURA;
     } else {
       
       const hours = Math.trunc(duraInDecimHours);
@@ -38,6 +36,6 @@ const Duration = {
       text = `${hours} h ${minutes} m`;
     }
     return text;
-  } // _format
+  } // format
 
 }; // Duration

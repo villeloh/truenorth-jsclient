@@ -10,6 +10,7 @@ const UI = {
     this._addMenuButton();
     // this._addMenu(); // added from GoogleMap now, due to some issues with menu visibility
     this._addInfoHeader();
+    this._addClearButton();
   },
 
   _addMenuButton: function() {
@@ -46,6 +47,15 @@ const UI = {
 
     // buttonHolderDiv.index = 1; // wtf does this do ?? is it the same as z-index ?
     GoogleMap.addUIControl(App.google.maps.ControlPosition.RIGHT_BOTTOM, buttonHolderDiv);
+  },
+
+  _addClearButton: function() {
+
+    const buttonHolderDiv = document.createElement('div');
+    buttonHolderDiv.style.margin = '2.5%';
+    ClearButton.addTo(buttonHolderDiv);
+
+    GoogleMap.addUIControl(App.google.maps.ControlPosition.TOP_LEFT, buttonHolderDiv);
   },
 
   _addInfoHeader: function() {

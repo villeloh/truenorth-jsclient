@@ -5,13 +5,13 @@
  // extends UIButton
 const LocationButton = {
 
-  OUTER_DIV_ID: 'loc-btn-outer',
-  INNER_DIV_ID: 'loc-btn-inner',
+  _OUTER_DIV_ID: 'loc-btn-outer',
+  _INNER_DIV_ID: 'loc-btn-inner',
 
   addTo: function(parentDiv) {
 
-    parentDiv.innerHTML = `<div id=${LocationButton.OUTER_DIV_ID} onclick="GoogleMap.onLocButtonClick()">
-    <div id=${LocationButton.INNER_DIV_ID}></div></div>`;
+    parentDiv.innerHTML = `<div id=${LocationButton._OUTER_DIV_ID} onclick="GoogleMap.onLocButtonClick()">
+    <div id=${LocationButton._INNER_DIV_ID}></div></div>`;
   }
   
 }; // LocationButton

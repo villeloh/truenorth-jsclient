@@ -31,7 +31,7 @@ const ClickHandler = {
         
         // capture the google map event so that it can be used in the LONG_START case that fires afterwards
         ClickHandler._gMapClickEvent = event; 
-        // do not delete! single clicks will be used later
+        // do not delete! single clicks will perhaps be used later
         /* setTimeout(() => {
           
           if (!ClickHandler._doubleClickInProgress) {
@@ -41,15 +41,13 @@ const ClickHandler = {
         }, ClickHandler._singleClickTimeOut); */
         break;
       case ClickHandler.DOUBLE:
-        
-        ClickHandler._doubleClickInProgress = true;
-        GoogleMap.clear();
-        Route.currentDist = 0;
-        Route.currentDura = 0;
+      
+        const lat = event.latLng.lat();
+        const lng = event.latLng.lng();
+        const clickedPos = { lat: lat, lng: lng };
+        GoogleMap.addWayPoint(clickedPos);
 
-        // reset the distance & duration in the upper screen display
-        InfoHeader.updateDistance();
-        InfoHeader.updateDuration();
+        ClickHandler._doubleClickInProgress = true;
 
         setTimeout(() => {
 
