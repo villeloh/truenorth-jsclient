@@ -158,10 +158,6 @@ const GoogleMap = {
       this._bikeLayerOn = false;
     } else {
 
-      /* if (this._bikeLayer === null) {
-
-        this._bikeLayer = new App.google.maps.BicyclingLayer();
-      } */
       toggleBtn.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_ON;
       toggleBtn.style.border = CyclingLayerToggleButton.BORDER_ON;
       this._bikeLayer.setMap(this._map);
@@ -185,7 +181,7 @@ const GoogleMap = {
       toggleBtn.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_OFF;
       toggleBtn.style.border = CyclingLayerToggleButton.BORDER_OFF;
       // this._bikeLayer.setMap(null);
-    }
+    } // if-else
   }, // setInitialCyclingLayerToggleButtonStyles
 
   updateDestMarker: function (position) {
@@ -198,8 +194,8 @@ const GoogleMap = {
       this._destMarker = new App.google.maps.Marker({ position: position, map: this._map, draggable: true, crossOnDrag: false });
       // this._destMarker.addListener('dragstart', GoogleMap.onMarkerDragStart);
       // this._destMarker.addListener('dragmove', GoogleMap.onMarkerDragMove);
-      this._destMarker.addListener('dragend', GoogleMap.onMarkerDragEnd);
-      this._destMarker.addListener('click', GoogleMap.onMarkerTap);
+      this._destMarker.addListener('dragend', GoogleMap._onMarkerDragEnd);
+      this._destMarker.addListener('click', GoogleMap._onMarkerTap);
     }
     // this.markers.push(marker); // the array is unnecessary i guess... keeping it for now
   }, // updateDestMarker
@@ -215,53 +211,55 @@ const GoogleMap = {
     }
   }, // updatePosMarker
 
-  onMarkerDragStart: function(event) {
+  _onMarkerDragStart: function(event) {
 
   },
 
-  onMarkerDragMove: function(event) {
+  _onMarkerDragMove: function(event) {
 
   },
 
-  onMarkerDragEnd: function(event) {
+  _onMarkerDragEnd: function(event) {
     
-    console.log("called onMarkerDragEnd");
+    // console.log("called _onMarkerDragEnd");
 
-    GoogleMap.clear(false);
-    Route.to(event);
-    GoogleMap.markerDragEventJustStopped = true;
+    GoogleMap.clear();
+
+    const toLat = event.latLng.lat();
+    const toLng = event.latLng.lng();
+    const destination = { lat: toLat, lng: toLng };
+    Route.fetch(destination);
+
+    // Route.to(event);
+    GoogleMap.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
     setTimeout(() => {
       GoogleMap.markerDragEventJustStopped = false;
     }, 100);
-  },
+  }, // _onMarkerDragEnd
 
-  onMarkerTap: function (event) {
+  _onMarkerTap: function (event) {
     
     console.log("tap event: " + JSON.stringify(event));
     // TODO: open an info window with place info. where to get it though? 
     // the event object doesn't contain it...
   },
 
-  clear: function(fullClear) {
+  clear: function() {
 
     if (this._destMarker === null) return; // this should always work, but i'm a bit wary about it still...
+
+    Route.getRenderer().setDirections(null);
+    Route.getRenderer().setMap(null); // clear the old route
     
     App.google.maps.event.clearInstanceListeners(this._destMarker);
     this._destMarker.setMap(null);
     this._destMarker = null;
 
+    /*
     this._polyLines.forEach(line => { 
       line.setMap(null);
     });
-    this._polyLines.length = 0;
-
-    // the header should only be reset on clearing all routes -- not when
-    // clearing an old route and recalculating a new one
-    if (fullClear) {
-
-      // reset the distance & duration in the upper screen display
-      InfoHeader.update(InfoHeader.DEFAULT_TEXT);
-    }
+    this._polyLines.length = 0; */
   }, // clear
 
   drawPolyLine: function(points) {
@@ -339,6 +337,12 @@ const GoogleMap = {
       e.id = ClickHandler.LONG_END;
       ClickHandler.handle(e);
     });
-  } // setListeners
+  }, // setListeners
+
+  // called in Route.js to get a reference to the map
+  getMap: function() {
+
+    return GoogleMap._map;
+  }
 
 }; // GoogleMap

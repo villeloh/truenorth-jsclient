@@ -43,9 +43,14 @@ const ClickHandler = {
       case ClickHandler.DOUBLE:
         
         ClickHandler._doubleClickInProgress = true;
-        GoogleMap.clear(true); // full clear; i.e., reset the top info header
-        Distance.currentDist = 0;
-        Distance.currentSpeed = 0;
+        GoogleMap.clear();
+        Route.currentDist = 0;
+        Route.currentDura = 0;
+
+        // reset the distance & duration in the upper screen display
+        InfoHeader.updateDistance();
+        InfoHeader.updateDuration();
+
         setTimeout(() => {
 
           ClickHandler._doubleClickInProgress = false;
@@ -75,7 +80,13 @@ const ClickHandler = {
 
           // console.log("fetching route");
           // set by the google map click event that fires before this regular DOM event
-          Route.to(ClickHandler._gMapClickEvent);
+
+          const toLat = ClickHandler._gMapClickEvent.latLng.lat(); // why in blazes they are functions is anyone's guess...
+          const toLng = ClickHandler._gMapClickEvent.latLng.lng();
+          const destination = { lat: toLat, lng: toLng };
+          Route.fetch(destination);
+
+          // Route.to(ClickHandler._gMapClickEvent);
         }
         break; 
       default:

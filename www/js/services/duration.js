@@ -18,7 +18,7 @@ const Duration = {
 
       duraInDecimHours = 0;
     }
-    return Duration._format(duraInDecimHours);
+    return duraInDecimHours;
   }, // calc
 
   // convert the duration to a more readable format (hours + minutes)

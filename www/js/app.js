@@ -29,9 +29,10 @@ const App = {
 
       this.google = google; // to be used throughout the app, so there's no need to pass it around
 
-      Distance.init();
+      // Distance.init();
       GoogleMap.init();
       UI.init();
+      Route.init();
     }); // GoogleMapsLoader.load
   }, // _initServices
 

@@ -14,9 +14,9 @@ const SpeedInput = {
       type="number" 
       id=${SpeedInput.INPUT_ID} 
       step=1 
-      min=${Distance.MIN_SPEED} 
-      max=${Distance.MAX_SPEED} 
-      value=${Distance.currentSpeed} 
+      min=${Route.MIN_SPEED} 
+      max=${Route.MAX_SPEED} 
+      value=${Route.currentSpeed} 
       oninput="SpeedInput.onValueChange(event)"
     >`;
   },
@@ -38,19 +38,16 @@ const SpeedInput = {
 
     if (Utils.isValidSpeed(event.target.value)) {
 
-      Distance.currentSpeed = event.target.value;
+      Route.currentSpeed = event.target.value;
     } else {
-      Distance.currentSpeed = 0;
+      Route.currentSpeed = 0;
     }
     // console.log("distance.currentSpeed: " + Distance.currentSpeed);
     // console.log("distance.currentDist: " + Distance.currentDist);
 
     // update the top screen info header with the new duration.
-    // this should really be moved somewhere else... maybe make some kind of 
-    // manager to manage speed, duration, distance, etc?
-    const formattedDuraText = Duration.calc(Distance.currentDist, Distance.currentSpeed);
-    const text = InfoHeader.formattedText(Distance.currentDist, formattedDuraText);
-    InfoHeader.update(text);
+    Route.currentDura = Duration.calc(Route.currentDist, Route.currentSpeed);
+    InfoHeader.updateDuration(); // uses the currentDura
   } // onValueChange
 
 }; // SpeedInput
