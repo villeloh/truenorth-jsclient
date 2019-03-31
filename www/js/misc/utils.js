@@ -13,13 +13,6 @@ const Utils = {
       return true;
     }
   }, // isValidSpeed
-
-  decodePolyPoints: function(encodedPoints) {
-
-    // console.log("decoded stuffs: " + app.google.maps.geometry.encoding.decodePath(encodedPoints));
-    return App.google.maps.geometry.encoding.decodePath(encodedPoints);
-  },
-
   calcDuration: function(distance, speed) {
 
     let duraInDecimHours;
@@ -51,6 +44,12 @@ const Utils = {
       text = `${hours} h ${minutes} m`;
     }
     return text;
-  } // formatDuration
+  }, // formatDuration
+
+  decodePolyPoints: function(encodedPoints) {
+
+    // console.log("decoded stuffs: " + app.google.maps.geometry.encoding.decodePath(encodedPoints));
+    return App.google.maps.geometry.encoding.decodePath(encodedPoints);
+  },
 
 }; // Utils

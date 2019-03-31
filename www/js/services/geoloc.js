@@ -46,7 +46,7 @@ const GeoLoc = {
 
     GeoLoc.currentPos = newPos;
     GoogleMap.updatePosMarker();
-    console.log("location: " + GeoLoc.currentPos.lat + ", " + GeoLoc.currentPos.lng);
+    // console.log("location: " + GeoLoc.currentPos.lat + ", " + GeoLoc.currentPos.lng);
   }, // _onSuccess
 
   _onError: function (error) {

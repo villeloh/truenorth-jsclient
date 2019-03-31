@@ -44,7 +44,7 @@ const ClickHandler = {
       
         const lat = event.latLng.lat();
         const lng = event.latLng.lng();
-        const clickedPos = { lat: lat, lng: lng };
+        const clickedPos = LatLng(lat, lng);
         GoogleMap.addWayPoint(clickedPos);
 
         ClickHandler._doubleClickInProgress = true;
@@ -77,11 +77,13 @@ const ClickHandler = {
         if ( ClickHandler.isLongPress && !GoogleMap.markerDragEventJustStopped ) { // do not re-fetch if the marker drag event just did it
 
           // console.log("fetching route");
-          // set by the google map click event that fires before this regular DOM event
 
-          const toLat = ClickHandler._gMapClickEvent.latLng.lat(); // why in blazes they are functions is anyone's guess...
+          // set by the google map click event that fires just before this regular DOM event
+          const toLat = ClickHandler._gMapClickEvent.latLng.lat();
           const toLng = ClickHandler._gMapClickEvent.latLng.lng();
-          const destination = { lat: toLat, lng: toLng };
+          const destination = LatLng(toLat, toLng);
+
+          // console.log("fetching route after LONG PRESS!");
           Route.fetch(destination);
 
           // Route.to(ClickHandler._gMapClickEvent);

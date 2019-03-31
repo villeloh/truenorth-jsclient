@@ -5,7 +5,11 @@
 
 const Route = {
 
-  wayPoints: [],
+  WALK_MODE: 'WALKING',
+  CYCLE_MODE: 'BICYCLING',
+  _travelMode: null,
+
+  _wayPoints: [],
   currentDest: null,
 
   DEFAULT_SPEED: 15, // km/h
@@ -25,6 +29,7 @@ const Route = {
 
     Route.currentDist = Route.DEFAULT_DIST;
     Route.currentSpeed = Route.DEFAULT_SPEED;
+    Route._travelMode = Route.CYCLE_MODE;
 
     Route._directionsService = new App.google.maps.DirectionsService();
     Route._directionsRenderer = new App.google.maps.DirectionsRenderer({
@@ -32,6 +37,7 @@ const Route = {
       suppressMarkers: true,
       suppressBicyclingLayer: true,
       map: GoogleMap.getMap(),
+      preserveViewport: true, // stops the auto-zooming on completed fetch
       polylineOptions: {
         // path: points,
         strokeColor: GoogleMap._ROUTE_COLOR,
@@ -63,10 +69,10 @@ const Route = {
 
       origin: GeoLoc.currentPos,
       destination: destination,
-      travelMode: 'BICYCLING', // TODO: get it from the travel mode toggle button
+      travelMode: Route._travelMode, // comes from the travel mode toggle button
       optimizeWaypoints: false,
       avoidHighways: true,
-      waypoints: Route.wayPoints
+      waypoints: Route._wayPoints
     };
   
     Route._directionsService.route(request, function(result, status) {
@@ -88,12 +94,19 @@ const Route = {
          * waypoint: { location: LatLng }
          */
         Route.currentDest = destination;
+        /* console.log("dest in fetch: " + Route.currentDest.lat + ", " + Route.currentDest.lng);
+
+        console.log("wps in fetch: ");
+        Route._wayPoints.forEach(wp => {
+
+          console.log(wp.location.lat + ", " + wp.location.lng);
+        }); */
 
         GoogleMap.clearRoute(); // this leads to double clears if you re-fetch after clearing the route manually, but ehh, whatever
         Route._directionsRenderer.setMap(GoogleMap.getMap()); // the map is set to null in GoogleMap.clearRoute
         Route._directionsRenderer.setDirections(result); // renders polyline on the map
 
-        GoogleMap.updateDestMarker(destination);
+        GoogleMap.updateDestMarker(Route.currentDest);
 
         const route = result.routes[0];
         Route.currentDist = Route.distanceInKm(route);
@@ -122,6 +135,37 @@ const Route = {
   getRenderer: function() {
 
     return Route._directionsRenderer;
+  },
+
+  addWayPointObject: function(wayPoint) {
+
+    Route._wayPoints.push(wayPoint);
+  },
+
+  deleteWayPointObject: function(index) {
+
+    Route._wayPoints.splice(index, 1);
+  },
+
+  clearWayPointObjects: function() {
+
+    Route._wayPoints.length = 0;
+  },
+
+  getWayPointArrayLength: function() {
+
+    return Route._wayPoints.length;
+  },
+
+  updateWayPoint: function(index, wayPoint) {
+
+    Route._wayPoints[index] = wayPoint;
+  },
+
+  // called by the walking/cycling mode toggle button
+  setTravelMode: function(travelMode) {
+
+    Route._travelMode = travelMode;
   }
 
 }; // Route
