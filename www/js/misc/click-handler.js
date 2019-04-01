@@ -14,7 +14,7 @@ const ClickHandler = {
 
   // set from GoogleMap on various events, as a guard against the
   // interference of DOM touch events with map click events
-  isLongPress: false,
+  _isLongPress: false,
 
   _doubleClickTimeOut: 300,
   _singleClickTimeOut: 300,
@@ -65,7 +65,7 @@ const ClickHandler = {
         // console.log("set isLongPress to: " + ClickHandler._isLongPress);
         setTimeout(() => {
           
-            ClickHandler.isLongPress = true;
+            ClickHandler.setLongPress(true);
             // console.log("set _isLongPress to: " + ClickHandler._isLongPress);
 
         }, ClickHandler._longPressTimeOut);
@@ -74,14 +74,14 @@ const ClickHandler = {
         
         // console.log("called LONG_END");
 
-        if ( ClickHandler.isLongPress && !GoogleMap.markerDragEventJustStopped ) { // do not re-fetch if the marker drag event just did it
+        if ( ClickHandler.isLongPress() && !GoogleMap.markerDragEventJustStopped ) { // do not re-fetch if the marker drag event just did it
 
           // console.log("fetching route");
 
           // set by the google map click event that fires just before this regular DOM event
           const toLat = ClickHandler._gMapClickEvent.latLng.lat();
           const toLng = ClickHandler._gMapClickEvent.latLng.lng();
-          const destination = LatLng(toLat, toLng);
+          const destination = new LatLng(toLat, toLng);
 
           // console.log("fetching route after LONG PRESS!");
           Route.fetch(destination);
@@ -94,6 +94,17 @@ const ClickHandler = {
         console.log("error handling click (a Very Bad Thing)!");
         break;
     } // switch
-  } // handle
+  }, // handle
+
+  // although it's a getter, this is a more descriptive name for it
+  isLongPress: function() {
+
+    return ClickHandler._isLongPress;
+  },
+
+  setLongPress: function(value) {
+
+    ClickHandler._isLongPress = value;
+  }
 
 }; // ClickHandler

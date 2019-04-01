@@ -1,9 +1,6 @@
 
 /**
  * Overall holder for app initialization. GoogleMap.js is the real heart of the app.
- * NOTE: However, i'm not sure whether that's good or not... Atm, everything is sort of 
- * like a static class with static functions. maybe having instances created in App.js
- * would be better? Then make App.js the 'main controller' of the project.
  * @author Ville Lohkovuori (2019)
  */
 
@@ -29,7 +26,6 @@ const App = {
 
       this.google = google; // to be used throughout the app, so there's no need to pass it around
 
-      // Distance.init();
       GoogleMap.init();
       UI.init();
       Route.init();
@@ -58,16 +54,8 @@ const App = {
     GeoLoc.start();
   },
 
-  // Update DOM on a Received Event
+  // Update DOM on a received event
   _receivedEvent: function(id) {
-    
-  // used to make the cordova logo blink in the demo app. USEFUL STUFF; DO NOT DELETE !!
-  /*  const parentElement = document.getElementById(id);
-    const listeningElement = parentElement.querySelector('.listening');
-    const receivedElement = parentElement.querySelector('.received');
-
-    listeningElement.setAttribute('style', 'display:none;');
-    receivedElement.setAttribute('style', 'display:block;'); */
 
     // console.log('Received Event: ' + id);
   } // _receivedEvent

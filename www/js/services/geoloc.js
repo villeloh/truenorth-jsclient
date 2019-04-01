@@ -6,11 +6,6 @@
 
 const GeoLoc = {
 
-  currentPos: {
-    lat: 0,
-    lng: 0
-  },
-
   _CAMERA_MOVE_THRESHOLD: 0.001, // the right value must be found experimentally
   _locTracker: null,
 
@@ -33,18 +28,15 @@ const GeoLoc = {
   // for some reason, 'this' refuses to work with this function
   _onSuccess: function(position) {
 
-    const newPos = {
-      lat: position.coords.latitude,
-      lng: position.coords.longitude
-    };
+    const newPos = new LatLng(position.coords.latitude, position.coords.longitude);
 
-    // must be called before resetting currentPos below!
-    if (GeoLoc._diffIsOverCameraMoveThreshold(GeoLoc.currentPos, newPos)) {
+    const oldPos = Route.getCurrentPos();
+    Route.setCurrentPos(newPos);
 
-      GoogleMap.reCenter(newPos); 
+    if (GeoLoc._diffIsOverCameraMoveThreshold(oldPos, newPos)) {
+
+      GoogleMap.reCenterToCurrentPos(); 
     }
-
-    GeoLoc.currentPos = newPos;
     GoogleMap.updatePosMarker();
     // console.log("location: " + GeoLoc.currentPos.lat + ", " + GeoLoc.currentPos.lng);
   }, // _onSuccess
@@ -56,16 +48,11 @@ const GeoLoc = {
   },
 
   // make the camera auto-follow the user only if the change in position is significant enough (i.e., they're cycling).
-  // TODO: implement Position objects which have a magnitude comparison method on them?
   _diffIsOverCameraMoveThreshold: function(oldPos, newPos) {
 
-    const absLatDiff = Math.abs(Math.abs(oldPos.lat) - Math.abs(newPos.lat));
-    const absLngDiff = Math.abs(Math.abs(oldPos.lng) - Math.abs(newPos.lng));
+    const diff = oldPos.differenceFrom(newPos);
 
-    if ( absLatDiff > this._CAMERA_MOVE_THRESHOLD || absLngDiff > this._CAMERA_MOVE_THRESHOLD ) {
-      return true;
-    }
-    return false;
+    return diff > this._CAMERA_MOVE_THRESHOLD;
   } // _diffIsOverCameraMoveThreshold
 
 }; // GeoLoc

@@ -42,7 +42,7 @@ const GoogleMap = {
 
     const mapOptions = {
 
-      center: GeoLoc.currentPos,
+      center: Route.getCurrentPos(),
       zoom: this._DEFAULT_ZOOM, 
       minZoom: this._MIN_ZOOM, 
       fullscreenControl: false,
@@ -64,9 +64,9 @@ const GoogleMap = {
     GoogleMap.setListeners();
   }, // init
 
-  reCenter: function (pos) {
+  reCenterToCurrentPos: function () {
     
-    this._map.setCenter(pos);
+    this._map.setCenter(Route.getCurrentPos());
   },
 
   onMapStyleToggleButtonClick: function (event) {
@@ -97,8 +97,7 @@ const GoogleMap = {
 
   onLocButtonClick: () => {
 
-    GoogleMap.reCenter(GeoLoc.currentPos);
-    // this.reCenter(GeoLoc.currentPos);
+    GoogleMap.reCenterToCurrentPos();
   },
 
   // toggles the right-hand corner menu
@@ -207,10 +206,10 @@ const GoogleMap = {
     
     if (this._posMarker !== null) {
 
-      this._posMarker.setPosition(GeoLoc.currentPos);
+      this._posMarker.setPosition(Route.getCurrentPos());
     } else {
       
-      this._posMarker = new App.google.maps.Marker({ position: GeoLoc.currentPos, map: this._map, draggable: false, icon: GoogleMap._PLACE_MARKER_URL });
+      this._posMarker = new App.google.maps.Marker({ position: Route.getCurrentPos(), map: this._map, draggable: false, icon: GoogleMap._PLACE_MARKER_URL });
     }
   }, // updatePosMarker
 
@@ -219,7 +218,7 @@ const GoogleMap = {
 
     if (this._destMarker === null) return;
     
-    const wayPoint = WayPoint(position);
+    const wayPoint = new WayPointObject(position);
     Route.addWayPointObject(wayPoint);
 
     const wayPointMarker = new App.google.maps.Marker({ 
@@ -246,7 +245,7 @@ const GoogleMap = {
     });
 
     // console.log("added waypoint; fetching route");
-    Route.fetch(Route.currentDest);
+    Route.fetch(Route.getCurrentDest());
   }, // addWayPoint
 
   onWayPointMarkerDragStart: function(event) {
@@ -265,7 +264,7 @@ const GoogleMap = {
     
     const toLat = event.latLng.lat();
     const toLng = event.latLng.lng();
-    const newWayPoint = WayPoint(LatLng(toLat, toLng));
+    const newWayPoint = new WayPointObject(new LatLng(toLat, toLng));
    /* console.log("dragged to: " + toLat + ", " + toLng);
 
     console.log('route.waypoints before altering:');
@@ -287,7 +286,7 @@ const GoogleMap = {
     // console.log("dest before fetch in dragend: " + Route.currentDest.lat + ", " + Route.currentDest.lng);
 
     // console.log("dragged wp; fetching route");
-    Route.fetch(Route.currentDest);
+    Route.fetch(Route.getCurrentDest());
 
     GoogleMap.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
     setTimeout(() => {
@@ -326,7 +325,7 @@ const GoogleMap = {
     GoogleMap._updateWayPointLabels(index+1); // the marker index is zero-based, while the marker labels start from 1
 
     console.log("deleted wp; fetching route");
-    Route.fetch(Route.currentDest);
+    Route.fetch(Route.getCurrentDest());
   }, // _deleteWayPoint
 
   // when a waypoint other than the last one is removed, 
@@ -352,9 +351,9 @@ const GoogleMap = {
 
     const toLat = event.latLng.lat();
     const toLng = event.latLng.lng();
-    const destination = LatLng(toLat, toLng);
+    const destination = new LatLng(toLat, toLng);
 
-    console.log("dragged dest marker; fetching route");
+    // console.log("toString of LatLng: " + destination.toString());
     Route.fetch(destination);
 
     GoogleMap.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
@@ -429,7 +428,7 @@ const GoogleMap = {
   _clearDestMarker: function() {
 
     if (GoogleMap._destMarker === null) return;
-    console.log("clearing dest marker...");
+    // console.log("clearing dest marker...");
 
     App.google.maps.event.clearInstanceListeners(GoogleMap._destMarker);
     GoogleMap._destMarker.setMap(null);
@@ -467,22 +466,22 @@ const GoogleMap = {
 
     this._map.addListener('zoom_changed', function(e) {
 
-      ClickHandler.isLongPress = false;
+      ClickHandler.setLongPress(false);
     });
 
     this._map.addListener('dragstart', function() {
 
-      ClickHandler.isLongPress = false;
+      ClickHandler.setLongPress(false);
     });
 
     this._map.addListener('drag', function() {
 
-      ClickHandler.isLongPress = false;
+      ClickHandler.setLongPress(false);
     });
 
     this._map.addListener('dragend', function() {
 
-      ClickHandler.isLongPress = false;
+      ClickHandler.setLongPress(false);
     });
     
     // DOM events seem to be the only option for listening to 'long press' type of events.

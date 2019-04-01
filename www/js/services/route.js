@@ -9,8 +9,9 @@ const Route = {
   CYCLE_MODE: 'BICYCLING',
   _travelMode: null,
 
-  _wayPoints: [],
-  currentDest: null,
+  _wayPoints: [], // array of objects that contain a WayPoint object and the WayPointMarker associated with it
+  _currentDest: null, // LatLng
+  _currentPos: null,
 
   DEFAULT_SPEED: 15, // km/h
   MAX_SPEED: 50,
@@ -67,7 +68,7 @@ const Route = {
 
     const request = {
 
-      origin: GeoLoc.currentPos,
+      origin: Route.getCurrentPos(),
       destination: destination,
       travelMode: Route._travelMode, // comes from the travel mode toggle button
       optimizeWaypoints: false,
@@ -166,6 +167,21 @@ const Route = {
   setTravelMode: function(travelMode) {
 
     Route._travelMode = travelMode;
+  },
+
+  getCurrentPos: function() {
+
+    return Route._currentPos;
+  },
+
+  setCurrentPos: function(pos) {
+
+    Route._currentPos = pos;
+  },
+
+  getCurrentDest: function() {
+
+    return Route._currentDest;
   }
 
 }; // Route
