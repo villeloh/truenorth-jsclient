@@ -28,17 +28,15 @@ const GeoLoc = {
   // for some reason, 'this' refuses to work with this function
   _onSuccess: function(position) {
 
-    const newPos = new LatLng(position.coords.latitude, position.coords.longitude);
+    const newCoords = new LatLng(position.coords.latitude, position.coords.longitude);
+    const oldCoords = GoogleMap.getCurrentPos().coords;
+    
+    GoogleMap.getCurrentPos().update(newCoords);
 
-    const oldPos = Route.getCurrentPos();
-    Route.setCurrentPos(newPos);
-
-    if (GeoLoc._diffIsOverCameraMoveThreshold(oldPos, newPos)) {
+    if (GeoLoc._diffIsOverCameraMoveThreshold(oldCoords, newCoords)) {
 
       GoogleMap.reCenterToCurrentPos(); 
     }
-    GoogleMap.updatePosMarker();
-    // console.log("location: " + GeoLoc.currentPos.lat + ", " + GeoLoc.currentPos.lng);
   }, // _onSuccess
 
   _onError: function (error) {

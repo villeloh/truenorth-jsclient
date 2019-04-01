@@ -5,8 +5,8 @@
 
 const InfoHeader = {
 
-  DEFAULT_DIST: '0.0 km',
-  DEFAULT_DURA: 'n/a',
+  _DEFAULT_DIST: '0.0 km',
+  _DEFAULT_DURA: 'n/a',
   
   _OUTER_DIV_ID: 'info-header-outer',
   _INNER_P_ID_DIST: 'info-header-p-dist',
@@ -17,31 +17,33 @@ const InfoHeader = {
 
     // &nbsp; = space... funny guy, whoever thought up html
     parentDiv.innerHTML = `<div id=${InfoHeader._OUTER_DIV_ID}>
-      <p id=${InfoHeader._INNER_P_ID_DIST}>${InfoHeader.DEFAULT_DIST}</p>
+      <p id=${InfoHeader._INNER_P_ID_DIST}>${InfoHeader._DEFAULT_DIST}</p>
       <p id=${InfoHeader._INNER_P_ID_DIVISOR}>&nbsp;|&nbsp;</p>
-      <p id=${InfoHeader._INNER_P_ID_DURA}>${InfoHeader.DEFAULT_DURA}</p>
+      <p id=${InfoHeader._INNER_P_ID_DURA}>${InfoHeader._DEFAULT_DURA}</p>
     <div>`;
   },
 
-  update: function(text) {
+  reset: function() {
 
-    const innerP = document.getElementById(InfoHeader._INNER_P_ID);
-    innerP.textContent = text;
+    const innerDistP = document.getElementById(InfoHeader._INNER_P_ID_DIST);
+    const innerDuraP = document.getElementById(InfoHeader._INNER_P_ID_DURA);
+    innerDistP.textContent = InfoHeader._DEFAULT_DIST;
+    innerDuraP.textContent = InfoHeader._DEFAULT_DURA;
   },
 
-  updateDistance: function() {
+  updateDistance: function(value) {
 
     const innerP = document.getElementById(InfoHeader._INNER_P_ID_DIST);
 
-    const distToDisplay = `${Route.currentDist} km`;
+    const distToDisplay = `${value} km`;
     innerP.textContent = distToDisplay;
   },
 
-  updateDuration: function() {
+  updateDuration: function(valueInDecimH) {
 
     const innerP = document.getElementById(InfoHeader._INNER_P_ID_DURA);
 
-    innerP.textContent = Utils.formatDuration(Route.currentDura);
+    innerP.textContent = Utils.formatDuration(valueInDecimH);
   }, // updateDuration
 
 }; // InfoHeader

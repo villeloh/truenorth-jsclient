@@ -6,45 +6,43 @@
 
 const GoogleMap = {
 
-  MAP_TYPE: {
+  // needed in order not to fire a superfluous route fetch on long press
+  markerDragEventJustStopped: false,
 
-    NORMAL: 0,
-    SATELLITE: 1,
-    TERRAIN: 2,
-    CYCLING: 3
-  },
+  constants: {
 
-  _DEFAULT_ZOOM: 8,
-  _MIN_ZOOM: 5,
+    _DEFAULT_ZOOM: 8,
+    _MIN_ZOOM: 5,
+    _PLACE_MARKER_URL: 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png',
 
-  _ROUTE_COLOR: '#2B7CFF', // darkish blue
-  _PLACE_MARKER_URL: 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png',
+    /* MAP_TYPE: {
 
-  _wayPointmarkers: [],
-  _posMarker: null,
-  _destMarker: null,
+      NORMAL: 0,
+      SATELLITE: 1,
+      TERRAIN: 2,
+      CYCLING: 3
+    } */
+  }, // constants
+
+  _currentPos: null,
+
+  _trip: null,
 
   _bikeLayer: null,
   _bikeLayerOn: false,
 
+  _mapHolderDiv: null,
   _map: null,
 
   _menuIsVisible: false,
 
-  _mapHolderDiv: null,
-
-  // needed in order not to fire a superfluous route fetch on long press
-  markerDragEventJustStopped: false,
-
   init: function () {
-
-    // this.reCenter.bind(this); // useless for some reason -.-
 
     const mapOptions = {
 
-      center: Route.getCurrentPos(),
-      zoom: this._DEFAULT_ZOOM, 
-      minZoom: this._MIN_ZOOM, 
+      center: this._currentPos,
+      zoom: this.constants._DEFAULT_ZOOM, 
+      minZoom: this.constants._MIN_ZOOM, 
       fullscreenControl: false,
       gestureHandling: 'greedy',
       mapTypeControl: false,
@@ -61,13 +59,79 @@ const GoogleMap = {
 
     this._bikeLayer = new App.google.maps.BicyclingLayer();
 
+    this._currentPos = new Position(new LatLng(0,0));
+
     GoogleMap.setListeners();
   }, // init
 
-  reCenterToCurrentPos: function () {
+  // takes a LatLng
+  addWayPoint: function(position) {
+
+    if (this.noTrip()) return;
+
+    const label = GoogleMap.getTrip().getWayPointArrayLength() + 1;
     
-    this._map.setCenter(Route.getCurrentPos());
-  },
+    const wayPoint = new WayPoint(position, label);
+    GoogleMap.getTrip().addWayPoint(wayPoint);
+
+    Route.fetch(GoogleMap.getTrip());
+  }, // addWayPoint
+
+
+
+
+
+  /*
+  _clearWayPointMarker: function(marker) {
+
+    const index = GoogleMap._wayPointmarkers.indexOf(marker);
+
+    GoogleMap._wayPointmarkers.splice(index, 1);
+    
+    App.google.maps.event.clearInstanceListeners(marker);
+    marker.setMap(null);
+    marker = null;
+  }, // _clearWayPointMarker */
+
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX CHECKED XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  
+
+  /*
+  updateDestMarker: function (position) {
+
+    // for some reason, after adding the waypoint logic, the destination
+    // marker disappears if it's not recreated with each drag/long press event.
+    
+    if (this._destMarker !== null) {
+      
+      console.log("moving dest marker");
+      this._destMarker.setPosition(position);
+    } else { 
+    
+    // console.log("dest marker coords: " + position.lat + ", " + position.lng);
+
+    GoogleMap._clearDestMarker();
+    
+    GoogleMap._destMarker = new App.google.maps.Marker({ position: position, map: this._map, draggable: true, crossOnDrag: false });
+    // this._destMarker.addListener('dragstart', GoogleMap.onMarkerDragStart);
+    // this._destMarker.addListener('dragmove', GoogleMap.onMarkerDragMove);
+    GoogleMap._destMarker.addListener('dragend', GoogleMap._onDestMarkerDragEnd);
+    GoogleMap._destMarker.addListener('click', GoogleMap._onDestMarkerTap);
+    // }
+  }, // updateDestMarker */
+
+  /*
+  updatePosMarker: function () {
+    
+    if (this._posMarker !== null) {
+
+      this._posMarker.setPosition(Route.getCurrentPos());
+    } else {
+      
+      this._posMarker = new App.google.maps.Marker({ position: Route.getCurrentPos(), map: this._map, draggable: false, icon: GoogleMap.constants._PLACE_MARKER_URL });
+    }
+  }, // updatePosMarker */
 
   onMapStyleToggleButtonClick: function (event) {
     
@@ -130,10 +194,8 @@ const GoogleMap = {
 
   onWalkingCyclingToggleButtonClick: function(event) {
 
-    // the values are the ones defined in Route.
-    // the logic is still in flux, but I feel this 'detour' through GoogleMap
-    // is justifiable due to handling a click event on the map.
-    Route.setTravelMode(event.target.value); 
+    // the values come from Route.js
+    GoogleMap.getTrip().travelMode = event.target.value; 
   },
 
   onCyclingLayerToggleButtonClick: function(event) {
@@ -178,154 +240,26 @@ const GoogleMap = {
       // this._bikeLayer.setMap(null);
     } // if-else
   }, // setInitialCyclingLayerToggleButtonStyles
-
-  updateDestMarker: function (position) {
-
-    // for some reason, after adding the waypoint logic, the destination
-    // marker disappears if it's not recreated with each drag/long press event.
-    /*
-    if (this._destMarker !== null) {
-      
-      console.log("moving dest marker");
-      this._destMarker.setPosition(position);
-    } else { */
-    
-    // console.log("dest marker coords: " + position.lat + ", " + position.lng);
-
-    GoogleMap._clearDestMarker();
-    
-    GoogleMap._destMarker = new App.google.maps.Marker({ position: position, map: this._map, draggable: true, crossOnDrag: false });
-    // this._destMarker.addListener('dragstart', GoogleMap.onMarkerDragStart);
-    // this._destMarker.addListener('dragmove', GoogleMap.onMarkerDragMove);
-    GoogleMap._destMarker.addListener('dragend', GoogleMap._onDestMarkerDragEnd);
-    GoogleMap._destMarker.addListener('click', GoogleMap._onDestMarkerTap);
-    // }
-  }, // updateDestMarker
-
-  updatePosMarker: function () {
-    
-    if (this._posMarker !== null) {
-
-      this._posMarker.setPosition(Route.getCurrentPos());
-    } else {
-      
-      this._posMarker = new App.google.maps.Marker({ position: Route.getCurrentPos(), map: this._map, draggable: false, icon: GoogleMap._PLACE_MARKER_URL });
-    }
-  }, // updatePosMarker
-
-  // takes a LatLng
-  addWayPoint: function(position) {
-
-    if (this._destMarker === null) return;
-    
-    const wayPoint = new WayPointObject(position);
-    Route.addWayPointObject(wayPoint);
-
-    const wayPointMarker = new App.google.maps.Marker({ 
-      position: position, 
-      map: this._map, 
-      draggable: true, 
-      label: ""+Route.getWayPointArrayLength(), 
-      crossOnDrag: false 
-    });
-
-    GoogleMap._wayPointmarkers.push(wayPointMarker);
-
-    wayPointMarker.addListener('dblclick', function(event) {
-
-      event.markerIndex = GoogleMap._wayPointmarkers.indexOf(wayPointMarker);
-      // console.log("the added markerIndex: " + event.markerIndex);
-      GoogleMap.onWayPointMarkerDblClick(event);
-    });
-    wayPointMarker.addListener('dragend', function(event) {
-
-      event.markerIndex = GoogleMap._wayPointmarkers.indexOf(wayPointMarker);
-      // console.log("the added markerIndex: " + event.markerIndex);
-      GoogleMap.onWayPointMarkerDragEnd(event);
-    });
-
-    // console.log("added waypoint; fetching route");
-    Route.fetch(Route.getCurrentDest());
-  }, // addWayPoint
-
+  
   onWayPointMarkerDragStart: function(event) {
 
     // console.log("dest in dragstart: " + Route.currentDest.lat + ", " + Route.currentDest.lng);
   },
 
-  onWayPointMarkerDragEnd: function(event) {
-
-    // console.log("dest when starting dragend: " + Route.currentDest.lat + ", " + Route.currentDest.lng);
-
-    // console.log("waypoint drag event id: " + event.markerIndex);
-
-    const index = event.markerIndex;
-    // console.log("index in dragend: " + index);
-    
-    const toLat = event.latLng.lat();
-    const toLng = event.latLng.lng();
-    const newWayPoint = new WayPointObject(new LatLng(toLat, toLng));
-   /* console.log("dragged to: " + toLat + ", " + toLng);
-
-    console.log('route.waypoints before altering:');
-
-    Route.wayPoints.forEach(wp => {
-
-      console.log(wp.location.lat + ", " + wp.location.lng);
-    }); */
-
-    Route.updateWayPoint(index, newWayPoint);
-
-    /*console.log('route.waypoints after altering:');
-
-    Route.wayPoints.forEach(wp => {
-
-      console.log(wp.location.lat + ", " + wp.location.lng);
-    }); */
-
-    // console.log("dest before fetch in dragend: " + Route.currentDest.lat + ", " + Route.currentDest.lng);
-
-    // console.log("dragged wp; fetching route");
-    Route.fetch(Route.getCurrentDest());
-
-    GoogleMap.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
-    setTimeout(() => {
-      GoogleMap.markerDragEventJustStopped = false;
-    }, 100);
-  }, // onWayPointMarkerDragEnd
-
   onWayPointMarkerDblClick: function(event) {
 
-    // console.log("waypoint marker dblclick event id: " + event.markerIndex);
     GoogleMap._deleteWayPoint(event);
   },
 
   _deleteWayPoint: function(event) {
 
-    /*
-    console.log("before deletion: ");
-    Route.wayPoints.forEach(wp => {
+    const index = event.wpIndex;
 
-      console.log(wp.location.lat + ", " + wp.location.lng);
-    }); */
-
-    const index = event.markerIndex;
-
-   // console.log("index in deleteWp: " + index);
-
-    Route.deleteWayPointObject(index);
-    GoogleMap._clearWayPointMarker(GoogleMap._wayPointmarkers[index]);
-/* 
-    console.log("after deletion: ");
-    Route.wayPoints.forEach(wp => {
-
-      console.log(wp.location.lat + ", " + wp.location.lng);
-    }); */
+    GoogleMap.getTrip().removeWayPoint(index);
 
     GoogleMap._updateWayPointLabels(index+1); // the marker index is zero-based, while the marker labels start from 1
 
-    console.log("deleted wp; fetching route");
-    Route.fetch(Route.getCurrentDest());
+    Route.fetch(GoogleMap.getTrip());
   }, // _deleteWayPoint
 
   // when a waypoint other than the last one is removed, 
@@ -333,12 +267,12 @@ const GoogleMap = {
   // after it will need to be bumped down by 1
   _updateWayPointLabels(aboveLabelNum) {
 
-    GoogleMap._wayPointmarkers.forEach(marker => {
+    GoogleMap.getTrip().wayPoints.forEach(wp => {
 
-      const labelAsNum = parseInt(marker.label);
+      const labelAsNum = parseInt(wp.marker.label);
       if (labelAsNum > aboveLabelNum) {
 
-        marker.setLabel((labelAsNum-1)+"");
+        wp.marker.setLabel((labelAsNum-1)+"");
       }
     });
   }, // _updateWayPointLabels
@@ -351,10 +285,10 @@ const GoogleMap = {
 
     const toLat = event.latLng.lat();
     const toLng = event.latLng.lng();
-    const destination = new LatLng(toLat, toLng);
+    const destCoords = new LatLng(toLat, toLng);
+    GoogleMap.getTrip().dest = new Destination(destCoords);
 
-    // console.log("toString of LatLng: " + destination.toString());
-    Route.fetch(destination);
+    Route.fetch(GoogleMap.getTrip());
 
     GoogleMap.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
     setTimeout(() => {
@@ -371,18 +305,16 @@ const GoogleMap = {
 
   onClearButtonClick: function() {
 
-    GoogleMap.fullClear();
-    Route.currentDist = Route.DEFAULT_DIST;
-    Route.currentDura = Route.DEFAULT_DURA;
+    if (this.noTrip()) return;
 
-    // reset the distance & duration in the upper screen display
-    InfoHeader.updateDistance();
-    InfoHeader.updateDuration();
+    GoogleMap.fullClear();
+
+    InfoHeader.reset();
   }, // onClearButtonClick
 
   fullClear: function() {
 
-    if (this._destMarker === null) return; // this should always work, but i'm a bit wary about it still...
+    if (this.noTrip()) return;
 
     GoogleMap.clearRoute();
     GoogleMap.clearWayPoints();
@@ -390,7 +322,7 @@ const GoogleMap = {
 
   clearRoute: function() {
 
-    if (this._destMarker === null) return;
+    if (this.noTrip()) return;
 
     // it produces an error to call this with null. it seems it's not needed to clear the map, but i'm
     // leaving it for now in case it's needed later.
@@ -398,53 +330,74 @@ const GoogleMap = {
 
     Route.getRenderer().setMap(null); // clear the old route
     
-    GoogleMap._clearDestMarker();
+    GoogleMap.getTrip().dest.clearMarker(); // clear the destination marker
   }, // clearRoute
 
   clearWayPoints: function() {
     
-    Route.clearWayPointObjects();
+    GoogleMap.getTrip().wayPoints.map(wp => {
 
-    this._wayPointmarkers.forEach(marker => { 
-
-      App.google.maps.event.clearInstanceListeners(marker);
-      marker.setMap(null);
-      marker = null;
+      wp.clear();
+      return null;
     });
-    this._wayPointmarkers.length = 0;
+
+    GoogleMap.getTrip().wayPoints.length = 0;
   }, // clearWayPoints
 
-  _clearWayPointMarker: function(marker) {
-
-    const index = GoogleMap._wayPointmarkers.indexOf(marker);
-
-    GoogleMap._wayPointmarkers.splice(index, 1);
+  noTrip: function () {
     
-    App.google.maps.event.clearInstanceListeners(marker);
-    marker.setMap(null);
-    marker = null;
-  }, // _clearWayPointMarker
+    return this._trip === null;
+  },
 
-  _clearDestMarker: function() {
+  onWayPointDragEnd: function(event) {
 
-    if (GoogleMap._destMarker === null) return;
-    // console.log("clearing dest marker...");
+    const index = event.wpIndex;
+    
+    const toLat = event.latLng.lat();
+    const toLng = event.latLng.lng();
+    const latLng = new LatLng(toLat, toLng);
 
-    App.google.maps.event.clearInstanceListeners(GoogleMap._destMarker);
-    GoogleMap._destMarker.setMap(null);
-    GoogleMap._destMarker = null;
+    // it's easier to make a new waypoint than to update an old one...
+    const label = GoogleMap.getTrip().wayPoints[index].marker.label;
+    GoogleMap.getTrip().wayPoints[index] = new WayPoint(latLng, label); // re-use the old label
+    
+    Route.fetch(GoogleMap.getTrip());
+
+    GoogleMap.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
+    setTimeout(() => {
+      GoogleMap.markerDragEventJustStopped = false;
+    }, 100);
+  }, // onWayPointDragEnd
+
+  getMap: function() {
+
+    return GoogleMap._map;
+  },
+
+  getTrip: function() {
+
+    return GoogleMap._trip;
+  },
+
+  setTrip: function(trip) {
+
+    GoogleMap._trip = trip;
+  },
+
+  getCurrentPos: function() {
+
+    return GoogleMap._currentPos;
+  },
+
+  reCenterToCurrentPos: function () {
+    
+    this._map.setCenter(this._currentPos.coords);
   },
 
   // called from ui.js to add the map ui controls
   addUIControl: function(position, control) {
 
     GoogleMap._map.controls[position].push(control);
-  },
-
-  // called in Route.js to get a reference to the map
-  getMap: function() {
-
-    return GoogleMap._map;
   },
 
   // tucking this mess away at the bottom
@@ -466,22 +419,22 @@ const GoogleMap = {
 
     this._map.addListener('zoom_changed', function(e) {
 
-      ClickHandler.setLongPress(false);
+      ClickHandler.isLongPress = false;
     });
 
     this._map.addListener('dragstart', function() {
 
-      ClickHandler.setLongPress(false);
+      ClickHandler.isLongPress = false;
     });
 
     this._map.addListener('drag', function() {
 
-      ClickHandler.setLongPress(false);
+      ClickHandler.isLongPress = false;
     });
 
     this._map.addListener('dragend', function() {
 
-      ClickHandler.setLongPress(false);
+      ClickHandler.isLongPress = false;
     });
     
     // DOM events seem to be the only option for listening to 'long press' type of events.

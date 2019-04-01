@@ -10,27 +10,32 @@ const SpeedInput = {
 
   addTo: function(parentDiv) {
 
+    let speed;
+    if (GoogleMap.noTrip()) {
+
+      speed = Constants.DEFAULT_SPEED;
+    } else {
+      speed = GoogleMap.getTrip().speed
+    }
+
     parentDiv.innerHTML = `<input 
       type="number" 
       id=${SpeedInput.INPUT_ID} 
-      step=1 
-      min=${Route.MIN_SPEED} 
-      max=${Route.MAX_SPEED} 
-      value=${Route.currentSpeed} 
+      step=1
+      max=${Constants.MAX_SPEED} 
+      value=${speed} 
       oninput="SpeedInput.onValueChange(event)"
     >`;
   },
 
   // it doesn't need to be a part of GoogleMap, so i'm putting it here.
-  // maybe App.js should be the 'central hub' of the app though... creating
-  // instances of the components and having references to them?
   onValueChange: function(event) {
 
     const value = event.target.value;
 
-    if (value > Distance.MAX_SPEED) {
+    if (value > Constants.MAX_SPEED) {
 
-      event.target.value = Distance.MAX_SPEED;
+      event.target.value = Constants.MAX_SPEED;
     } else if (value < 0) {
 
       event.target.value = 0;
@@ -38,16 +43,16 @@ const SpeedInput = {
 
     if (Utils.isValidSpeed(event.target.value)) {
 
-      Route.currentSpeed = event.target.value;
+      GoogleMap.getTrip().speed = event.target.value;
     } else {
-      Route.currentSpeed = 0;
+      GoogleMap.getTrip().speed = 0;
     }
     // console.log("distance.currentSpeed: " + Distance.currentSpeed);
     // console.log("distance.currentDist: " + Distance.currentDist);
 
     // update the top screen info header with the new duration.
-    Route.currentDura = Duration.calc(Route.currentDist, Route.currentSpeed);
-    InfoHeader.updateDuration(); // uses the currentDura
+    GoogleMap.getTrip().duration = Duration.calc(GoogleMap.getTrip().distance, GoogleMap.getTrip().speed);
+    InfoHeader.updateDuration(GoogleMap.getTrip().duration);
   } // onValueChange
 
 }; // SpeedInput

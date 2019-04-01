@@ -14,7 +14,7 @@ const ClickHandler = {
 
   // set from GoogleMap on various events, as a guard against the
   // interference of DOM touch events with map click events
-  _isLongPress: false,
+  isLongPress: false,
 
   _doubleClickTimeOut: 300,
   _singleClickTimeOut: 300,
@@ -44,7 +44,7 @@ const ClickHandler = {
       
         const lat = event.latLng.lat();
         const lng = event.latLng.lng();
-        const clickedPos = LatLng(lat, lng);
+        const clickedPos = new LatLng(lat, lng);
         GoogleMap.addWayPoint(clickedPos);
 
         ClickHandler._doubleClickInProgress = true;
@@ -65,7 +65,7 @@ const ClickHandler = {
         // console.log("set isLongPress to: " + ClickHandler._isLongPress);
         setTimeout(() => {
           
-            ClickHandler.setLongPress(true);
+            ClickHandler.isLongPress = true;
             // console.log("set _isLongPress to: " + ClickHandler._isLongPress);
 
         }, ClickHandler._longPressTimeOut);
@@ -74,20 +74,20 @@ const ClickHandler = {
         
         // console.log("called LONG_END");
 
-        if ( ClickHandler.isLongPress() && !GoogleMap.markerDragEventJustStopped ) { // do not re-fetch if the marker drag event just did it
+        if ( !ClickHandler.isLongPress || GoogleMap.markerDragEventJustStopped ) return;  // do not re-fetch if the marker drag event just did it
 
-          // console.log("fetching route");
+        // console.log("fetching route");
 
-          // set by the google map click event that fires just before this regular DOM event
-          const toLat = ClickHandler._gMapClickEvent.latLng.lat();
-          const toLng = ClickHandler._gMapClickEvent.latLng.lng();
-          const destination = new LatLng(toLat, toLng);
+        // set by the google map click event that fires just before this regular DOM event
+        const toLat = ClickHandler._gMapClickEvent.latLng.lat();
+        const toLng = ClickHandler._gMapClickEvent.latLng.lng();
+        const destCoords = new LatLng(toLat, toLng);
 
-          // console.log("fetching route after LONG PRESS!");
-          Route.fetch(destination);
+        GoogleMap.getTrip().dest = new Destination(destCoords);
 
-          // Route.to(ClickHandler._gMapClickEvent);
-        }
+        // console.log("fetching route after LONG PRESS!");
+        Route.fetch(GoogleMap.getTrip());
+        
         break; 
       default:
 
@@ -95,16 +95,5 @@ const ClickHandler = {
         break;
     } // switch
   }, // handle
-
-  // although it's a getter, this is a more descriptive name for it
-  isLongPress: function() {
-
-    return ClickHandler._isLongPress;
-  },
-
-  setLongPress: function(value) {
-
-    ClickHandler._isLongPress = value;
-  }
 
 }; // ClickHandler
