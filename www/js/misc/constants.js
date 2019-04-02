@@ -6,7 +6,8 @@
 
 const Constants = {
 
+  /*
   MAX_SPEED: 50, // km/h  
-  DEFAULT_SPEED: 15, // km/h
+  DEFAULT_SPEED: 15, // km/h */
 
 }; // Constants

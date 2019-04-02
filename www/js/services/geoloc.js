@@ -29,7 +29,7 @@ const GeoLoc = {
   _onSuccess: function(position) {
 
     const newCoords = new LatLng(position.coords.latitude, position.coords.longitude);
-    const oldCoords = GoogleMap.getCurrentPos().coords;
+    const oldCoords = GoogleMap.getCyclist().getPosCoords();
     
     GoogleMap.getCyclist().updatePosition(newCoords);
 

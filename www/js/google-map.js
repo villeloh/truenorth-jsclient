@@ -6,7 +6,7 @@
 
 const GoogleMap = {
 
-  // needed in order not to fire a superfluous route fetch on long press
+  // needed in ClickHandler in order not to fire a superfluous route fetch on long press
   markerDragEventJustStopped: false,
 
   constants: {
@@ -14,17 +14,7 @@ const GoogleMap = {
     _DEFAULT_ZOOM: 8,
     _MIN_ZOOM: 5,
     _PLACE_MARKER_URL: 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png',
-
-    /* MAP_TYPE: {
-
-      NORMAL: 0,
-      SATELLITE: 1,
-      TERRAIN: 2,
-      CYCLING: 3
-    } */
   }, // constants
-
-  _currentPos: null,
 
   _cyclist: null, // the cyclist object contains a *planned* speed, destination, etc.
   _displayedTrip: null, // one for which the route request was successful
@@ -37,11 +27,15 @@ const GoogleMap = {
 
   _menuIsVisible: false,
 
+  _routeRenderer: null,
+
   init: function () {
+
+    const initialPosCoords = new LatLng(0,0);
 
     const mapOptions = {
 
-      center: this._currentPos,
+      center: initialPosCoords,
       zoom: this.constants._DEFAULT_ZOOM, 
       minZoom: this.constants._MIN_ZOOM, 
       fullscreenControl: false,
@@ -59,10 +53,12 @@ const GoogleMap = {
     this._map = new App.google.maps.Map(this._mapHolderDiv, mapOptions);
 
     this._bikeLayer = new App.google.maps.BicyclingLayer();
-
-    this._currentPos = new Position(new LatLng(0,0));
-
+    
     this._cyclist = new Cyclist(Route.constants.CYCLE_MODE); // ideally, take it from localStorage
+
+    this._cyclist.position = new Position(initialPosCoords); // GeoLoc.js periodically updates this
+
+    this._routeRenderer = new RouteRenderer(this._map); // for showing fetched routes on the map
 
     GoogleMap.setListeners();
   }, // init
@@ -70,14 +66,11 @@ const GoogleMap = {
   // takes a LatLng
   addWayPoint: function(position) {
 
-    if (this.noTrip()) return;
-
-    const label = GoogleMap.getTrip().getWayPointArrayLength() + 1;
+    if (this.noDisplayedTrip()) return;
     
-    const wayPoint = new WayPoint(position, label);
-    GoogleMap.getTrip().addWayPoint(wayPoint);
+    GoogleMap._cyclist.addWayPointObject(position);
 
-    Route.fetch(GoogleMap.getTrip());
+    Route.fetch(GoogleMap._cyclist);
   }, // addWayPoint
 
 
@@ -86,58 +79,28 @@ const GoogleMap = {
     return GoogleMap._cyclist;
   },
 
+  onRouteFetchSuccess: function(fetchResult, cyclist) {
 
-  /*
-  _clearWayPointMarker: function(marker) {
+    GoogleMap.deleteDisplayedTrip();
 
-    const index = GoogleMap._wayPointmarkers.indexOf(marker);
-
-    GoogleMap._wayPointmarkers.splice(index, 1);
+    GoogleMap._routeRenderer.renderOnMap(fetchResult);
     
-    App.google.maps.event.clearInstanceListeners(marker);
-    marker.setMap(null);
-    marker = null;
-  }, // _clearWayPointMarker */
+    const route = fetchResult.routes[0];
 
-  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX CHECKED XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+    const dist = Utils.distanceInKm(route);
+    const dura = Utils.calcDuration(dist, cyclist.getSpeed());
 
-  
+    const destCoords = cyclist.getDestCoords();
+    const wayPointCoords = cyclist.getAllWayPointCoords();
 
-  /*
-  updateDestMarker: function (position) {
+    const tripToDisplay = new Trip(destCoords, wayPointCoords, dist, dura);
 
-    // for some reason, after adding the waypoint logic, the destination
-    // marker disappears if it's not recreated with each drag/long press event.
-    
-    if (this._destMarker !== null) {
-      
-      console.log("moving dest marker");
-      this._destMarker.setPosition(position);
-    } else { 
-    
-    // console.log("dest marker coords: " + position.lat + ", " + position.lng);
+    GoogleMap.setDisplayedTrip(tripToDisplay);
+    GoogleMap.getDisplayedTrip().displayOnMap();
 
-    GoogleMap._clearDestMarker();
-    
-    GoogleMap._destMarker = new App.google.maps.Marker({ position: position, map: this._map, draggable: true, crossOnDrag: false });
-    // this._destMarker.addListener('dragstart', GoogleMap.onMarkerDragStart);
-    // this._destMarker.addListener('dragmove', GoogleMap.onMarkerDragMove);
-    GoogleMap._destMarker.addListener('dragend', GoogleMap._onDestMarkerDragEnd);
-    GoogleMap._destMarker.addListener('click', GoogleMap._onDestMarkerTap);
-    // }
-  }, // updateDestMarker */
-
-  /*
-  updatePosMarker: function () {
-    
-    if (this._posMarker !== null) {
-
-      this._posMarker.setPosition(Route.getCurrentPos());
-    } else {
-      
-      this._posMarker = new App.google.maps.Marker({ position: Route.getCurrentPos(), map: this._map, draggable: false, icon: GoogleMap.constants._PLACE_MARKER_URL });
-    }
-  }, // updatePosMarker */
+    InfoHeader.updateDistance(dist);
+    InfoHeader.updateDuration(dura);
+  }, // onRouteFetchSuccess
 
   onMapStyleToggleButtonClick: function (event) {
     
@@ -167,7 +130,7 @@ const GoogleMap = {
 
   onLocButtonClick: () => {
 
-    GoogleMap.reCenterToCurrentPos();
+    GoogleMap.reCenter(GoogleMap._cyclist.getPosCoords());
   },
 
   // toggles the right-hand corner menu
@@ -228,31 +191,7 @@ const GoogleMap = {
     }
   }, // _toggleBikeLayer
 
-  // does what it says... called when recreating the menu
-  // (as it's not a click event, it needs its own method)
-  setInitialCyclingLayerToggleButtonStyles: function() {
-
-    const toggleBtn = document.getElementById('cyc-layer-btn-outer');
-
-    if (this._bikeLayerOn) { 
-
-      toggleBtn.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_ON;
-      toggleBtn.style.border = CyclingLayerToggleButton.BORDER_ON;
-      // this._bikeLayer.setMap(this._map); // should not be needed
-    } else {
-
-      toggleBtn.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_OFF;
-      toggleBtn.style.border = CyclingLayerToggleButton.BORDER_OFF;
-      // this._bikeLayer.setMap(null);
-    } // if-else
-  }, // setInitialCyclingLayerToggleButtonStyles
-  
-  onWayPointMarkerDragStart: function(event) {
-
-    // console.log("dest in dragstart: " + Route.currentDest.lat + ", " + Route.currentDest.lng);
-  },
-
-  onWayPointMarkerDblClick: function(event) {
+  onWayPointDblClick: function(event) {
 
     GoogleMap._deleteWayPoint(event);
   },
@@ -260,41 +199,21 @@ const GoogleMap = {
   _deleteWayPoint: function(event) {
 
     const index = event.wpIndex;
+    GoogleMap._cyclist.removeWayPointObject(index);
 
-    GoogleMap.getTrip().removeWayPoint(index);
-
-    GoogleMap._updateWayPointLabels(index+1); // the marker index is zero-based, while the marker labels start from 1
-
-    Route.fetch(GoogleMap.getTrip());
+    Route.fetch(GoogleMap._cyclist);
   }, // _deleteWayPoint
 
-  // when a waypoint other than the last one is removed, 
-  // the labels of all the waypoints that come
-  // after it will need to be bumped down by 1
-  _updateWayPointLabels(aboveLabelNum) {
-
-    GoogleMap.getTrip().wayPoints.forEach(wp => {
-
-      const labelAsNum = parseInt(wp.marker.label);
-      if (labelAsNum > aboveLabelNum) {
-
-        wp.marker.setLabel((labelAsNum-1)+"");
-      }
-    });
-  }, // _updateWayPointLabels
-
   _onDestMarkerDragEnd: function(event) {
-    
-    // console.log("called _onDestMarkerDragEnd");
 
-    GoogleMap.clearRoute();
-
+    // this bit of code id duplicated in a lot of place; but
+    // i feel it'd make things too nebulous to move it to its own method
     const toLat = event.latLng.lat();
     const toLng = event.latLng.lng();
     const destCoords = new LatLng(toLat, toLng);
-    GoogleMap.getTrip().dest = new Destination(destCoords);
+    GoogleMap._cyclist.setDestCoords(destCoords);
 
-    Route.fetch(GoogleMap.getTrip());
+    Route.fetch(GoogleMap._cyclist);
 
     GoogleMap.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
     setTimeout(() => {
@@ -311,54 +230,55 @@ const GoogleMap = {
 
   onClearButtonClick: function() {
 
-    if (this.noTrip()) return;
+    if (this.noDisplayedTrip()) return;
 
-    GoogleMap.fullClear();
-
-    InfoHeader.reset();
+    GoogleMap._fullClear();
   }, // onClearButtonClick
 
-  fullClear: function() {
+  _fullClear: function() {
 
-    if (this.noTrip()) return;
+    GoogleMap._deletePlannedTrip();
+    GoogleMap.deleteDisplayedTrip();
 
-    GoogleMap.clearRoute();
-    GoogleMap.clearWayPoints();
+    InfoHeader.reset();
   }, // fullClear
 
-  clearDisplayedTrip: function() {
+  // called from Route.js on every route fetch
+  deleteDisplayedTrip: function() {
 
     if (this.noDisplayedTrip()) return;
 
-    // it produces an error to call this with null. it seems it's not needed to clear the map, but i'm
-    // leaving it for now in case it's needed later.
-    // Route.getRenderer().setDirections(null);
-
-    Route.setRendererMapToNull(); // clear the polyline from the map
+    GoogleMap._routeRenderer.clearPolyLine();
     
-    GoogleMap.getDisplayedTrip().clear();
-  }, // clearRoute
+    GoogleMap._displayedTrip.clear();
+    GoogleMap._displayedTrip = null;
+  }, // deleteDisplayedTrip
 
   // clears the stored waypoints and the destination coordinate from the cyclist object
-  clearPlannedTrip: function() {
+  _deletePlannedTrip: function() {
 
     this._cyclist.clearPlannedTrip();
   },
 
-  clearWayPoints: function() {
-    
-    GoogleMap.getTrip().wayPoints.map(wp => {
+  onGoogleMapLongPress: function(event) {
 
-      wp.clear();
-      return null;
-    });
+    const toLat = event.latLng.lat();
+    const toLng = event.latLng.lng();
+    const destCoords = new LatLng(toLat, toLng);
 
-    GoogleMap.getTrip().wayPoints.length = 0;
-  }, // clearWayPoints
+    GoogleMap._cyclist.setDestCoords(destCoords);
 
-  noDisplayedTrip: function () {
-    
-    return this._displayedTrip === null;
+    Route.fetch(GoogleMap._cyclist);
+  },
+
+  onGoogleMapDoubleClick: function(event) {
+
+    const lat = event.latLng.lat();
+    const lng = event.latLng.lng();
+    const clickedPos = new LatLng(lat, lng);
+    GoogleMap._cyclist.addWayPointObject(clickedPos);
+
+    Route.fetch(GoogleMap._cyclist);
   },
 
   onWayPointDragEnd: function(event) {
@@ -369,7 +289,7 @@ const GoogleMap = {
     const toLng = event.latLng.lng();
     const latLng = new LatLng(toLat, toLng);
 
-    GoogleMap._cyclist.updateWayPoint(index, latLng);
+    GoogleMap._cyclist.updateWayPointObject(index, latLng);
     
     Route.fetch(GoogleMap._cyclist);
 
@@ -389,14 +309,16 @@ const GoogleMap = {
     return GoogleMap._displayedTrip;
   },
 
+  // NOTE: before calling this, the existing trip's 
+  // clear method should be called (to get rid of all the objects within it for sure)
   setDisplayedTrip: function(trip) {
 
     GoogleMap._displayedTrip = trip;
   },
 
-  getCurrentPosCoords: function() {
-
-    return GoogleMap._currentPos.coords;
+  noDisplayedTrip: function () {
+    
+    return this._displayedTrip === null;
   },
 
   reCenter: function (newCoords) {
@@ -409,6 +331,25 @@ const GoogleMap = {
 
     GoogleMap._map.controls[position].push(control);
   },
+
+  // does what it says... called when recreating the menu
+  // (as it's not a click event, it needs its own method)
+  setInitialCyclingLayerToggleButtonStyles: function() {
+
+    const toggleBtn = document.getElementById('cyc-layer-btn-outer');
+
+    if (this._bikeLayerOn) { 
+
+      toggleBtn.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_ON;
+      toggleBtn.style.border = CyclingLayerToggleButton.BORDER_ON;
+      // this._bikeLayer.setMap(this._map); // should not be needed
+    } else {
+
+      toggleBtn.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_OFF;
+      toggleBtn.style.border = CyclingLayerToggleButton.BORDER_OFF;
+      // this._bikeLayer.setMap(null);
+    } // if-else
+  }, // setInitialCyclingLayerToggleButtonStyles
 
   // tucking this mess away at the bottom
   setListeners: function() {
@@ -447,7 +388,7 @@ const GoogleMap = {
       ClickHandler.isLongPress = false;
     });
     
-    // DOM events seem to be the only option for listening to 'long press' type of events.
+    // DOM events seem to be the only option for listening for 'long press' type of events.
     // these fire on *every* click though, which makes things messy to say the least
     App.google.maps.event.addDomListener(GoogleMap._mapHolderDiv, 'touchstart', function(e) {
 

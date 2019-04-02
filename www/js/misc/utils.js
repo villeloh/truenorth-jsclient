@@ -28,14 +28,15 @@ const Utils = {
   }, // calcDuration
 
   // convert the duration to a more readable format (hours + minutes)
-  formatDuration: function(duraInDecimHours) {
+  formatDuration: function(duraInDecimHours, fallBackText) {
 
     let text;
 
-    // all invalid speed values should lead to 0 here
-    if (duraInDecimHours === 0) {
+    // when arriving, the value should always be a Number (invalid values get converted to 0); 
+    // but it can be less than 1, leading to a great number of digits
+    if (duraInDecimHours < 1) {
 
-      text = InfoHeader.DEFAULT_DURA;
+      text = fallBackText;
     } else {
       
       const hours = Math.trunc(duraInDecimHours);
@@ -45,6 +46,17 @@ const Utils = {
     }
     return text;
   }, // formatDuration
+
+  // takes a route object from a DirectionsService fetch result
+  distanceInKm: function(route) {
+
+    let total = 0;
+    for (let i = 0; i < route.legs.length; i++) {
+
+      total += route.legs[i].distance.value;
+    }
+    return (total / 1000).toFixed(1);
+  }, // distanceInKm
 
   decodePolyPoints: function(encodedPoints) {
 

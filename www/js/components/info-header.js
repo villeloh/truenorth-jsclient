@@ -43,7 +43,8 @@ const InfoHeader = {
 
     const innerP = document.getElementById(InfoHeader._INNER_P_ID_DURA);
 
-    innerP.textContent = Utils.formatDuration(valueInDecimH);
+    // give it a fallback text to display if the value is invalid (not a number or less than 1)
+    innerP.textContent = Utils.formatDuration(valueInDecimH, InfoHeader._DEFAULT_DURA);
   }, // updateDuration
 
 }; // InfoHeader

@@ -2,16 +2,17 @@
 /**
  * This is getting a bit too object-oriented, but due to some display issues with markers etc,
  * it's best to have a Cyclist object with 'planned' speed, destination, etc. Then Trip can be 
- * a 'possible' trip (i.e., the route request was successful), ready to be rendered on the map in all its glory.
+ * a 'possible' trip (i.e., the route request was successful), ready to be rendered on the map 
+ * with only the info that's contained in / given to it.
  */
 
 function Cyclist(travelMode) {
 
   this.position = new Position(new LatLng(0,0));
-  this.speed = Constants.DEFAULT_SPEED; // km/h
+  this.speed = Route.constants.DEFAULT_SPEED; // km/h
   this.destCoords = null; // LatLng
   this.wayPointObjects = [];
-  this.travelMode = travelMode;
+  this.travelMode = travelMode; // constant from Route.js
 
   this.getPosCoords = function() {
 
@@ -43,19 +44,24 @@ function Cyclist(travelMode) {
     return this.destCoords;
   };
 
-  this.addWayPoint = function(latLng) {
+  this.addWayPointObject = function(latLng) {
 
     this.wayPointObjects.push(new WayPointObject(latLng));
+  };
+
+  this.updateWayPointObject = function(index, newCoords) {
+
+    this.wayPointObjects[index].location = newCoords;
+  };
+
+  this.removeWayPointObject = function(index) {
+
+    this.wayPointObjects.splice(index, 1);
   };
 
   this.getWayPointObjects = function() {
 
     return this.wayPointObjects;
-  };
-
-  this.updateWayPoint = function(index, newCoords) {
-
-    this.wayPointObjects[index].location = newCoords;
   };
 
   // for getting the plain latLngs inside the WayPointObjects
@@ -67,20 +73,10 @@ function Cyclist(travelMode) {
     });
   };
 
-  this.removeWayPoint = function(index) {
-
-    this.wayPointObjects.splice(index, 1);
-  };
-
-  this._clearAllWayPoints = function() {
-
-    this.wayPointObjects.length = 0;
-  };
-
   this.clearPlannedTrip = function() {
 
     this.setDestCoords(null);
-    this._clearAllWayPoints();
+    this.wayPointObjects.length = 0; // there is never a case where only the waypoints are cleared, so it's ok to do this here
   };
 
   this.getTravelMode = function() {

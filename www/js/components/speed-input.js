@@ -14,20 +14,22 @@ const SpeedInput = {
       type="number" 
       id=${SpeedInput.INPUT_ID} 
       step=1
-      max=${Constants.MAX_SPEED} 
+      max=${Route.constants.MAX_SPEED} 
       value=${GoogleMap.getCyclist().getSpeed()} 
       oninput="SpeedInput.onValueChange(event)"
     >`;
   },
 
   // it doesn't need to be a part of GoogleMap, so i'm putting it here.
+  // technically it's a violation of the general design principle of the app, 
+  // but GoogleMap is crowded enough already.
   onValueChange: function(event) {
 
     const value = event.target.value;
 
-    if (value > Constants.MAX_SPEED) {
+    if (value > Route.constants.MAX_SPEED) {
 
-      event.target.value = Constants.MAX_SPEED;
+      event.target.value = Route.constants.MAX_SPEED;
     } else if (value < 0) {
 
       event.target.value = 0;
@@ -43,7 +45,7 @@ const SpeedInput = {
     if (GoogleMap.noDisplayedTrip()) return; // the cyclist always has a speed, but it's only used if there's a possible trip that's being displayed
 
     // update the top screen info header with the new duration.
-    GoogleMap.getDisplayedTrip().duration = Duration.calc(GoogleMap.getDisplayedTrip().distance, GoogleMap.getCyclist().getSpeed());
+    GoogleMap.getDisplayedTrip().duration = Utils.calcDuration(GoogleMap.getDisplayedTrip().distance, GoogleMap.getCyclist().getSpeed());
     InfoHeader.updateDuration(GoogleMap.getDisplayedTrip().duration);
   } // onValueChange
 

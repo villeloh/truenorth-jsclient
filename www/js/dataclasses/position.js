@@ -8,7 +8,7 @@ function Position(latLng) {
   this.coords = latLng;
 
   this.marker = new App.google.maps.Marker({ 
-    position: GoogleMap.getCurrentPosCoords(), 
+    position: latLng, 
     map: GoogleMap.getMap(), 
     draggable: false, 
     icon: GoogleMap.constants._PLACE_MARKER_URL 
@@ -18,8 +18,16 @@ function Position(latLng) {
   this.update = function(newCoords) {
 
     this.coords = newCoords;
-    this.marker.position = newCoords;
-  };
+    this.marker.setMap(null); // to clear the old marker from the map
+    // it needs to be recreated due to not being rendered on just moving it...
+    // not sure what's wrong there tbh
+    this.marker = new App.google.maps.Marker({ 
+      position: newCoords, 
+      map: GoogleMap.getMap(), 
+      draggable: false, 
+      icon: GoogleMap.constants._PLACE_MARKER_URL 
+    });
+  }; // update
 
 /* // it should not be needed, but leaving it for now, just in case
   this.clear = function() {
