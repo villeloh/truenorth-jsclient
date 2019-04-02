@@ -13,8 +13,8 @@ const WalkingCyclingToggleButton = {
 
     parentDiv.innerHTML = `<div id=${WalkingCyclingToggleButton.OUTER_DIV_ID}>
     <select id=${WalkingCyclingToggleButton.SELECT_ID} onchange="GoogleMap.onWalkingCyclingToggleButtonClick(event)">
-      <option value=${Route.constants.CYCLE_MODE}>cycle</option>
-      <option value=${Route.constants.WALK_MODE}>walk</option>
+      <option value=${Cyclist.CYCLE_MODE}>cycle</option>
+      <option value=${Cyclist.WALK_MODE}>walk</option>
     </select>
     </div>`;
   } // addTo

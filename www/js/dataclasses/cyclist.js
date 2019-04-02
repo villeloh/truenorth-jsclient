@@ -1,92 +1,103 @@
 
 /**
  * This is getting a bit too object-oriented, but due to some display issues with markers etc,
- * it's best to have a Cyclist object with 'planned' speed, destination, etc. Then Trip can be 
- * a 'possible' trip (i.e., the route request was successful), ready to be rendered on the map 
- * with only the info that's contained in / given to it.
+ * it's best to have a Cyclist object with 'planned' speed, destination, etc. Then Trip can be
+ * a 'possible' trip (i.e., the route request was successful), ready to be rendered on the map
+ * with only the info that's contained in it / given to it.
  */
+class Cyclist {
 
-function Cyclist(travelMode) {
+  // I wonder how the static keyword works under the hood?
+  // I made Cyclist into a class instead of a functional component
+  // in order to be able to put these constants in it.
+  static get WALK_MODE() { return 'WALKING'; };
+  static get CYCLE_MODE() { return 'BICYCLING'; };
+  static get MAX_SPEED() { return 50; }; // km/h  
+  static get _DEFAULT_SPEED() { return 15; }; // km/h
 
-  this.position = new Position(new LatLng(0,0));
-  this.speed = Route.constants.DEFAULT_SPEED; // km/h
-  this.destCoords = null; // LatLng
-  this.wayPointObjects = [];
-  this.travelMode = travelMode; // constant from Route.js
+  constructor() {
 
-  this.getPosCoords = function() {
+    this.position = new Position(new LatLng(0, 0));
+    this.speed = Cyclist._DEFAULT_SPEED; // km/h
+    this.destCoords = null; // LatLng
+    this.wayPointObjects = [];
+    this.travelMode = Cyclist.CYCLE_MODE;
+  } // constructor
+
+  getPosCoords() {
 
     return this.position.coords;
-  };
+  }
 
-  this.updatePosition = function(newCoords) {
+  updatePosition(newCoords) {
 
     this.position.update(newCoords);
-  };
+  }
 
-  this.getSpeed = function() {
+  getSpeed () {
 
     return this.speed;
-  };
+  }
 
-  this.setSpeed = function(newSpeed) {
+  setSpeed(newSpeed) {
 
     this.speed = newSpeed;
-  };
+  }
 
-  this.setDestCoords = function(newCoords) {
-
-    this.destCoords = newCoords;
-  };
-
-  this.getDestCoords = function() {
+  getDestCoords() {
 
     return this.destCoords;
-  };
+  }
 
-  this.addWayPointObject = function(latLng) {
+  setDestCoords (newCoords) {
+
+    this.destCoords = newCoords;
+  }
+
+  addWayPointObject(latLng) {
 
     this.wayPointObjects.push(new WayPointObject(latLng));
-  };
+  }
 
-  this.updateWayPointObject = function(index, newCoords) {
+  updateWayPointObject(index, newCoords) {
 
     this.wayPointObjects[index].location = newCoords;
-  };
+  }
 
-  this.removeWayPointObject = function(index) {
+  removeWayPointObject(index) {
 
     this.wayPointObjects.splice(index, 1);
-  };
+  }
 
-  this.getWayPointObjects = function() {
+  getWayPointObjects() {
 
     return this.wayPointObjects;
-  };
+  }
 
   // for getting the plain latLngs inside the WayPointObjects
   // (needed for rendering markers on the map)
-  this.getAllWayPointCoords = function() {
+  getAllWayPointCoords() {
 
     return this.wayPointObjects.map(wpObj => {
+
       return wpObj.location;
     });
-  };
+  }
 
-  this.clearPlannedTrip = function() {
+  clearPlannedTrip() {
 
     this.setDestCoords(null);
     this.wayPointObjects.length = 0; // there is never a case where only the waypoints are cleared, so it's ok to do this here
-  };
+  }
 
-  this.getTravelMode = function() {
+  getTravelMode() {
 
     return this.travelMode;
-  };
+  }
 
-  this.setTravelMode = function(newMode) {
+  setTravelMode(newMode) {
 
     this.travelMode = newMode;
-  };
-
+  }
+  
 } // Cyclist

@@ -13,6 +13,7 @@ const Utils = {
       return true;
     }
   }, // isValidSpeed
+  
   calcDuration: function(distance, speed) {
 
     let duraInDecimHours;

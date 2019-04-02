@@ -14,13 +14,14 @@ function Position(latLng) {
     icon: GoogleMap.constants._PLACE_MARKER_URL 
   });
 
-  // GeoLoc calls this (via cyclist)
+  // GeoLoc calls this (via cyclist, which contains the position object)
   this.update = function(newCoords) {
 
     this.coords = newCoords;
     this.marker.setMap(null); // to clear the old marker from the map
+
     // it needs to be recreated due to not being rendered on just moving it...
-    // not sure what's wrong there tbh
+    // not sure what's wrong here tbh
     this.marker = new App.google.maps.Marker({ 
       position: newCoords, 
       map: GoogleMap.getMap(), 

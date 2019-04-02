@@ -2,40 +2,42 @@
 /**
  * Renders routes on the map.
  */
+class RouteRenderer {
 
-function RouteRenderer(map) {
+  static get _ROUTE_COLOR() { return '#2B7CFF'; };
 
-  this._ROUTE_COLOR = '#2B7CFF'; // darkish blue
-  this._map = map;
+  constructor(googleMap) {
 
-  this._renderer = new App.google.maps.DirectionsRenderer({
+    this._googleMap = googleMap;
 
-    draggable: false, // the dragging is way too sensitive to light presses
-    suppressMarkers: true, // the default markers only get in the way
-    suppressBicyclingLayer: true,
-    map: this._map,
-    preserveViewport: true, // stops the auto-zooming on completed fetch
-    polylineOptions: {
-      // path: points,
-      strokeColor: this._ROUTE_COLOR,
-      strokeOpacity: 1.0,
-      strokeWeight: 4,
-      zIndex: 5,
-      map: GoogleMap.getMap(),
-      // editable: true,
-      geodesic: true    
-    }
-  }); // _renderer
+    this._renderer = new App.google.maps.DirectionsRenderer({
+      draggable: false,
+      suppressMarkers: true,
+      suppressBicyclingLayer: true,
+      map: this._googleMap,
+      preserveViewport: true,
+      polylineOptions: {
+        // path: points,
+        strokeColor: RouteRenderer._ROUTE_COLOR,
+        strokeOpacity: 1.0,
+        strokeWeight: 4,
+        zIndex: 5,
+        map: this._googleMap,
+        // editable: true,
+        geodesic: true
+      }
+    }); // _renderer
+  } // constructor
 
-  this.clearPolyLine = function() {
+  clearPolyLine() {
 
     this._renderer.setMap(null);
-  };
+  }
 
-  this.renderOnMap = function(fetchResult) {
-    
-    this._renderer.setMap(this._map);
+  renderOnMap(fetchResult) {
+
+    this._renderer.setMap(this._googleMap);
     this._renderer.setDirections(fetchResult); // renders polyline on the map
-  };
+  }
 
 } // RouteRenderer

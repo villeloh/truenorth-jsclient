@@ -14,7 +14,7 @@ const SpeedInput = {
       type="number" 
       id=${SpeedInput.INPUT_ID} 
       step=1
-      max=${Route.constants.MAX_SPEED} 
+      max=${Cyclist.MAX_SPEED} 
       value=${GoogleMap.getCyclist().getSpeed()} 
       oninput="SpeedInput.onValueChange(event)"
     >`;
@@ -27,9 +27,9 @@ const SpeedInput = {
 
     const value = event.target.value;
 
-    if (value > Route.constants.MAX_SPEED) {
+    if (value > Cyclist.MAX_SPEED) {
 
-      event.target.value = Route.constants.MAX_SPEED;
+      event.target.value = Cyclist.MAX_SPEED;
     } else if (value < 0) {
 
       event.target.value = 0;

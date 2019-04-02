@@ -7,6 +7,7 @@
 const App = {
 
   google: null,
+  geoLocService: null,
 
   // Application Constructor
   _initialize: function() {
@@ -16,7 +17,7 @@ const App = {
 
   _initServices: function() {
 
-    GeoLoc.start(); // should be called first, as the location is needed below
+    // GeoLoc.start(); // should be called first, as the location is needed below
 
     GoogleMapsLoader.KEY = Env.API_KEY;
     GoogleMapsLoader.LANGUAGE = 'en';
@@ -28,7 +29,9 @@ const App = {
 
       GoogleMap.init();
       UI.init();
-      Route.init();
+
+      this.geoLocService = new GeoLocService(GoogleMap);
+      this.geoLocService.start();
     }); // GoogleMapsLoader.load
   }, // _initServices
 
@@ -46,12 +49,12 @@ const App = {
 
   _onPause: function() {
 
-    GeoLoc.stop();
+    this.geoLocService.stop();
   },
 
   _onResume: function () {
     
-    GeoLoc.start();
+    this.geoLocService.start();
   },
 
   // Update DOM on a received event

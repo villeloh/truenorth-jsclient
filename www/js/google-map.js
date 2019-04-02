@@ -28,6 +28,7 @@ const GoogleMap = {
   _menuIsVisible: false,
 
   _routeRenderer: null,
+  _routeService: null,
 
   init: function () {
 
@@ -54,25 +55,16 @@ const GoogleMap = {
 
     this._bikeLayer = new App.google.maps.BicyclingLayer();
     
-    this._cyclist = new Cyclist(Route.constants.CYCLE_MODE); // ideally, take it from localStorage
+    this._cyclist = new Cyclist(); // ideally, take it from localStorage
 
     this._cyclist.position = new Position(initialPosCoords); // GeoLoc.js periodically updates this
+
+    this._routeService = new RouteService(GoogleMap.onRouteFetchSuccess, GoogleMap.onRouteFetchFailure);
 
     this._routeRenderer = new RouteRenderer(this._map); // for showing fetched routes on the map
 
     GoogleMap.setListeners();
   }, // init
-
-  // takes a LatLng
-  addWayPoint: function(position) {
-
-    if (this.noDisplayedTrip()) return;
-    
-    GoogleMap._cyclist.addWayPointObject(position);
-
-    Route.fetch(GoogleMap._cyclist);
-  }, // addWayPoint
-
 
   getCyclist: function() {
 
@@ -101,6 +93,10 @@ const GoogleMap = {
     InfoHeader.updateDistance(dist);
     InfoHeader.updateDuration(dura);
   }, // onRouteFetchSuccess
+
+  onRouteFetchFailure: function() {
+
+  },
 
   onMapStyleToggleButtonClick: function (event) {
     
@@ -163,7 +159,7 @@ const GoogleMap = {
 
   onWalkingCyclingToggleButtonClick: function(event) {
 
-    // the values come from Route.js (via the toggle button)
+    // the values come from Constants.js (via the toggle button)
     GoogleMap._cyclist.travelMode = event.target.value; 
   },
 
@@ -201,19 +197,14 @@ const GoogleMap = {
     const index = event.wpIndex;
     GoogleMap._cyclist.removeWayPointObject(index);
 
-    Route.fetch(GoogleMap._cyclist);
+    GoogleMap._routeService.fetchFor(GoogleMap._cyclist);
   }, // _deleteWayPoint
 
   _onDestMarkerDragEnd: function(event) {
 
-    // this bit of code id duplicated in a lot of place; but
-    // i feel it'd make things too nebulous to move it to its own method
-    const toLat = event.latLng.lat();
-    const toLng = event.latLng.lng();
-    const destCoords = new LatLng(toLat, toLng);
-    GoogleMap._cyclist.setDestCoords(destCoords);
+    GoogleMap._updateDestination(event);
 
-    Route.fetch(GoogleMap._cyclist);
+    GoogleMap._routeService.fetchFor(GoogleMap._cyclist);
 
     GoogleMap.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
     setTimeout(() => {
@@ -262,42 +253,55 @@ const GoogleMap = {
 
   onGoogleMapLongPress: function(event) {
 
-    const toLat = event.latLng.lat();
-    const toLng = event.latLng.lng();
-    const destCoords = new LatLng(toLat, toLng);
+    GoogleMap._updateDestination(event);
 
-    GoogleMap._cyclist.setDestCoords(destCoords);
-
-    Route.fetch(GoogleMap._cyclist);
+    GoogleMap._routeService.fetchFor(GoogleMap._cyclist);
   },
 
   onGoogleMapDoubleClick: function(event) {
 
-    const lat = event.latLng.lat();
-    const lng = event.latLng.lng();
-    const clickedPos = new LatLng(lat, lng);
-    GoogleMap._cyclist.addWayPointObject(clickedPos);
+    // waypoints cannot be added without a valid destination
+    if (this.noDisplayedTrip()) return;
 
-    Route.fetch(GoogleMap._cyclist);
+    GoogleMap._addWayPoint(event);
+
+    GoogleMap._routeService.fetchFor(GoogleMap._cyclist);
+  },
+
+  _latLngFromClickEvent: function(event) {
+
+    return new LatLng(event.latLng.lat(), event.latLng.lng());
+  },
+
+  _addWayPoint: function(event) {
+
+    const clickedPos = GoogleMap._latLngFromClickEvent(event);
+    GoogleMap._cyclist.addWayPointObject(clickedPos);
+  }, // _addWayPoint
+
+  _updateDestination: function(event) {
+
+    const destCoords = GoogleMap._latLngFromClickEvent(event);
+    GoogleMap._cyclist.setDestCoords(destCoords);
   },
 
   onWayPointDragEnd: function(event) {
 
-    const index = event.wpIndex;
+    GoogleMap._updateWayPoint(event);
     
-    const toLat = event.latLng.lat();
-    const toLng = event.latLng.lng();
-    const latLng = new LatLng(toLat, toLng);
-
-    GoogleMap._cyclist.updateWayPointObject(index, latLng);
-    
-    Route.fetch(GoogleMap._cyclist);
+    GoogleMap._routeService.fetchFor(GoogleMap._cyclist);
 
     GoogleMap.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
     setTimeout(() => {
       GoogleMap.markerDragEventJustStopped = false;
     }, 100);
   }, // onWayPointDragEnd
+
+  _updateWayPoint: function(event) {
+
+    const latLng = GoogleMap._latLngFromClickEvent(event);
+    GoogleMap._cyclist.updateWayPointObject(event.wpIndex, latLng);
+  },
 
   getMap: function() {
 
