@@ -45,7 +45,7 @@ const ClickHandler = {
         const lat = event.latLng.lat();
         const lng = event.latLng.lng();
         const clickedPos = new LatLng(lat, lng);
-        GoogleMap.addWayPoint(clickedPos);
+        GoogleMap.getCyclist().addWayPoint(clickedPos);
 
         ClickHandler._doubleClickInProgress = true;
 
@@ -71,23 +71,17 @@ const ClickHandler = {
         }, ClickHandler._longPressTimeOut);
         break;
       case ClickHandler.LONG_END:
-        
-        // console.log("called LONG_END");
 
         if ( !ClickHandler.isLongPress || GoogleMap.markerDragEventJustStopped ) return;  // do not re-fetch if the marker drag event just did it
-
-        // console.log("fetching route");
 
         // set by the google map click event that fires just before this regular DOM event
         const toLat = ClickHandler._gMapClickEvent.latLng.lat();
         const toLng = ClickHandler._gMapClickEvent.latLng.lng();
         const destCoords = new LatLng(toLat, toLng);
 
-        GoogleMap.getTrip().dest = new Destination(destCoords);
+        GoogleMap.getCyclist().setDestCoords(destCoords);
 
-        // console.log("fetching route after LONG PRESS!");
-        Route.fetch(GoogleMap.getTrip());
-        
+        Route.fetch(GoogleMap.getCyclist());
         break; 
       default:
 

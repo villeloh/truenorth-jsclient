@@ -2,7 +2,7 @@
 /**
  * A 'class' to associate an inner WayPointObject (used by the Google Maps API) and a waypoint marker with each other.
  */
-
+/*
 function WayPoint(latLng, label) {
 
   this.coords = latLng;
@@ -42,4 +42,4 @@ function WayPoint(latLng, label) {
 
     this.marker.setLabel(newText);
   };
-} // WayPoint
+} // WayPoint */

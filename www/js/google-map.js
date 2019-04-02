@@ -26,7 +26,8 @@ const GoogleMap = {
 
   _currentPos: null,
 
-  _trip: null,
+  _cyclist: null, // the cyclist object contains a *planned* speed, destination, etc.
+  _displayedTrip: null, // one for which the route request was successful
 
   _bikeLayer: null,
   _bikeLayerOn: false,
@@ -61,6 +62,8 @@ const GoogleMap = {
 
     this._currentPos = new Position(new LatLng(0,0));
 
+    this._cyclist = new Cyclist(Route.constants.CYCLE_MODE); // ideally, take it from localStorage
+
     GoogleMap.setListeners();
   }, // init
 
@@ -78,7 +81,10 @@ const GoogleMap = {
   }, // addWayPoint
 
 
+  getCyclist: function() {
 
+    return GoogleMap._cyclist;
+  },
 
 
   /*
@@ -194,8 +200,8 @@ const GoogleMap = {
 
   onWalkingCyclingToggleButtonClick: function(event) {
 
-    // the values come from Route.js
-    GoogleMap.getTrip().travelMode = event.target.value; 
+    // the values come from Route.js (via the toggle button)
+    GoogleMap._cyclist.travelMode = event.target.value; 
   },
 
   onCyclingLayerToggleButtonClick: function(event) {
@@ -320,18 +326,24 @@ const GoogleMap = {
     GoogleMap.clearWayPoints();
   }, // fullClear
 
-  clearRoute: function() {
+  clearDisplayedTrip: function() {
 
-    if (this.noTrip()) return;
+    if (this.noDisplayedTrip()) return;
 
     // it produces an error to call this with null. it seems it's not needed to clear the map, but i'm
     // leaving it for now in case it's needed later.
     // Route.getRenderer().setDirections(null);
 
-    Route.getRenderer().setMap(null); // clear the old route
+    Route.setRendererMapToNull(); // clear the polyline from the map
     
-    GoogleMap.getTrip().dest.clearMarker(); // clear the destination marker
+    GoogleMap.getDisplayedTrip().clear();
   }, // clearRoute
+
+  // clears the stored waypoints and the destination coordinate from the cyclist object
+  clearPlannedTrip: function() {
+
+    this._cyclist.clearPlannedTrip();
+  },
 
   clearWayPoints: function() {
     
@@ -344,9 +356,9 @@ const GoogleMap = {
     GoogleMap.getTrip().wayPoints.length = 0;
   }, // clearWayPoints
 
-  noTrip: function () {
+  noDisplayedTrip: function () {
     
-    return this._trip === null;
+    return this._displayedTrip === null;
   },
 
   onWayPointDragEnd: function(event) {
@@ -357,11 +369,9 @@ const GoogleMap = {
     const toLng = event.latLng.lng();
     const latLng = new LatLng(toLat, toLng);
 
-    // it's easier to make a new waypoint than to update an old one...
-    const label = GoogleMap.getTrip().wayPoints[index].marker.label;
-    GoogleMap.getTrip().wayPoints[index] = new WayPoint(latLng, label); // re-use the old label
+    GoogleMap._cyclist.updateWayPoint(index, latLng);
     
-    Route.fetch(GoogleMap.getTrip());
+    Route.fetch(GoogleMap._cyclist);
 
     GoogleMap.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
     setTimeout(() => {
@@ -374,24 +384,24 @@ const GoogleMap = {
     return GoogleMap._map;
   },
 
-  getTrip: function() {
+  getDisplayedTrip: function() {
 
-    return GoogleMap._trip;
+    return GoogleMap._displayedTrip;
   },
 
-  setTrip: function(trip) {
+  setDisplayedTrip: function(trip) {
 
-    GoogleMap._trip = trip;
+    GoogleMap._displayedTrip = trip;
   },
 
-  getCurrentPos: function() {
+  getCurrentPosCoords: function() {
 
-    return GoogleMap._currentPos;
+    return GoogleMap._currentPos.coords;
   },
 
-  reCenterToCurrentPos: function () {
+  reCenter: function (newCoords) {
     
-    this._map.setCenter(this._currentPos.coords);
+    this._map.setCenter(newCoords);
   },
 
   // called from ui.js to add the map ui controls

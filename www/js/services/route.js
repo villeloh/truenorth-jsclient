@@ -8,10 +8,10 @@ const Route = {
   constants: {
 
     _ROUTE_COLOR: '#2B7CFF', // darkish blue
+    WALK_MODE: 'WALKING',
+    CYCLE_MODE: 'BICYCLING'
   },
 
-  WALK_MODE: 'WALKING',
-  CYCLE_MODE: 'BICYCLING',
 
   DEFAULT_DIST: 0.0,
   DEFAULT_DURA: 0,
@@ -55,51 +55,44 @@ const Route = {
         geodesic: true    
       }
     });
-/*
-    // dragging the route triggers this event
-    Route._directionsRenderer.addListener('directions_changed', function() {
-
-      const route = Route._directionsRenderer.getDirections().routes[0];
-
-      Route.currentDist = Route.distanceInKm(route);
-      InfoHeader.updateDistance(); // uses the currentDist
-
-      Route.currentDura = Utils.calcDuration(Route.currentDist, Route.currentSpeed);
-      InfoHeader.updateDuration(); // uses the currentDura
-    }); */
   }, // init
 
-  fetch: function(trip) {
+  fetch: function(cyclist) {
+
+    const destCoords = cyclist.getDestCoords();
+    const wayPoints = cyclist.getAllWayPointCoords();
 
     const request = {
 
       origin: GoogleMap.getCurrentPos().coords,
-      destination: trip.tryDestCoords,
-      travelMode: trip.travelMode, // comes from the travel mode toggle button
+      destination: destCoords,
+      travelMode: cyclist.getTravelMode(), // comes from the travel mode toggle button
       optimizeWaypoints: false,
       avoidHighways: true,
-      waypoints: trip.wayPoints.map(wp => { return wp.object; }) // we need the inner objects, without the markers
+      waypoints: wayPoints
     };
   
     Route._directionsService.route(request, function(result, status) {
 
       if (status == 'OK') {
 
-        GoogleMap.clearRoute();
+        GoogleMap.getDisplayedTrip().clear();
+        GoogleMap.setDisplayedTrip(null);
 
         Route._directionsRenderer.setMap(GoogleMap.getMap()); // the map is set to null in GoogleMap.clearRoute
         Route._directionsRenderer.setDirections(result); // renders polyline on the map
-
-        GoogleMap.getTrip().dest.renderOnMap(); // since the request succeeded, we can show the destination marker on the map
-
+        
         const route = result.routes[0];
 
         const dist = Route.distanceInKm(route);
-        GoogleMap.getTrip().distance = dist;
-        InfoHeader.updateDistance(dist);
+        const dura = Utils.calcDuration(dist, cyclist.getSpeed());
 
-        const dura = Utils.calcDuration(dist, trip.speed);
-        GoogleMap.getTrip().duration = dura;
+        const tripToDisplay = new Trip(destCoords, wayPoints, dist, dura);
+
+        GoogleMap.setDisplayedTrip(tripToDisplay);
+        GoogleMap.getDisplayedTrip().displayOnMap();
+
+        InfoHeader.updateDistance(dist);
         InfoHeader.updateDuration(dura);
 
       } else {
@@ -119,9 +112,10 @@ const Route = {
     return (total / 1000).toFixed(1);
   }, // distanceInKm
 
-  getRenderer: function() {
+  // stops rendering the current route polyline on the map
+  setRendererMapToNull: function() {
 
-    return Route._directionsRenderer;
+    Route._directionsRenderer.setMap(null);
   }
 
 }; // Route

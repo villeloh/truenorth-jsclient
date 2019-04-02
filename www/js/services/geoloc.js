@@ -31,11 +31,11 @@ const GeoLoc = {
     const newCoords = new LatLng(position.coords.latitude, position.coords.longitude);
     const oldCoords = GoogleMap.getCurrentPos().coords;
     
-    GoogleMap.getCurrentPos().update(newCoords);
+    GoogleMap.getCyclist().updatePosition(newCoords);
 
     if (GeoLoc._diffIsOverCameraMoveThreshold(oldCoords, newCoords)) {
 
-      GoogleMap.reCenterToCurrentPos(); 
+      GoogleMap.reCenter(newCoords); 
     }
   }, // _onSuccess
 

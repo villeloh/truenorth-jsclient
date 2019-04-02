@@ -10,20 +10,12 @@ const SpeedInput = {
 
   addTo: function(parentDiv) {
 
-    let speed;
-    if (GoogleMap.noTrip()) {
-
-      speed = Constants.DEFAULT_SPEED;
-    } else {
-      speed = GoogleMap.getTrip().speed
-    }
-
     parentDiv.innerHTML = `<input 
       type="number" 
       id=${SpeedInput.INPUT_ID} 
       step=1
       max=${Constants.MAX_SPEED} 
-      value=${speed} 
+      value=${GoogleMap.getCyclist().getSpeed()} 
       oninput="SpeedInput.onValueChange(event)"
     >`;
   },
@@ -43,16 +35,16 @@ const SpeedInput = {
 
     if (Utils.isValidSpeed(event.target.value)) {
 
-      GoogleMap.getTrip().speed = event.target.value;
+      GoogleMap.getCyclist().setSpeed(event.target.value);
     } else {
-      GoogleMap.getTrip().speed = 0;
+      GoogleMap.getCyclist().setSpeed(0);
     }
-    // console.log("distance.currentSpeed: " + Distance.currentSpeed);
-    // console.log("distance.currentDist: " + Distance.currentDist);
+
+    if (GoogleMap.noDisplayedTrip()) return; // the cyclist always has a speed, but it's only used if there's a possible trip that's being displayed
 
     // update the top screen info header with the new duration.
-    GoogleMap.getTrip().duration = Duration.calc(GoogleMap.getTrip().distance, GoogleMap.getTrip().speed);
-    InfoHeader.updateDuration(GoogleMap.getTrip().duration);
+    GoogleMap.getDisplayedTrip().duration = Duration.calc(GoogleMap.getDisplayedTrip().distance, GoogleMap.getCyclist().getSpeed());
+    InfoHeader.updateDuration(GoogleMap.getDisplayedTrip().duration);
   } // onValueChange
 
 }; // SpeedInput

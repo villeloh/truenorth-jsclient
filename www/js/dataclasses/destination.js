@@ -1,7 +1,7 @@
 /**
  * 'Class' that encapsulates the user's destination.
  */
-
+/*
 function Destination(latLng) {
 
   this.coords = latLng;
@@ -35,4 +35,4 @@ function Destination(latLng) {
     this.marker.position = newCoords;
   };
 
-} // Destination
+} // Destination */
