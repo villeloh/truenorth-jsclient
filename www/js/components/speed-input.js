@@ -14,8 +14,8 @@ const SpeedInput = {
       type="number" 
       id=${SpeedInput.INPUT_ID} 
       step=1
-      max=${Cyclist.MAX_SPEED} 
-      value=${GoogleMap.getCyclist().getSpeed()} 
+      max=${PlannedTrip.MAX_SPEED} 
+      value=${GoogleMap.getPlannedTrip().getSpeed()} 
       oninput="SpeedInput.onValueChange(event)"
     >`;
   },
@@ -27,9 +27,9 @@ const SpeedInput = {
 
     const value = event.target.value;
 
-    if (value > Cyclist.MAX_SPEED) {
+    if (value > PlannedTrip.MAX_SPEED) {
 
-      event.target.value = Cyclist.MAX_SPEED;
+      event.target.value = PlannedTrip.MAX_SPEED;
     } else if (value < 0) {
 
       event.target.value = 0;
@@ -37,15 +37,15 @@ const SpeedInput = {
 
     if (Utils.isValidSpeed(event.target.value)) {
 
-      GoogleMap.getCyclist().setSpeed(event.target.value);
+      GoogleMap.getPlannedTrip().setSpeed(event.target.value);
     } else {
-      GoogleMap.getCyclist().setSpeed(0);
+      GoogleMap.getPlannedTrip().setSpeed(0);
     }
 
-    if (GoogleMap.noDisplayedTrip()) return; // the cyclist always has a speed, but it's only used if there's a possible trip that's being displayed
+    if (GoogleMap.noDisplayedTrip()) return; // the PlannedTrip always has a speed, but it's only used if there's a possible trip that's being displayed
 
     // update the top screen info header with the new duration.
-    GoogleMap.getDisplayedTrip().duration = Utils.calcDuration(GoogleMap.getDisplayedTrip().distance, GoogleMap.getCyclist().getSpeed());
+    GoogleMap.getDisplayedTrip().duration = Utils.calcDuration(GoogleMap.getDisplayedTrip().distance, GoogleMap.getPlannedTrip().getSpeed());
     InfoHeader.updateDuration(GoogleMap.getDisplayedTrip().duration);
   } // onValueChange
 

@@ -9,16 +9,16 @@ function RouteService(onFetchSuccessCallback, onFetchFailureCallback) {
 
   this._dirService = new App.google.maps.DirectionsService();
 
-  this.fetchFor = function(cyclist) {
+  this.fetchFor = function(plannedTrip) {
 
     const request = {
 
-      origin: cyclist.getPosCoords(),
-      destination: cyclist.getDestCoords(),
-      travelMode: cyclist.getTravelMode(), // comes from the travel mode toggle button
+      origin: plannedTrip.getPosCoords(),
+      destination: plannedTrip.getDestCoords(),
+      travelMode: plannedTrip.getTravelMode(), // comes from the travel mode toggle button
       optimizeWaypoints: false,
       avoidHighways: true,
-      waypoints: cyclist.getWayPointObjects()
+      waypoints: plannedTrip.getWayPointObjects()
     };
   
     this._dirService.route(request, function(result, status) {
@@ -26,7 +26,7 @@ function RouteService(onFetchSuccessCallback, onFetchFailureCallback) {
       if (status === 'OK') {
 
         // in practice, GoogleMap's onRouteFetchSuccess
-        onFetchSuccessCallback(result, cyclist);
+        onFetchSuccessCallback(result, plannedTrip);
 
       } else {
 

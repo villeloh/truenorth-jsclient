@@ -14,7 +14,7 @@ function Position(latLng) {
     icon: GoogleMap.constants._PLACE_MARKER_URL 
   });
 
-  // GeoLoc calls this (via cyclist, which contains the position object)
+  // GeoLoc calls this (via _plannedTrip, which contains the position object)
   this.update = function(newCoords) {
 
     this.coords = newCoords;

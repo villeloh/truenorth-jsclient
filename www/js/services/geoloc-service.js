@@ -43,9 +43,9 @@ class GeoLocService {
   _onSuccess(pos) {
 
     const newCoords = new LatLng(pos.coords.latitude, pos.coords.longitude);
-    const oldCoords = this._googleMap.getCyclist().getPosCoords();
+    const oldCoords = this._googleMap.getPlannedTrip().getPosCoords();
     
-    this._googleMap.getCyclist().updatePosition(newCoords);
+    this._googleMap.getPlannedTrip().updatePosition(newCoords);
 
     if (this._diffIsOverCameraMoveThreshold(oldCoords, newCoords)) {
 

@@ -1,14 +1,14 @@
 
 /**
  * This is getting a bit too object-oriented, but due to some display issues with markers etc,
- * it's best to have a Cyclist object with 'planned' speed, destination, etc. Then Trip can be
+ * it's best to have a PlannedTrip object with 'planned' speed, destination, etc. Then Trip can be
  * a 'possible' trip (i.e., the route request was successful), ready to be rendered on the map
  * with only the info that's contained in it / given to it.
  */
-class Cyclist {
+class PlannedTrip {
 
   // I wonder how the static keyword works under the hood?
-  // I made Cyclist into a class instead of a functional component
+  // I made PlannedTrip into a class instead of a functional component
   // in order to be able to put these constants in it.
   static get WALK_MODE() { return 'WALKING'; };
   static get CYCLE_MODE() { return 'BICYCLING'; };
@@ -18,11 +18,24 @@ class Cyclist {
   constructor() {
 
     this.position = new Position(new LatLng(0, 0));
-    this.speed = Cyclist._DEFAULT_SPEED; // km/h
+    this.speed = PlannedTrip._DEFAULT_SPEED; // km/h
     this.destCoords = null; // LatLng
     this.wayPointObjects = [];
-    this.travelMode = Cyclist.CYCLE_MODE;
+    this.travelMode = PlannedTrip.CYCLE_MODE;
   } // constructor
+
+  copy() {
+
+    const clone = new PlannedTrip();
+    clone.position = new Position(this.position.coords);
+    clone.speed = this.speed;
+    clone.destCoords = this.destCoords;
+    clone.wayPointObjects = [];
+    this.wayPointObjects.forEach(wpObj => { clone.wayPointObjects.push(wpObj); });
+    clone.travelMode = this.travelMode;
+
+    return clone;
+  } // clone
 
   getPosCoords() {
 
@@ -84,7 +97,7 @@ class Cyclist {
     });
   }
 
-  clearPlannedTrip() {
+  clear() {
 
     this.setDestCoords(null);
     this.wayPointObjects.length = 0; // there is never a case where only the waypoints are cleared, so it's ok to do this here
@@ -100,4 +113,4 @@ class Cyclist {
     this.travelMode = newMode;
   }
   
-} // Cyclist
+} // PlannedTrip

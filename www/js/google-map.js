@@ -16,7 +16,8 @@ const GoogleMap = {
     _PLACE_MARKER_URL: 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png',
   }, // constants
 
-  _cyclist: null, // the cyclist object contains a *planned* speed, destination, etc.
+  _prevPlannedTrip: null, // for restoring a valid trip in case of invalid route request
+  _plannedTrip: null, // the planned trip object contains a *planned* speed, destination, etc.
   _displayedTrip: null, // one for which the route request was successful
 
   _bikeLayer: null,
@@ -55,9 +56,8 @@ const GoogleMap = {
 
     this._bikeLayer = new App.google.maps.BicyclingLayer();
     
-    this._cyclist = new Cyclist(); // ideally, take it from localStorage
-
-    this._cyclist.position = new Position(initialPosCoords); // GeoLoc.js periodically updates this
+    this._plannedTrip = new PlannedTrip(); // ideally, take it from localStorage
+    this._prevPlannedTrip = this._plannedTrip.copy();
 
     this._routeService = new RouteService(GoogleMap.onRouteFetchSuccess, GoogleMap.onRouteFetchFailure);
 
@@ -66,12 +66,14 @@ const GoogleMap = {
     GoogleMap.setListeners();
   }, // init
 
-  getCyclist: function() {
+  getPlannedTrip: function() {
 
-    return GoogleMap._cyclist;
+    return GoogleMap._plannedTrip;
   },
 
-  onRouteFetchSuccess: function(fetchResult, cyclist) {
+  onRouteFetchSuccess: function(fetchResult, successfulPlannedTrip) {
+
+    GoogleMap._prevPlannedTrip = successfulPlannedTrip.copy(); // save the trip in case the next one is unsuccessful
 
     GoogleMap.deleteDisplayedTrip();
 
@@ -80,10 +82,10 @@ const GoogleMap = {
     const route = fetchResult.routes[0];
 
     const dist = Utils.distanceInKm(route);
-    const dura = Utils.calcDuration(dist, cyclist.getSpeed());
+    const dura = Utils.calcDuration(dist, successfulPlannedTrip.getSpeed());
 
-    const destCoords = cyclist.getDestCoords();
-    const wayPointCoords = cyclist.getAllWayPointCoords();
+    const destCoords = successfulPlannedTrip.getDestCoords();
+    const wayPointCoords = successfulPlannedTrip.getAllWayPointCoords();
 
     const tripToDisplay = new Trip(destCoords, wayPointCoords, dist, dura);
 
@@ -96,6 +98,9 @@ const GoogleMap = {
 
   onRouteFetchFailure: function() {
 
+    GoogleMap._plannedTrip = GoogleMap._prevPlannedTrip.copy(); // restore a successful trip
+
+    GoogleMap._routeService.fetchFor(GoogleMap._plannedTrip);
   },
 
   onMapStyleToggleButtonClick: function (event) {
@@ -126,7 +131,7 @@ const GoogleMap = {
 
   onLocButtonClick: () => {
 
-    GoogleMap.reCenter(GoogleMap._cyclist.getPosCoords());
+    GoogleMap.reCenter(GoogleMap._plannedTrip.getPosCoords());
   },
 
   // toggles the right-hand corner menu
@@ -160,7 +165,7 @@ const GoogleMap = {
   onWalkingCyclingToggleButtonClick: function(event) {
 
     // the values come from Constants.js (via the toggle button)
-    GoogleMap._cyclist.travelMode = event.target.value; 
+    GoogleMap._plannedTrip.travelMode = event.target.value; 
   },
 
   onCyclingLayerToggleButtonClick: function(event) {
@@ -195,16 +200,16 @@ const GoogleMap = {
   _deleteWayPoint: function(event) {
 
     const index = event.wpIndex;
-    GoogleMap._cyclist.removeWayPointObject(index);
+    GoogleMap._plannedTrip.removeWayPointObject(index);
 
-    GoogleMap._routeService.fetchFor(GoogleMap._cyclist);
+    GoogleMap._routeService.fetchFor(GoogleMap._plannedTrip);
   }, // _deleteWayPoint
 
   _onDestMarkerDragEnd: function(event) {
 
     GoogleMap._updateDestination(event);
 
-    GoogleMap._routeService.fetchFor(GoogleMap._cyclist);
+    GoogleMap._routeService.fetchFor(GoogleMap._plannedTrip);
 
     GoogleMap.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
     setTimeout(() => {
@@ -228,7 +233,7 @@ const GoogleMap = {
 
   _fullClear: function() {
 
-    GoogleMap._deletePlannedTrip();
+    GoogleMap._deletePlannedTrips();
     GoogleMap.deleteDisplayedTrip();
 
     InfoHeader.reset();
@@ -245,17 +250,19 @@ const GoogleMap = {
     GoogleMap._displayedTrip = null;
   }, // deleteDisplayedTrip
 
-  // clears the stored waypoints and the destination coordinate from the cyclist object
-  _deletePlannedTrip: function() {
+  // clears the stored waypoints and the destination coordinate from the _plannedTrip object
+  _deletePlannedTrips: function() {
 
-    this._cyclist.clearPlannedTrip();
+    this._prevPlannedTrip.clear();
+    this._prevPlannedTrip = null;
+    this._plannedTrip.clear(); // NOTE: do not set this to null! it breaks the whole app!
   },
 
   onGoogleMapLongPress: function(event) {
 
     GoogleMap._updateDestination(event);
 
-    GoogleMap._routeService.fetchFor(GoogleMap._cyclist);
+    GoogleMap._routeService.fetchFor(GoogleMap._plannedTrip);
   },
 
   onGoogleMapDoubleClick: function(event) {
@@ -265,7 +272,7 @@ const GoogleMap = {
 
     GoogleMap._addWayPoint(event);
 
-    GoogleMap._routeService.fetchFor(GoogleMap._cyclist);
+    GoogleMap._routeService.fetchFor(GoogleMap._plannedTrip);
   },
 
   _latLngFromClickEvent: function(event) {
@@ -276,20 +283,20 @@ const GoogleMap = {
   _addWayPoint: function(event) {
 
     const clickedPos = GoogleMap._latLngFromClickEvent(event);
-    GoogleMap._cyclist.addWayPointObject(clickedPos);
+    GoogleMap._plannedTrip.addWayPointObject(clickedPos);
   }, // _addWayPoint
 
   _updateDestination: function(event) {
 
     const destCoords = GoogleMap._latLngFromClickEvent(event);
-    GoogleMap._cyclist.setDestCoords(destCoords);
+    GoogleMap._plannedTrip.setDestCoords(destCoords);
   },
 
   onWayPointDragEnd: function(event) {
 
     GoogleMap._updateWayPoint(event);
     
-    GoogleMap._routeService.fetchFor(GoogleMap._cyclist);
+    GoogleMap._routeService.fetchFor(GoogleMap._plannedTrip);
 
     GoogleMap.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
     setTimeout(() => {
@@ -300,7 +307,7 @@ const GoogleMap = {
   _updateWayPoint: function(event) {
 
     const latLng = GoogleMap._latLngFromClickEvent(event);
-    GoogleMap._cyclist.updateWayPointObject(event.wpIndex, latLng);
+    GoogleMap._plannedTrip.updateWayPointObject(event.wpIndex, latLng);
   },
 
   getMap: function() {
