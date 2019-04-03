@@ -13,7 +13,7 @@ const MenuButton = {
 
   addTo: function (parentDiv) {
     
-    parentDiv.innerHTML += `<div id=${MenuButton._OUTER_DIV_ID} onclick="App.mapService.onMenuButtonClick(event)">
+    parentDiv.innerHTML += `<div id=${MenuButton._OUTER_DIV_ID} onclick="App.onMenuButtonClick(event)">
       <div id=${MenuButton._INNER_DIV_ID}>${MenuButton.CLOSED_SYMBOL}</div>
     </div>`;
   }

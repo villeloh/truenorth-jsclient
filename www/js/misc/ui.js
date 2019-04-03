@@ -25,7 +25,7 @@ const UI = {
     App.mapService.addUIControl(App.google.maps.ControlPosition.TOP_RIGHT, buttonHolderDiv);
   },
 
-  // called from GoogleMap on each menu click, as due to some visibility issues the menu has to be recreated
+  // called from App on each menu click, as due to some visibility issues the menu has to be recreated
   // from scratch with each click of the menu button
   addMenu: function() {
 

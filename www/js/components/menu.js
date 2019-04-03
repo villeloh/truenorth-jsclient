@@ -7,6 +7,8 @@ const Menu = {
 
   DIV_ID: 'menu',
 
+  isVisible: false,
+
   addTo: function(parentDiv) {
 
     Menu._addMapStyleToggleButtons(parentDiv);
@@ -35,7 +37,7 @@ const Menu = {
     // recreating it with every click.
     setTimeout(() => {
       
-      App.mapService.setInitialCyclingLayerToggleButtonStyles(); // wait for the DOM to update...
+      CyclingLayerToggleButton.setInitialStyles(); // wait for the DOM to update...
     }, 50);
   }, // _addCyclingLayerToggleButton
 
@@ -52,6 +54,28 @@ const Menu = {
     const holderDiv = document.createElement('div');
     SpeedInput.addTo(holderDiv);
     parentDiv.appendChild(holderDiv);
-  }
+  },
+
+  // technically, it removes / recreates the menu with each click.
+  // this is needed because zoom events 'reset' the map, which makes 
+  // the menu become visible with each zoom if it's present in the DOM.
+  toggleVisibility = (event) => {
+
+    const menuBtnTextHolderDiv = event.target;
+
+    if (this.isVisible) {
+
+      this.isVisible = false;
+      UI.removeElement(Menu.DIV_ID);
+      menuBtnTextHolderDiv.textContent = MenuButton.CLOSED_SYMBOL;
+      menuBtnTextHolderDiv.style.fontSize = '26px'; // the symbols for the open and closed menu are of different sizes in the same font, so the other one has to be made larger
+    } else {
+
+      this.isVisible = true;
+      UI.addMenu();
+      menuBtnTextHolderDiv.textContent = MenuButton.OPEN_SYMBOL;
+      menuBtnTextHolderDiv.style.fontSize = '20px';
+    } // if-else
+  } // toggleVisibility
 
 }; // Menu

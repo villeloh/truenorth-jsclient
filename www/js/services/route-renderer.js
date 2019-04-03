@@ -5,7 +5,7 @@
 
 class RouteRenderer {
 
-  static get _ROUTE_COLOR() { return '#2B7CFF'; }
+  static get _ROUTE_COLOR() { return '#2B7CFF'; } // darkish blue
 
   constructor(googleMap) {
 

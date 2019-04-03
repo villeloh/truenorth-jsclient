@@ -1,17 +1,24 @@
 
 /**
- * For fetching the route (via Google Maps' Directions api).
+ * For storing and fetching routes.
  */
 
-// it could be a static object, I guess. but in case it needs to be 
-// set to null under some circumstances, I'm making it a function for now.
-function RouteService(onFetchSuccessCallback, onFetchFailureCallback) {
+class RouteService {
 
-  this._dirService = new App.google.maps.DirectionsService();
+  constructor(onFetchSuccessCallback, onFetchFailureCallback) {
 
-  this.fetchFor = function(plannedTrip) {
+    this.onFetchSuccess = onFetchSuccessCallback;
+    this.onFetchFailure = onFetchFailureCallback;
 
-    const destCoords = plannedTrip.destCoords;
+    this._directionsService = new App.google.maps.DirectionsService();
+
+    this.prevPlannedTrip = null;
+    this.plannedTrip = new PlannedTrip(App.mapService.map); // ideally, take it from localStorage
+  } // constructor
+
+  fetch = () => {
+
+    const destCoords = this.plannedTrip.destCoords;
 
     // null destCoords sometimes reach this method (after clicking on water twice or more in a row).
     // for now, it's an unavoidable side effect of the way the plannedTrip state is managed.
@@ -19,20 +26,121 @@ function RouteService(onFetchSuccessCallback, onFetchFailureCallback) {
 
     const request = {
 
-      origin: plannedTrip.getPosCoords(),
+      origin: this.plannedTrip.getPosCoords(),
       destination: destCoords,
-      travelMode: plannedTrip.travelMode, // comes from the travel mode toggle button
+      travelMode: this.plannedTrip.travelMode, // comes from the travel mode toggle button
       optimizeWaypoints: false,
       avoidHighways: true,
-      waypoints: plannedTrip.wayPointObjects
+      waypoints: this.plannedTrip.wayPointObjects
     }; // request
   
-    this._dirService.route(request, function(result, status) {
+    this._directionsService.route(request, function(result, status) {
 
       if (status === 'OK') {
 
-        // in practice, GoogleMap's onRouteFetchSuccess
-        onFetchSuccessCallback(result, plannedTrip);
+        // in practice, App's onRouteFetchSuccess
+        this.onFetchSuccess(result, this.plannedTrip);
+
+      } else {
+
+        console.log("Error fetching route: " + status);
+        this.onFetchFailure();
+      }
+    }); // this._dirService.route
+  } // fetch
+
+    // clears the stored waypoints and the destination coordinate from the plannedTrip object.
+    // called on clicking the map clear button.
+    deletePlannedTrips = () => {
+
+      this.prevPlannedTrip.clear(); // sets destCoords to null, which prevents a route fetch with the trip
+      // this._prevPlannedTrip = null; // this wreaks havoc atm, but ideally should be possible
+      this.plannedTrip.clear(); // NOTE: do NOT set plannedTrip to null! it breaks the whole app!
+    }
+  
+    updateDestination = (event) => {
+  
+      const destCoords = this.latLngFromClickEvent(event);
+      this.plannedTrip.destCoords = destCoords;
+    }
+  
+    addWayPoint = (event) => {
+  
+      const clickedPos = this.latLngFromClickEvent(event);
+      this.plannedTrip.addWayPointObject(clickedPos);
+    }
+  
+    updateWayPoint = (event) => {
+  
+      const latLng = this.latLngFromClickEvent(event);
+      this.plannedTrip.updateWayPointObject(event.wpIndex, latLng);
+    }
+  
+    deleteWayPoint = (event) => {
+  
+      const index = event.wpIndex;
+      this.plannedTrip.removeWayPointObject(index);
+    } // deleteWayPoint
+  
+    latLngFromClickEvent = (event) => {
+  
+      return new LatLng(event.latLng.lat(), event.latLng.lng());
+    }
+  
+    get plannedTrip() {
+  
+      return this._plannedTrip;
+    }
+  
+    set plannedTrip(value) {
+  
+      this._plannedTrip = value;
+    }
+  
+    get prevPlannedTrip() {
+  
+      return this._prevPlannedTrip;
+    }
+  
+    set prevPlannedTrip(trip) {
+  
+      this._prevPlannedTrip = trip;
+    }
+
+} // RouteService
+
+/*
+function RouteService(onFetchSuccessCallback, onFetchFailureCallback) {
+
+  this._directionsService = new App.google.maps.DirectionsService();
+
+  this.prevPlannedTrip = null;
+  this.plannedTrip = new PlannedTrip(App.mapService.map); // ideally, take it from localStorage
+
+  this.fetch = function() {
+
+    const destCoords = this.plannedTrip.destCoords;
+
+    // null destCoords sometimes reach this method (after clicking on water twice or more in a row).
+    // for now, it's an unavoidable side effect of the way the plannedTrip state is managed.
+    if (destCoords === null) return; 
+
+    const request = {
+
+      origin: this.plannedTrip.getPosCoords(),
+      destination: destCoords,
+      travelMode: this.plannedTrip.travelMode, // comes from the travel mode toggle button
+      optimizeWaypoints: false,
+      avoidHighways: true,
+      waypoints: this.plannedTrip.wayPointObjects
+    }; // request
+  
+    this._directionsService.route(request, function(result, status) {
+
+      if (status === 'OK') {
+
+        // in practice, App's onRouteFetchSuccess
+        onFetchSuccessCallback(result, this.plannedTrip);
 
       } else {
 
@@ -40,6 +148,67 @@ function RouteService(onFetchSuccessCallback, onFetchFailureCallback) {
         onFetchFailureCallback();
       }
     }); // this._dirService.route
-  } // fetchFor
+  } // fetch
 
-} // RouteService
+  // clears the stored waypoints and the destination coordinate from the plannedTrip object
+  deletePlannedTrips = () => {
+
+    this.prevPlannedTrip.clear(); // sets destCoords to null, which prevents a route fetch with the trip
+    // this._prevPlannedTrip = null; // this wreaks havoc atm, but ideally should be possible
+    this.plannedTrip.clear(); // NOTE: do NOT set plannedTrip to null! it breaks the whole app!
+  }
+
+  updateDestination = (event) => {
+
+    const destCoords = this.latLngFromClickEvent(event);
+    this.plannedTrip.destCoords = destCoords;
+  }
+
+  addWayPoint = (event) => {
+
+    const clickedPos = this.latLngFromClickEvent(event);
+    this.plannedTrip.addWayPointObject(clickedPos);
+  }
+
+  updateWayPoint = (event) => {
+
+    const latLng = this.latLngFromClickEvent(event);
+    this.plannedTrip.updateWayPointObject(event.wpIndex, latLng);
+  }
+
+  deleteWayPoint = (event) => {
+
+    const index = event.wpIndex;
+    this.plannedTrip.removeWayPointObject(index);
+
+    App.routeService.fetchFor(this.plannedTrip);
+  } // deleteWayPoint
+
+  latLngFromClickEvent = (event) => {
+
+    return new LatLng(event.latLng.lat(), event.latLng.lng());
+  }
+
+  
+
+  get plannedTrip() {
+
+    return this._plannedTrip;
+  }
+
+  set plannedTrip(value) {
+
+    this._plannedTrip = value;
+  }
+
+  get prevPlannedTrip() {
+
+    return this._prevPlannedTrip;
+  }
+
+  set prevPlannedTrip(trip) {
+
+    this._prevPlannedTrip = trip;
+  }
+
+} // RouteService */
