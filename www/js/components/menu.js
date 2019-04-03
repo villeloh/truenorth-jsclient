@@ -7,11 +7,7 @@ const Menu = {
 
   DIV_ID: 'menu',
 
-  mapService: null,
-
-  addTo: function(parentDiv, mapService) {
-
-    this.mapService = mapService;
+  addTo: function(parentDiv) {
 
     Menu._addMapStyleToggleButtons(parentDiv);
     Menu._addCyclingLayerToggleButton(parentDiv);
@@ -22,16 +18,16 @@ const Menu = {
   // if called first, no extra holder div is needed
   _addMapStyleToggleButtons: function (parentDiv) {
     
-    MapStyleToggleButton.addTo(parentDiv, MapStyleToggleButton.NORMAL_TXT, this.mapService);
-    MapStyleToggleButton.addTo(parentDiv, MapStyleToggleButton.SAT_TXT, this.mapService);
-    MapStyleToggleButton.addTo(parentDiv, MapStyleToggleButton.TERRAIN_TXT, this.mapService);
+    MapStyleToggleButton.addTo(parentDiv, MapStyleToggleButton.NORMAL_TXT);
+    MapStyleToggleButton.addTo(parentDiv, MapStyleToggleButton.SAT_TXT);
+    MapStyleToggleButton.addTo(parentDiv, MapStyleToggleButton.TERRAIN_TXT);
   }, // addMapStyleToggleButtons
 
   _addCyclingLayerToggleButton: function(parentDiv) {
     
     const buttonHolderDiv = document.createElement('div');
     buttonHolderDiv.style.marginTop = '20%'; // separate it from the other buttons
-    CyclingLayerToggleButton.addTo(buttonHolderDiv, this.mapService);
+    CyclingLayerToggleButton.addTo(buttonHolderDiv);
     parentDiv.appendChild(buttonHolderDiv);
 
     // this call is needed to 'remember' the state of the cycling layer button on each menu recreation...
@@ -39,7 +35,7 @@ const Menu = {
     // recreating it with every click.
     setTimeout(() => {
       
-      this.mapService.setInitialCyclingLayerToggleButtonStyles(); // wait for the DOM to update...
+      App.mapService.setInitialCyclingLayerToggleButtonStyles(); // wait for the DOM to update...
     }, 50);
   }, // _addCyclingLayerToggleButton
 
@@ -47,14 +43,14 @@ const Menu = {
 
     // we need a holder div because otherwise the .innerHTML assignment in addTo() erases all other menu items
     const buttonHolderDiv = document.createElement('div'); 
-    TravelModeToggleButton.addTo(buttonHolderDiv, this.mapService);
+    TravelModeToggleButton.addTo(buttonHolderDiv);
     parentDiv.appendChild(buttonHolderDiv);
   },
 
   _addSpeedInput: function(parentDiv) {
 
     const holderDiv = document.createElement('div');
-    SpeedInput.addTo(holderDiv, this.mapService);
+    SpeedInput.addTo(holderDiv);
     parentDiv.appendChild(holderDiv);
   }
 

@@ -18,8 +18,6 @@ const App = {
 
   _initServices: function() {
 
-    // GeoLoc.start(); // should be called first, as the location is needed below
-
     GoogleMapsLoader.KEY = Env.API_KEY;
     GoogleMapsLoader.LANGUAGE = 'en';
     GoogleMapsLoader.LIBRARIES = ['geometry', 'places'];
@@ -30,7 +28,7 @@ const App = {
 
       this.mapService = new MapService();
       
-      UI.init(this.mapService);
+      UI.init();
 
       this.geoLocService = new GeoLocService(this.mapService);
       this.geoLocService.start();

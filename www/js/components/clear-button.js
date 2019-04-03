@@ -11,11 +11,9 @@ const ClearButton = {
   _INNER_DIV_ID: 'clear-btn-inner',
   _TEXT: 'CLEAR',
 
-  addTo: function(parentDiv, mapService) {
+  addTo: function(parentDiv) {
 
-    ClearButton.mapService = mapService;
-
-    parentDiv.innerHTML = `<div id=${ClearButton._OUTER_DIV_ID} onclick="ClearButton.mapService.onClearButtonClick()">
+    parentDiv.innerHTML = `<div id=${ClearButton._OUTER_DIV_ID} onclick="App.mapService.onClearButtonClick()">
       <div id=${ClearButton._INNER_DIV_ID}>${ClearButton._TEXT}</div>
     </div>`;
   }

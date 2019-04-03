@@ -12,11 +12,9 @@ const MapStyleToggleButton = {
   INNER_DIV_CLASS: 'map-style-btn-inner',
 
   // btnTxt should be one of the types above ('NORMAL_TXT', etc)
-  addTo: function(parentDiv, btnText, mapService) {
+  addTo: function(parentDiv, btnText) {
 
-    MapStyleToggleButton.mapService = mapService;
-
-    parentDiv.innerHTML += `<div class=${MapStyleToggleButton.OUTER_DIV_CLASS} onclick="MapStyleToggleButton.mapService.onMapStyleToggleButtonClick(event)">
+    parentDiv.innerHTML += `<div class=${MapStyleToggleButton.OUTER_DIV_CLASS} onclick="App.mapService.onMapStyleToggleButtonClick(event)">
     <div class=${MapStyleToggleButton.INNER_DIV_CLASS}>${btnText}</div></div>`;
   }
   

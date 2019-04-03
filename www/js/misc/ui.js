@@ -6,9 +6,7 @@ const UI = {
 
   mapService: null,
 
-  init: function(mapService) {
-
-    this.mapService = mapService;
+  init: function() {
 
     this._addLocationButton();
     this._addMenuButton();
@@ -22,9 +20,9 @@ const UI = {
     const buttonHolderDiv = document.createElement('div');
     // buttonHolderDiv.id = MenuButton.DIV_ID; // it seems like it can just be an invisible holder, so no id is needed
     buttonHolderDiv.style.margin = '2.5%';
-    MenuButton.addTo(buttonHolderDiv, this.mapService);
+    MenuButton.addTo(buttonHolderDiv);
     
-    UI.mapService.addUIControl(App.google.maps.ControlPosition.TOP_RIGHT, buttonHolderDiv);
+    App.mapService.addUIControl(App.google.maps.ControlPosition.TOP_RIGHT, buttonHolderDiv);
   },
 
   // called from GoogleMap on each menu click, as due to some visibility issues the menu has to be recreated
@@ -41,30 +39,28 @@ const UI = {
     menuHolderDiv.style.marginTop = '20%';
     menuHolderDiv.style.marginBottom = '75%';
 
-    Menu.addTo(menuHolderDiv, this.mapService);
+    Menu.addTo(menuHolderDiv);
 
-    UI.mapService.addUIControl(App.google.maps.ControlPosition.RIGHT_CENTER, menuHolderDiv);
+    App.mapService.addUIControl(App.google.maps.ControlPosition.RIGHT_CENTER, menuHolderDiv);
   }, // _addMenu
 
   // adds a custom ui button for recentering the map at the user's location
   _addLocationButton: function() {
 
     const buttonHolderDiv = document.createElement('div');
-    // const locButton = new LocationButton(UI.mapService);
-    // locButton.attachTo(buttonHolderDiv);
-    LocationButton.addTo(buttonHolderDiv, UI.mapService);
+    LocationButton.addTo(buttonHolderDiv);
 
     // buttonHolderDiv.index = 1; // wtf does this do ?? is it the same as z-index ?
-    UI.mapService.addUIControl(App.google.maps.ControlPosition.RIGHT_BOTTOM, buttonHolderDiv);
+    App.mapService.addUIControl(App.google.maps.ControlPosition.RIGHT_BOTTOM, buttonHolderDiv);
   },
 
   _addClearButton: function() {
 
     const buttonHolderDiv = document.createElement('div');
     buttonHolderDiv.style.margin = '2.5%';
-    ClearButton.addTo(buttonHolderDiv, this.mapService);
+    ClearButton.addTo(buttonHolderDiv);
 
-    UI.mapService.addUIControl(App.google.maps.ControlPosition.TOP_LEFT, buttonHolderDiv);
+    App.mapService.addUIControl(App.google.maps.ControlPosition.TOP_LEFT, buttonHolderDiv);
   },
 
   _addInfoHeader: function() {
@@ -75,7 +71,7 @@ const UI = {
     holderDiv.style.marginTop = '1.5%';
     InfoHeader.addTo(holderDiv);
 
-    UI.mapService.addUIControl(App.google.maps.ControlPosition.TOP_CENTER, holderDiv);
+    App.mapService.addUIControl(App.google.maps.ControlPosition.TOP_CENTER, holderDiv);
   },
 
   removeElement: function(elementId) {

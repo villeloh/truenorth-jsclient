@@ -8,18 +8,14 @@ const SpeedInput = {
 
   INPUT_ID: 'speed-input',
 
-  mapService: null,
-
-  addTo: function(parentDiv, mapService) {
-
-    this.mapService = mapService;
+  addTo: function(parentDiv) {
 
     parentDiv.innerHTML = `<input 
       type="number" 
       id=${SpeedInput.INPUT_ID} 
       step=1
       max=${PlannedTrip.MAX_SPEED} 
-      value=${this.mapService.plannedTrip.speed} 
+      value=${App.mapService.plannedTrip.speed} 
       oninput="SpeedInput.onValueChange(event)"
     >`;
   }, // addTo
@@ -41,16 +37,16 @@ const SpeedInput = {
 
     if (Utils.isValidSpeed(event.target.value)) {
 
-      this.mapService.plannedTrip.speed = event.target.value;
+      App.mapService.plannedTrip.speed = event.target.value;
     } else {
-      this.mapService.plannedTrip.speed = 0;
+      App.mapService.plannedTrip.speed = 0;
     }
 
-    if (this.mapService.noVisualTrip()) return; // the PlannedTrip always has a speed, but it's only used if there's a possible trip that's being displayed
+    if (App.mapService.noVisualTrip()) return; // the PlannedTrip always has a speed, but it's only used if there's a possible trip that's being displayed
 
     // update the top screen info header with the new duration.
-    this.mapService.visualTrip.duration = Utils.calcDuration(this.mapService.visualTrip.distance, this.mapService.plannedTrip.speed);
-    InfoHeader.updateDuration(this.mapService.visualTrip.duration);
+    App.mapService.visualTrip.duration = Utils.calcDuration(App.mapService.visualTrip.distance, App.mapService.plannedTrip.speed);
+    InfoHeader.updateDuration(App.mapService.visualTrip.duration);
   } // onValueChange
 
 }; // SpeedInput

@@ -1,5 +1,6 @@
 
 /**
+ * A convenience wrapper for the GoogleMaps Marker element.
  * I put this in dataclasses for now; it's a bit of a hybrid between a visual element and a dataclass.
  */
 
@@ -20,24 +21,7 @@ class Marker {
       label: label,
       crossOnDrag: false
     });
-
   } // constructor
-
-  // we need to make a new marker with each move, as otherwise it 
-  // refuses to render
-  moveTo(newPos) {
-
-    this.clearFromMap(); // erase the old marker
-
-    this.googleMapMarker = new App.google.maps.Marker({
-
-      position: newPos,
-      map: this.googleMap,
-      draggable: this.isDraggable,
-      label: this.label,
-      crossOnDrag: false
-    });
-  } // moveTo
 
   // takes a string and a function, like the underlying 
   // addListener method that it 'overrides'
@@ -57,5 +41,23 @@ class Marker {
 
     this.googleMapMarker.setMap(googleMap);
   }
+
+  // we need to make a new marker with each move, as otherwise it 
+  // refuses to render.
+  // NOTE: not used atm, as all markers get remade with each 
+  // route change. may use it in the future.
+/* moveTo(newPos) {
+
+    this.clearFromMap(); // erase the old marker
+
+    this.googleMapMarker = new App.google.maps.Marker({
+
+      position: newPos,
+      map: this.googleMap,
+      draggable: this.isDraggable,
+      label: this.label,
+      crossOnDrag: false
+    });
+  } // moveTo */
 
 } // Marker
