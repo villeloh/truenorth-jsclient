@@ -13,13 +13,8 @@ class VisualTrip {
     this.distance = distance;
     this.duration = duration;
 
-    this.destMarker = new App.google.maps.Marker({
-      position: destCoords,
-      map: null,
-      draggable: true,
-      crossOnDrag: false
-    });
-
+    this.destMarker = new Marker(null, destCoords, "", true);
+    
     this.destMarker.addListener('dragend', mapService.onDestMarkerDragEnd);
     this.destMarker.addListener('click', mapService.onDestMarkerTap);
 
@@ -29,13 +24,7 @@ class VisualTrip {
 
     for (let i = 0; i < wayPointCoordsArray.length; i++) {
 
-      const marker = new App.google.maps.Marker({
-        position: wayPointCoordsArray[i],
-        map: null,
-        draggable: true,
-        label: labelNum + "",
-        crossOnDrag: false
-      });
+      const marker = new Marker(null, wayPointCoordsArray[i], labelNum+"", true);
 
       labelNum++;
 
@@ -58,25 +47,24 @@ class VisualTrip {
     this.distance = null;
     this.duration = null;
 
-    this.destMarker.setMap(null);
-    App.google.maps.event.clearInstanceListeners(this.destMarker);
-    this.destMarker = null;
+    this.destMarker.clearFromMap();
     this.wayPointMarkers.map(marker => {
-      marker.setMap(null);
-      App.google.maps.event.clearInstanceListeners(marker);
+      
+      marker.clearFromMap();
       return null;
     });
 
     this.wayPointMarkers.length = 0;
   } // clear
 
-    // i'm not sure if this needs to exist, but it seems somehow
-    // wrong to display the trip immediately on creation
+  // i'm not sure if this needs to exist, but it seems somehow
+  // wrong to display the trip immediately on creation
   displayOnMap(googleMap) {
 
-    this.destMarker.setMap(googleMap);
+    this.destMarker.showOnMap(googleMap);
     this.wayPointMarkers.forEach(marker => {
-      marker.setMap(googleMap);
+
+      marker.showOnMap(googleMap);
     });
   }; // displayOnMap
 
