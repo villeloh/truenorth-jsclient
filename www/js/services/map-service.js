@@ -46,7 +46,7 @@ class MapService {
     this.routeService = new RouteService(this.onRouteFetchSuccess, this.onRouteFetchFailure);
     this.routeRenderer = new RouteRenderer(this.map); // for showing fetched routes on the map
 
-    this.clickHandler = new ClickHandler(this);
+    this.clickHandler = new ClickHandler();
 
     this.menuIsVisible = false;
     this.bikeLayerOn = false;

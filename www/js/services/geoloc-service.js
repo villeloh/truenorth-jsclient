@@ -10,11 +10,11 @@ class GeoLocService {
   static get _MAX_AGE() { return 3000; };
   static get _TIME_OUT() { return 5000; };
 
-  constructor(mapService) {
+  constructor() {
 
-    this._mapService = mapService;
     this._locTracker = null;
     this._options = { 
+
       maximumAge: GeoLocService._MAX_AGE, // use cached results that are max this old
       timeout: GeoLocService._TIME_OUT, // call onError if no success in this amount of ms
       enableHighAccuracy: true
@@ -43,13 +43,13 @@ class GeoLocService {
   _onSuccess(pos) {
 
     const newCoords = new LatLng(pos.coords.latitude, pos.coords.longitude);
-    const oldCoords = this._mapService.plannedTrip.getPosCoords();
+    const oldCoords = App.mapService.plannedTrip.getPosCoords();
     
-    this._mapService.plannedTrip.updatePosition(newCoords);
+    App.mapService.plannedTrip.updatePosition(newCoords);
 
     if (this._diffIsOverCameraMoveThreshold(oldCoords, newCoords)) {
 
-      this._mapService.reCenter(newCoords); 
+      App.mapService.reCenter(newCoords); 
     }
   } // _onSuccess
 

@@ -26,11 +26,11 @@ const App = {
 
       this.google = google; // to be used throughout the app, so there's no need to pass it around
 
-      this.mapService = new MapService();
+      this.mapService = new MapService(); // must be done before setting up other services
       
       UI.init();
 
-      this.geoLocService = new GeoLocService(this.mapService);
+      this.geoLocService = new GeoLocService();
       this.geoLocService.start();
     }); // GoogleMapsLoader.load
   }, // _initServices
