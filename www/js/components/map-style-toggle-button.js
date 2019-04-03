@@ -2,7 +2,6 @@
  * These buttons toggle the map's style (terrain / normal / satellite).
  */
 
-// extends UIButton
 const MapStyleToggleButton = {
 
   NORMAL_TXT: 'NORMAL',
@@ -13,9 +12,11 @@ const MapStyleToggleButton = {
   INNER_DIV_CLASS: 'map-style-btn-inner',
 
   // btnTxt should be one of the types above ('NORMAL_TXT', etc)
-  addTo: function(parentDiv, btnText) {
+  addTo: function(parentDiv, btnText, mapService) {
 
-    parentDiv.innerHTML += `<div class=${MapStyleToggleButton.OUTER_DIV_CLASS} onclick="GoogleMap.onMapStyleToggleButtonClick(event)">
+    MapStyleToggleButton.mapService = mapService;
+
+    parentDiv.innerHTML += `<div class=${MapStyleToggleButton.OUTER_DIV_CLASS} onclick="MapStyleToggleButton.mapService.onMapStyleToggleButtonClick(event)">
     <div class=${MapStyleToggleButton.INNER_DIV_CLASS}>${btnText}</div></div>`;
   }
   

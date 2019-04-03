@@ -2,41 +2,40 @@
 /**
  * 'Class' that encapsulates the user's own position.
  */
+// NOTE: only one should ever exist, and it's to be updated, not replaced;
+// so I guess it could be an object/singleton, or a class with static methods.
+// TODO: update to class that takes a map argument
+class Position {
 
-function Position(latLng) {
+  static _POS_MARKER_URL = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png';
 
-  this.coords = latLng;
+  constructor(latLng, googleMap) {
 
-  this.marker = new App.google.maps.Marker({ 
-    position: latLng, 
-    map: GoogleMap.getMap(), 
-    draggable: false, 
-    icon: GoogleMap.constants._PLACE_MARKER_URL 
-  });
+    this.googleMap = googleMap;
+    
+    this.coords = latLng;
+    this.marker = new App.google.maps.Marker({
+      position: latLng,
+      map: googleMap,
+      draggable: false,
+      icon: Position._POS_MARKER_URL
+    });
+  }
 
   // GeoLoc calls this (via _plannedTrip, which contains the position object)
-  this.update = function(newCoords) {
+  update(newCoords) {
 
     this.coords = newCoords;
     this.marker.setMap(null); // to clear the old marker from the map
 
-    // it needs to be recreated due to not being rendered on just moving it...
-    // not sure what's wrong here tbh
-    this.marker = new App.google.maps.Marker({ 
-      position: newCoords, 
-      map: GoogleMap.getMap(), 
-      draggable: false, 
-      icon: GoogleMap.constants._PLACE_MARKER_URL 
+    // it needs to be recreated due to not being rendered if just moving it...
+    // not sure what's wrong there tbh.
+    this.marker = new App.google.maps.Marker({
+      position: newCoords,
+      map: this.googleMap,
+      draggable: false,
+      icon: Position._POS_MARKER_URL
     });
-  }; // update
-
-/* // it should not be needed, but leaving it for now, just in case
-  this.clear = function() {
-
-    this.coords = null;
-    this.marker.setMap(null);
-    App.google.maps.event.clearInstanceListeners(this.marker);
-    this.marker = null;
-  }; */
-
+  } // update
+  
 } // Position

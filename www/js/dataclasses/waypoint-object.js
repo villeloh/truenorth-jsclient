@@ -1,7 +1,6 @@
 
 /**
- * For storing the inner waypoint objects that are needed by the fetch method in Route.js.
- * Actual WayPoints (defined in waypoint.js) contain one of these along with a waypoint marker.
+ * For storing the inner waypoint objects that are needed by the fetchFor method in route-service.js.
  */
 
 function WayPointObject(latLng) {

@@ -8,6 +8,7 @@ const App = {
 
   google: null,
   geoLocService: null,
+  mapService: null,
 
   // Application Constructor
   _initialize: function() {
@@ -27,10 +28,11 @@ const App = {
 
       this.google = google; // to be used throughout the app, so there's no need to pass it around
 
-      GoogleMap.init();
-      UI.init();
+      this.mapService = new MapService();
+      
+      UI.init(this.mapService);
 
-      this.geoLocService = new GeoLocService(GoogleMap);
+      this.geoLocService = new GeoLocService(this.mapService);
       this.geoLocService.start();
     }); // GoogleMapsLoader.load
   }, // _initServices
@@ -49,12 +51,12 @@ const App = {
 
   _onPause: function() {
 
-    this.geoLocService.stop();
+    App.geoLocService.stop();
   },
 
   _onResume: function () {
     
-    this.geoLocService.start();
+    App.geoLocService.start();
   },
 
   // Update DOM on a received event

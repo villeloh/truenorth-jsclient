@@ -10,24 +10,26 @@ class PlannedTrip {
   // I wonder how the static keyword works under the hood?
   // I made PlannedTrip into a class instead of a functional component
   // in order to be able to put these constants in it.
-  static get WALK_MODE() { return 'WALKING'; };
-  static get CYCLE_MODE() { return 'BICYCLING'; };
-  static get MAX_SPEED() { return 50; }; // km/h  
-  static get _DEFAULT_SPEED() { return 15; }; // km/h
+  static get WALK_MODE() { return 'WALKING'; }
+  static get CYCLE_MODE() { return 'BICYCLING'; }
+  static get MAX_SPEED() { return 50; } // km/h  
+  static get _DEFAULT_SPEED() { return 15; } // km/h
 
-  constructor() {
+  constructor(googleMap) {
 
-    this.position = new Position(new LatLng(0, 0));
+    this.googleMap = googleMap;
+    this.position = new Position(new LatLng(0, 0), googleMap);
     this.speed = PlannedTrip._DEFAULT_SPEED; // km/h
     this.destCoords = null; // LatLng
     this.wayPointObjects = [];
     this.travelMode = PlannedTrip.CYCLE_MODE;
   } // constructor
 
+  // needed in order not to cause an infinite loop of requests (at least I think this was the cause...)
   copy() {
 
-    const clone = new PlannedTrip();
-    clone.position = new Position(this.position.coords);
+    const clone = new PlannedTrip(this.googleMap);
+    clone.position = new Position(this.position.coords, this.googleMap);
     clone.speed = this.speed;
     clone.destCoords = this.destCoords;
     clone.wayPointObjects = [];
@@ -42,29 +44,40 @@ class PlannedTrip {
     return this.position.coords;
   }
 
+  // called by GeoLocService periodically
   updatePosition(newCoords) {
 
     this.position.update(newCoords);
   }
 
-  getSpeed () {
+  get speed () {
 
-    return this.speed;
+    return this._speed;
   }
 
-  setSpeed(newSpeed) {
+  set speed(newSpeed) {
 
-    this.speed = newSpeed;
+    this._speed = newSpeed;
   }
 
-  getDestCoords() {
+  get travelMode() {
 
-    return this.destCoords;
+    return this._travelMode;
   }
 
-  setDestCoords (newCoords) {
+  set travelMode(newMode) {
 
-    this.destCoords = newCoords;
+    this._travelMode = newMode;
+  }
+
+  get destCoords() {
+
+    return this._destCoords;
+  }
+
+  set destCoords (newCoords) {
+
+    this._destCoords = newCoords;
   }
 
   addWayPointObject(latLng) {
@@ -82,9 +95,14 @@ class PlannedTrip {
     this.wayPointObjects.splice(index, 1);
   }
 
-  getWayPointObjects() {
+  get wayPointObjects() {
 
-    return this.wayPointObjects;
+    return this._wayPointObjects;
+  }
+
+  set wayPointObjects(newArray) {
+
+    this._wayPointObjects = newArray;
   }
 
   // for getting the plain latLngs inside the WayPointObjects
@@ -99,18 +117,8 @@ class PlannedTrip {
 
   clear() {
 
-    this.setDestCoords(null);
+    this.destCoords = null;
     this.wayPointObjects.length = 0; // there is never a case where only the waypoints are cleared, so it's ok to do this here
-  }
-
-  getTravelMode() {
-
-    return this.travelMode;
-  }
-
-  setTravelMode(newMode) {
-
-    this.travelMode = newMode;
   }
   
 } // PlannedTrip

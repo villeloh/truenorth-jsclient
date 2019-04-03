@@ -2,12 +2,15 @@
  * For utility functions that don't really fit anywhere else.
  */
 
+// could be a class with static methods instead; i'm not sure which is superior 
+// from a performance pov (probably doesn't matter either way).
 const Utils = {
 
   // used for checking the user-inputted speed in the menu's speed box
   isValidSpeed: function(speedInKmH) {
 
-    if (speedInKmH <= 0 || speedInKmH === "" || speedInKmH === null || speedInKmH === undefined) { 
+    // values of less than 1 lead to a great number of digits in the duration display
+    if (speedInKmH < 1 || speedInKmH === "" || speedInKmH === null || speedInKmH === undefined) { 
       return false;
     } else {
       return true;
@@ -33,9 +36,8 @@ const Utils = {
 
     let text;
 
-    // when arriving, the value should always be a Number (invalid values get converted to 0); 
-    // but it can be less than 1, leading to a great number of digits
-    if (duraInDecimHours < 1) {
+    // when arriving, the value should always be a Number (invalid values get converted to 0 beforehand)
+    if (duraInDecimHours === 0) {
 
       text = fallBackText;
     } else {
@@ -59,10 +61,11 @@ const Utils = {
     return (total / 1000).toFixed(1);
   }, // distanceInKm
 
-  decodePolyPoints: function(encodedPoints) {
+  // not being used atm, but keeping it in case it's needed later on
+  /* decodePolyPoints: function(encodedPoints) {
 
     // console.log("decoded stuffs: " + app.google.maps.geometry.encoding.decodePath(encodedPoints));
     return App.google.maps.geometry.encoding.decodePath(encodedPoints);
-  },
+  } */
 
 }; // Utils

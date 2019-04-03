@@ -15,7 +15,7 @@ function LatLng(lat, lng) {
     return `lat.: ${this.lat}, lng.: ${this.lng}`;
   };
 
-  // used for determining when the map recenters when the user moves
+  // used in GeoLocService for determining if the map should recenter when the user moves
   this.differenceFrom = function(anotherLatLng) {
 
     const absLatDiff = Math.abs(Math.abs(this.lat) - Math.abs(anotherLatLng.lat));

@@ -11,9 +11,9 @@ function RouteService(onFetchSuccessCallback, onFetchFailureCallback) {
 
   this.fetchFor = function(plannedTrip) {
 
-    const destCoords = plannedTrip.getDestCoords();
+    const destCoords = plannedTrip.destCoords;
 
-    // invalid destCoords sometimes reach this method (after clicking on water twice or more in a row).
+    // null destCoords sometimes reach this method (after clicking on water twice or more in a row).
     // for now, it's an unavoidable side effect of the way the plannedTrip state is managed.
     if (destCoords === null) return; 
 
@@ -21,11 +21,11 @@ function RouteService(onFetchSuccessCallback, onFetchFailureCallback) {
 
       origin: plannedTrip.getPosCoords(),
       destination: destCoords,
-      travelMode: plannedTrip.getTravelMode(), // comes from the travel mode toggle button
+      travelMode: plannedTrip.travelMode, // comes from the travel mode toggle button
       optimizeWaypoints: false,
       avoidHighways: true,
-      waypoints: plannedTrip.getWayPointObjects()
-    };
+      waypoints: plannedTrip.wayPointObjects
+    }; // request
   
     this._dirService.route(request, function(result, status) {
 
@@ -39,7 +39,7 @@ function RouteService(onFetchSuccessCallback, onFetchFailureCallback) {
         console.log("Error fetching route: " + status);
         onFetchFailureCallback();
       }
-    }); // Route._directionsService.route
+    }); // this._dirService.route
   } // fetchFor
 
 } // RouteService

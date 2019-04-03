@@ -11,9 +11,11 @@ const MenuButton = {
   _OUTER_DIV_ID: 'menu-btn-outer',
   _INNER_DIV_ID: 'menu-btn-inner',
 
-  addTo: function (parentDiv) {
+  addTo: function (parentDiv, mapService) {
+
+    MenuButton.mapService = mapService;
     
-    parentDiv.innerHTML += `<div id=${MenuButton._OUTER_DIV_ID} onclick="GoogleMap.onMenuButtonClick(event)">
+    parentDiv.innerHTML += `<div id=${MenuButton._OUTER_DIV_ID} onclick="MenuButton.mapService.onMenuButtonClick(event)">
       <div id=${MenuButton._INNER_DIV_ID}>${MenuButton.CLOSED_SYMBOL}</div>
     </div>`;
   }

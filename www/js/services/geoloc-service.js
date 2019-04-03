@@ -1,5 +1,5 @@
 /**
- * Updates the user's own position.
+ * Periodically updates the user's own position (via GPS).
  */
 
 // TODO: handle not having GPS on / turning it off while using the app (rn it crashes the app)
@@ -10,10 +10,10 @@ class GeoLocService {
   static get _MAX_AGE() { return 3000; };
   static get _TIME_OUT() { return 5000; };
 
-  constructor(googleMap) {
+  constructor(mapService) {
 
-    this._googleMap = googleMap;
-    this._locktracker = null;
+    this._mapService = mapService;
+    this._locTracker = null;
     this._options = { 
       maximumAge: GeoLocService._MAX_AGE, // use cached results that are max this old
       timeout: GeoLocService._TIME_OUT, // call onError if no success in this amount of ms
@@ -25,7 +25,7 @@ class GeoLocService {
 
     const that = this;
 
-    this._locktracker = navigator.geolocation.watchPosition(
+    this._locTracker = navigator.geolocation.watchPosition(
       function(pos) {
 
         that._onSuccess.bind(that); // for some odd reason, this trick is needed for the function to retain the correct 'this' reference
@@ -43,13 +43,13 @@ class GeoLocService {
   _onSuccess(pos) {
 
     const newCoords = new LatLng(pos.coords.latitude, pos.coords.longitude);
-    const oldCoords = this._googleMap.getPlannedTrip().getPosCoords();
+    const oldCoords = this._mapService.plannedTrip.getPosCoords();
     
-    this._googleMap.getPlannedTrip().updatePosition(newCoords);
+    this._mapService.plannedTrip.updatePosition(newCoords);
 
     if (this._diffIsOverCameraMoveThreshold(oldCoords, newCoords)) {
 
-      this._googleMap.reCenter(newCoords); 
+      this._mapService.reCenter(newCoords); 
     }
   } // _onSuccess
 

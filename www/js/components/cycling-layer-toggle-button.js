@@ -16,9 +16,11 @@ const CyclingLayerToggleButton = {
 
   TEXT: 'C.LAYER',
 
-  addTo: function(parentDiv) {
+  addTo: function(parentDiv, mapService) {
 
-    parentDiv.innerHTML = `<div id=${CyclingLayerToggleButton.OUTER_DIV_ID} onclick="GoogleMap.onCyclingLayerToggleButtonClick(event)">
+    CyclingLayerToggleButton.mapService = mapService;
+
+    parentDiv.innerHTML = `<div id=${CyclingLayerToggleButton.OUTER_DIV_ID} onclick="CyclingLayerToggleButton.mapService.onCyclingLayerToggleButtonClick(event)">
     <div id=${CyclingLayerToggleButton.INNER_DIV_ID}>${CyclingLayerToggleButton.TEXT}</div></div>`;
   }
 
