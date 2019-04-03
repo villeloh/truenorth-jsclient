@@ -35,7 +35,7 @@ class PlannedTrip {
     clone.travelMode = this.travelMode;
 
     return clone;
-  } // clone
+  } // copy
 
   getPosCoords() {
 

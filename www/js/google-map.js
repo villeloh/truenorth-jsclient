@@ -100,7 +100,7 @@ const GoogleMap = {
 
     GoogleMap._plannedTrip = GoogleMap._prevPlannedTrip.copy(); // restore a successful trip
 
-    GoogleMap._routeService.fetchFor(GoogleMap._plannedTrip);
+    // GoogleMap._routeService.fetchFor(GoogleMap._plannedTrip); // should not be necessary in this case, as the displayedTrip remains unchanged
   },
 
   onMapStyleToggleButtonClick: function (event) {
@@ -254,7 +254,7 @@ const GoogleMap = {
   _deletePlannedTrips: function() {
 
     this._prevPlannedTrip.clear();
-    this._prevPlannedTrip = null;
+    // this._prevPlannedTrip = null; // this wreaks havoc atm, but ideally should be possible
     this._plannedTrip.clear(); // NOTE: do not set this to null! it breaks the whole app!
   },
 
