@@ -16,7 +16,11 @@ class RouteService {
     this.plannedTrip = new PlannedTrip(App.mapService.map); // ideally, take it from localStorage
   } // constructor
 
-  fetch = () => {
+  fetchRoute = () => {
+
+    // I don't understand why the context is lost in the route fetch callbacks...
+    // this is the only convenient workaround.
+    const that = this;
 
     const destCoords = this.plannedTrip.destCoords;
 
@@ -39,15 +43,15 @@ class RouteService {
       if (status === 'OK') {
 
         // in practice, App's onRouteFetchSuccess
-        this.onFetchSuccess(result, this.plannedTrip);
+        that.onFetchSuccess(result, that.plannedTrip);
 
       } else {
 
         console.log("Error fetching route: " + status);
-        this.onFetchFailure();
+        that.onFetchFailure();
       }
     }); // this._dirService.route
-  } // fetch
+  } // fetchRoute
 
     // clears the stored waypoints and the destination coordinate from the plannedTrip object.
     // called on clicking the map clear button.

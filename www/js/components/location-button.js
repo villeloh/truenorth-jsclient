@@ -11,7 +11,7 @@ const LocationButton = {
 
   addTo: function(parentDiv) {
 
-    parentDiv.innerHTML = `<div id=${LocationButton._OUTER_DIV_ID} onclick="App.mapService.onLocButtonClick()">
+    parentDiv.innerHTML = `<div id=${LocationButton._OUTER_DIV_ID} onclick="App.onLocButtonClick()">
     <div id=${LocationButton._INNER_DIV_ID}></div></div>`;
   }
   

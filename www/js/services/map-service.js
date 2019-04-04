@@ -49,11 +49,6 @@ class MapService {
     this._setListeners();
   } // constructor
 
-  renderOnMap = (fetchResult) => {
-
-    this.routeRenderer.renderOnMap(fetchResult);
-  }
-
   fullClear = () => {
 
     App.routeService.deletePlannedTrips();
@@ -61,6 +56,11 @@ class MapService {
 
     InfoHeader.reset();
   } // fullClear
+
+  showVisualTripOnMap = () => {
+
+    this.visualTrip.displayOnMap(this.map);
+  }
   
   // called from Route.js on every route fetch
   deleteVisualTrip = () => {
@@ -153,12 +153,12 @@ class MapService {
     this.map.addListener('click', function(e) {
 
       e.id = ClickHandler.SINGLE;
-      this.clickHandler.handle(e);
+      App.mapService.clickHandler.handle(e);
     });
     this.map.addListener('dblclick', function(e) { 
 
       e.id = ClickHandler.DOUBLE;
-      this.clickHandler.handle(e);
+      App.mapService.clickHandler.handle(e);
     });
 
     this.map.addListener('heading_changed', function(e) {
@@ -168,22 +168,22 @@ class MapService {
 
     this.map.addListener('zoom_changed', function(e) {
 
-      this.clickHandler.isLongPress = false;
+      App.mapService.clickHandler.isLongPress = false; // 'this' doesn't work here because of lost context in html (I guess)
     });
 
     this.map.addListener('dragstart', function() {
 
-      this.clickHandler.isLongPress = false;
+      App.mapService.clickHandler.isLongPress = false;
     });
 
     this.map.addListener('drag', function() {
 
-      this.clickHandler.isLongPress = false;
+      App.mapService.clickHandler.isLongPress = false;
     });
 
     this.map.addListener('dragend', function() {
 
-      this.clickHandler.isLongPress = false;
+      App.mapService.clickHandler.isLongPress = false;
     });
     
     // DOM events seem to be the only option for listening for 'long press' type of events.
@@ -191,13 +191,13 @@ class MapService {
     App.google.maps.event.addDomListener(this.mapHolderDiv, 'touchstart', function(e) {
 
       e.id = ClickHandler.LONG_START;
-      this.clickHandler.handle(e);
+      App.mapService.clickHandler.handle(e); 
     });
 
     App.google.maps.event.addDomListener(this.mapHolderDiv, 'touchend', function(e) {
       
       e.id = ClickHandler.LONG_END;
-      this.clickHandler.handle(e);
+      App.mapService.clickHandler.handle(e);
     });
   } // _setListeners
 

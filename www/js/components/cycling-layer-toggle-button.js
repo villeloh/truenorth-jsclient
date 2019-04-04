@@ -18,7 +18,7 @@ const CyclingLayerToggleButton = {
 
   addTo: function(parentDiv) {
 
-    parentDiv.innerHTML = `<div id=${CyclingLayerToggleButton.OUTER_DIV_ID} onclick="App.mapService.onCyclingLayerToggleButtonClick(event)">
+    parentDiv.innerHTML = `<div id=${CyclingLayerToggleButton.OUTER_DIV_ID} onclick="App.onCyclingLayerToggleButtonClick(event)">
     <div id=${CyclingLayerToggleButton.INNER_DIV_ID}>${CyclingLayerToggleButton.TEXT}</div></div>`;
   },
 

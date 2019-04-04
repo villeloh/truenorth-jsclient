@@ -1,10 +1,12 @@
 
 /**
- * Overall holder for app initialization. GoogleMap.js is the real heart of the app.
+ * Overall holder/central hub for app, containing the responses to ui actions and route fetches.
  * @author Ville Lohkovuori (2019)
  */
 
 const App = {
+
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX INIT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   google: null,
   geoLocService: null,
@@ -16,6 +18,7 @@ const App = {
     document.addEventListener('deviceready', this._onDeviceReady.bind(this), false);
   },
 
+  // called down below in _onDeviceReady
   _initServices: function() {
 
     GoogleMapsLoader.KEY = Env.API_KEY;
@@ -37,33 +40,14 @@ const App = {
     }); // GoogleMapsLoader.load
   }, // _initServices
 
-  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX UI ACTION RESPONSES XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX API QUERY RESPONSES XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  // ------------------------------------ MAP TAPS -----------------------------------------------------------------------
+  // 'slimming down' this method is an enticing proposition, but otoh it shows very clearly what's going on
+  onRouteFetchSuccess: (fetchResult, successfulPlannedTrip) => {
 
-  onGoogleMapLongPress = (event) => {
+    App.routeService.prevPlannedTrip = successfulPlannedTrip.copy(); // save the trip in case the next one is unsuccessful
 
-    this.routeService.updateDestination(event);
-
-    this.routeService.fetch();
-  },
-
-  onGoogleMapDoubleClick = (event) => {
-
-    // waypoints cannot be added without a valid destination
-    if (this.mapService.noVisualTrip) return;
-
-    this.routeService.addWayPoint(event);
-    this.routeService.fetch();
-  },
-
-  onRouteFetchSuccess = (fetchResult, successfulPlannedTrip) => {
-
-    this.routeService.prevPlannedTrip = successfulPlannedTrip.copy(); // save the trip in case the next one is unsuccessful
-
-    App.mapService.deleteVisualTrip();
-
-    App.mapService.renderOnMap(fetchResult);
+    App.mapService.deleteVisualTrip(); // clears the old polyline and markers from the map (if they exist)
     
     const route = fetchResult.routes[0];
 
@@ -73,24 +57,102 @@ const App = {
     const destCoords = successfulPlannedTrip.destCoords;
     const wayPointCoords = successfulPlannedTrip.getAllWayPointCoords();
 
-    const tripToDisplay = new VisualTrip(this.mapService, destCoords, wayPointCoords, dist, dura);
+    const tripToDisplay = new VisualTrip(fetchResult, destCoords, wayPointCoords, dist, dura);
 
-    this.mapService.visualTrip = tripToDisplay;
-    this.mapService.visualTrip.displayOnMap(this.mapService.map);
+    App.mapService.visualTrip = tripToDisplay;
+    App.mapService.showVisualTripOnMap(); // shows the destination and waypoint markers and the polyline
 
+    // I'm not sure if this is the best location for this operation... tbd.
     InfoHeader.updateDistance(dist);
     InfoHeader.updateDuration(dura);
   }, // onRouteFetchSuccess
 
   // usually occurs when clicking on water, mountains, etc
-  onRouteFetchFailure = () => {
+  onRouteFetchFailure: () => {
 
-    this.routeService.plannedTrip = this.routeService.prevPlannedTrip.copy(); // restore a successful trip
+    App.routeService.plannedTrip = App.routeService.prevPlannedTrip.copy(); // restore a successful trip (in most situations; failure is harmless though)
 
-    App.routeService.fetch(); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
+    App.routeService.fetchRoute(); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
   },
 
-  onMapStyleToggleButtonClick = (event) => {
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX UI ACTION RESPONSES XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  // -------------------------------- MAP TAPS & DRAGS -------------------------------------------------------------------
+
+  onGoogleMapLongPress: (event) => {
+
+    App.routeService.updateDestination(event);
+    App.routeService.fetchRoute();
+  },
+
+  onGoogleMapDoubleClick: (event) => {
+
+    // waypoints cannot be added without a valid destination
+    if (App.mapService.noVisualTrip) return;
+
+    App.routeService.addWayPoint(event);
+    App.routeService.fetchRoute();
+  },
+
+  onDestMarkerDragEnd: (event) => {
+
+    App.routeService.updateDestination(event);
+    App.routeService.fetchRoute();
+
+    App.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
+
+    setTimeout(() => {
+
+      App.mapService.markerDragEventJustStopped = false;
+    }, MapService.MARKER_DRAG_TIMEOUT);
+  }, // onDestMarkerDragEnd
+
+  onDestMarkerTap: (event) => {
+    
+    console.log("tap event: " + JSON.stringify(event));
+    // TODO: open an info window with place info
+  },
+
+  onWayPointMarkerDragEnd: (event) => {
+
+    App.routeService.updateWayPoint(event);
+    App.routeService.fetchRoute();
+
+    App.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
+
+    setTimeout(() => {
+
+      App.mapService.markerDragEventJustStopped = false;
+    }, MapService.MARKER_DRAG_TIMEOUT);
+  }, // onWayPointMarkerDragEnd
+
+  onWayPointDblClick: (event) => {
+
+    App.routeService.deleteWayPoint(event);
+    App.routeService.fetchRoute();
+  },
+
+  // -------------------------------- OVERLAY UI CLICKS ---------------------------------------------------------------
+
+  onLocButtonClick: () => {
+
+    App.mapService.reCenter(this.routeService.plannedTrip.getPosCoords());
+  },
+
+  onClearButtonClick: () => {
+
+    if (App.mapService.noVisualTrip) return;
+
+    App.mapService.fullClear();
+  },
+
+  // toggles the right-hand corner menu
+  onMenuButtonClick: (event) => {
+
+    Menu.toggleVisibility(event);
+  },
+
+  onMapStyleToggleButtonClick: (event) => {
     
     const textHolderDiv = event.target;
     const value = textHolderDiv.innerText; // supposedly expensive... but .textContent refuses to work with the switch, even though the type is string!
@@ -98,15 +160,15 @@ const App = {
     switch (value) {
       case MapStyleToggleButton.NORMAL_TXT:
         
-        this.mapService.map.setMapTypeId(App.google.maps.MapTypeId.ROADMAP);
+        App.mapService.map.setMapTypeId(App.google.maps.MapTypeId.ROADMAP);
         break;
       case MapStyleToggleButton.SAT_TXT:
         
-        this.mapService.map.setMapTypeId(App.google.maps.MapTypeId.HYBRID);
+        App.mapService.map.setMapTypeId(App.google.maps.MapTypeId.HYBRID);
         break;
       case MapStyleToggleButton.TERRAIN_TXT:
         
-        this.mapService.map.setMapTypeId(App.google.maps.MapTypeId.TERRAIN);
+        App.mapService.map.setMapTypeId(App.google.maps.MapTypeId.TERRAIN);
         break;
       default:
 
@@ -116,73 +178,17 @@ const App = {
     } // switch
   }, // onMapStyleToggleButtonClick
 
-  onLocButtonClick = () => {
+  onCyclingLayerToggleButtonClick: (event) => {
 
-    this.mapService.reCenter(this.routeService.plannedTrip.getPosCoords());
+    App.mapService.toggleBikeLayer(event);
   },
 
-  onTravelModeToggleButtonClick = (event) => {
+  onTravelModeToggleButtonClick: (event) => {
 
-    this.routeService.plannedTrip.travelMode = event.target.value; 
+    App.routeService.plannedTrip.travelMode = event.target.value; 
   },
 
-  onCyclingLayerToggleButtonClick = (event) => {
-
-    this.mapService.toggleBikeLayer(event);
-  },
-
-  // toggles the right-hand corner menu
-  onMenuButtonClick = (event) => {
-
-    Menu.toggleVisibility(event);
-  },
-
-    
-  onWayPointDblClick = (event) => {
-
-    this.routeService.deleteWayPoint(event);
-    this.routeService.fetch();
-  },
-
-  onDestMarkerDragEnd = (event) => {
-
-    this.routeService.updateDestination(event);
-
-    this.routeService.fetch();
-
-    this.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
-
-    setTimeout(() => {
-
-      this.mapService.markerDragEventJustStopped = false;
-    }, MapService.MARKER_DRAG_TIMEOUT);
-  }, // onDestMarkerDragEnd
-
-  onDestMarkerTap = (event) => {
-    
-    console.log("tap event: " + JSON.stringify(event));
-    // TODO: open an info window with place info
-  },
-
-  onClearButtonClick = () => {
-
-    if (this.mapService.noVisualTrip) return;
-
-    this.mapService.fullClear();
-  },
-  
-  onWayPointMarkerDragEnd = (event) => {
-
-    this.routeService.updateWayPoint(event);
-    this.routeService.fetch();
-
-    this.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
-
-    setTimeout(() => {
-
-      this.markerDragEventJustStopped = false;
-    }, MapService.MARKER_DRAG_TIMEOUT);
-  }, // onWayPointMarkerDragEnd
+  // NOTE: the speed input contains its own onValueChange method (it should technically be here, but its so simple yet huge that I put it in speed-input.js)
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LIFECYCLE METHODS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 

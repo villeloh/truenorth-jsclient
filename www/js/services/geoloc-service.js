@@ -43,9 +43,9 @@ class GeoLocService {
   _onSuccess(pos) {
 
     const newCoords = new LatLng(pos.coords.latitude, pos.coords.longitude);
-    const oldCoords = App.mapService.plannedTrip.getPosCoords();
+    const oldCoords = App.routeService.plannedTrip.getPosCoords();
     
-    App.mapService.plannedTrip.updatePosition(newCoords);
+    App.routeService.plannedTrip.updatePosition(newCoords);
 
     if (this._diffIsOverCameraMoveThreshold(oldCoords, newCoords)) {
 

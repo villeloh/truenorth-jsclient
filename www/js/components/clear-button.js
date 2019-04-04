@@ -13,7 +13,7 @@ const ClearButton = {
 
   addTo: function(parentDiv) {
 
-    parentDiv.innerHTML = `<div id=${ClearButton._OUTER_DIV_ID} onclick="App.mapService.onClearButtonClick()">
+    parentDiv.innerHTML = `<div id=${ClearButton._OUTER_DIV_ID} onclick="App.onClearButtonClick()">
       <div id=${ClearButton._INNER_DIV_ID}>${ClearButton._TEXT}</div>
     </div>`;
   }

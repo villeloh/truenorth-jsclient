@@ -15,14 +15,13 @@ const SpeedInput = {
       id=${SpeedInput.INPUT_ID} 
       step=1
       max=${PlannedTrip.MAX_SPEED} 
-      value=${App.mapService.plannedTrip.speed} 
+      value=${App.routeService.plannedTrip.speed} 
       oninput="SpeedInput.onValueChange(event)"
     >`;
   }, // addTo
 
-  // it doesn't need to be a part of MapService, so i'm putting it here.
-  // technically it's a violation of the general design principle of the app, 
-  // but MapService is crowded enough already.
+  // technically it's a violation of the general design principle of the app to put this here, 
+  // but I'm trying not to bloat App.js and this is the best candidate to tuck away in its own file.
   onValueChange: function(event) {
 
     const value = event.target.value;
@@ -37,15 +36,15 @@ const SpeedInput = {
 
     if (Utils.isValidSpeed(event.target.value)) {
 
-      App.mapService.plannedTrip.speed = event.target.value;
+      App.routeService.plannedTrip.speed = event.target.value;
     } else {
-      App.mapService.plannedTrip.speed = 0;
+      App.routeService.plannedTrip.speed = 0;
     }
 
-    if (App.mapService.noVisualTrip()) return; // the PlannedTrip always has a speed, but it's only used if there's a possible trip that's being displayed
+    if (App.mapService.noVisualTrip) return; // the plannedTrip always has a speed, but it's only used if there's a possible trip that's being displayed
 
     // update the top screen info header with the new duration.
-    App.mapService.visualTrip.duration = Utils.calcDuration(App.mapService.visualTrip.distance, App.mapService.plannedTrip.speed);
+    App.mapService.visualTrip.duration = Utils.calcDuration(App.mapService.visualTrip.distance, App.routeService.plannedTrip.speed);
     InfoHeader.updateDuration(App.mapService.visualTrip.duration);
   } // onValueChange
 

@@ -6,17 +6,19 @@
 // trips always start from the current position, so it's not necessary to have a start field here
 class VisualTrip {
 
-  constructor(mapService, destCoords, wayPointCoordsArray, distance, duration) {
+  constructor(routeFetchResult, destCoords, wayPointCoordsArray, distance, duration) {
 
     // they're displayable quantities, only known after the route fetch completes, 
     // so it makes sense to have them here (rather than in PlannedTrip.js)
     this.distance = distance;
     this.duration = duration;
 
+    this.fetchResult = routeFetchResult;
+
     this.destMarker = new Marker(null, destCoords, "", true);
     
-    this.destMarker.addListener('dragend', mapService.onDestMarkerDragEnd);
-    this.destMarker.addListener('click', mapService.onDestMarkerTap);
+    this.destMarker.addListener('dragend', App.onDestMarkerDragEnd);
+    this.destMarker.addListener('click', App.onDestMarkerTap);
 
     this.wayPointMarkers = [];
 
@@ -30,12 +32,12 @@ class VisualTrip {
 
       marker.addListener('dragend', function (event) {
         event.wpIndex = i;
-        mapService.onWayPointDragEnd(event);
+        App.onWayPointMarkerDragEnd(event);
       });
 
       marker.addListener('dblclick', function (event) {
         event.wpIndex = i;
-        mapService.onWayPointDblClick(event);
+        App.onWayPointDblClick(event);
       });
 
       this.wayPointMarkers.push(marker);
@@ -57,10 +59,12 @@ class VisualTrip {
     this.wayPointMarkers.length = 0;
   } // clear
 
-  // i'm not sure if this needs to exist, but it seems somehow
-  // wrong to display the trip immediately on creation
   displayOnMap(googleMap) {
 
+    // show the polyline on the map
+    App.mapService.routeRenderer.renderOnMap(this.fetchResult);
+
+    // show the dest marker and waypoints
     this.destMarker.showOnMap(googleMap);
     this.wayPointMarkers.forEach(marker => {
 

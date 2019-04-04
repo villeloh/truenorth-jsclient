@@ -12,7 +12,7 @@ const TravelModeToggleButton = {
   addTo: function(parentDiv) {
 
     parentDiv.innerHTML = `<div id=${TravelModeToggleButton.OUTER_DIV_ID}>
-    <select id=${TravelModeToggleButton.SELECT_ID} onchange="App.mapService.onTravelModeToggleButtonClick(event)">
+    <select id=${TravelModeToggleButton.SELECT_ID} onchange="App.onTravelModeToggleButtonClick(event)">
       <option value=${PlannedTrip.CYCLE_MODE}>cycle</option>
       <option value=${PlannedTrip.WALK_MODE}>walk</option>
     </select>

@@ -52,7 +52,7 @@ class ClickHandler {
         break;
       case ClickHandler.DOUBLE:
 
-        App.mapService.onGoogleMapDoubleClick(event);
+        App.onGoogleMapDoubleClick(event);
 
         this._doubleClickInProgress = true;
 
@@ -75,7 +75,7 @@ class ClickHandler {
         if ( !this.isLongPress || App.mapService.markerDragEventJustStopped ) return;  // do not re-fetch if the marker drag event just did it
 
         // set by the google map click event that fires just before this regular DOM event
-        App.mapService.onGoogleMapLongPress(this._gMapClickEvent);
+        App.onGoogleMapLongPress(this._gMapClickEvent);
         break; 
       default:
 

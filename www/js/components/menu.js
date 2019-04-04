@@ -59,7 +59,7 @@ const Menu = {
   // technically, it removes / recreates the menu with each click.
   // this is needed because zoom events 'reset' the map, which makes 
   // the menu become visible with each zoom if it's present in the DOM.
-  toggleVisibility = (event) => {
+  toggleVisibility: (event) => {
 
     const menuBtnTextHolderDiv = event.target;
 
