@@ -136,7 +136,7 @@ const App = {
 
   onLocButtonClick: () => {
 
-    App.mapService.reCenter(this.routeService.plannedTrip.getPosCoords());
+    App.mapService.reCenter(App.routeService.plannedTrip.getPosCoords());
   },
 
   onClearButtonClick: () => {
@@ -192,6 +192,7 @@ const App = {
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LIFECYCLE METHODS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+  // here, 'this' works correctly... go figure.
   _onDeviceReady: function() {
 
     this._receivedEvent('deviceready');
