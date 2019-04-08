@@ -17,4 +17,4 @@ you, it can't talk to you, and you literally CAN'T spin the map around. As it sa
 
 ## Installation?
 
-For God's sake don't try to install it yet; I'll tell you when it's in a good enough shape for that! Better yet, I'll publish the app on the PlayStore for your no-mess, no-fuss, easy downloading pleasure. As for an ETA, it's a hobby project, so unfortunately I really cannot say atm.
+For God's sake don't try to install it yet; I'll tell you when it's in a good enough shape for that! Better yet, I'll publish the app on the PlayStore for your no-mess, no-fuss, easy downloading pleasure. As for an ETA, as it's a hobby project, unfortunately I really can't say atm.
