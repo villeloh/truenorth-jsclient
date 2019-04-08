@@ -2,7 +2,7 @@
 
 If you've ever tried to use Google Maps while cycling, you'll know my headaches.
 
-* Minimize the app and when you come back, the zoom level and/or bearing has altered, throwing your sense of direction into orbit with a wicked side-spin? Check.
+* Minimize the app and when you come back, the zoom level and/or map bearing has altered, throwing your sense of direction into orbit with a wicked side-spin? Check.
 
 * A huge banner about recommended cafés and tourist spots blocking you're view when you're rounding a tight corner? Check.
 
