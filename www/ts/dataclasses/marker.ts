@@ -1,46 +1,54 @@
+import { GoogleMapListenerCallback, Nullable, GoogleMap } from './../misc/types';
+import LatLng from './latng';
 
 /**
  * A convenience wrapper for the GoogleMaps Marker element.
  * I put this in dataclasses for now; it's a bit of a hybrid between a visual element and a dataclass.
  */
 
-class Marker {
+export default class Marker {
 
-  constructor(googleMap, position, label, isDraggable) {
+  private _googleMapMarker: Nullable<google.maps.Marker>;
 
-    this.position = position;
-    this.googleMap = googleMap;
-    this.label = label;
-    this.isDraggable = isDraggable;
+  constructor(
+    private _map: GoogleMap, 
+    private _position: LatLng, 
+    private _label: string, 
+    private _isDraggable: boolean) {
 
-    this.googleMapMarker = new App.google.maps.Marker({
+    const markerOptions = {
 
-      position: position,
-      map: googleMap,
-      draggable: isDraggable,
-      label: label,
-      crossOnDrag: false
-    });
+      position: _position,
+      map: _map,
+      draggable: _isDraggable,
+      label: _label,
+      crossOnDrag: false // it's not in the typedef file (too new? oversight?), but assigning to an object and then passing it seems to work
+    };
+
+    this._googleMapMarker = new google.maps.Marker(markerOptions);
   } // constructor
 
   // takes a string and a function, like the underlying 
-  // addListener method that it 'overrides'
-  addListener(eventName, callback) {
+  // addListener method that it wraps
+  addListener(eventName: string, callback: GoogleMapListenerCallback) {
 
-    this.googleMapMarker.addListener(eventName, callback);
+    this._googleMapMarker!.addListener(eventName, callback);
   }
 
+  // this won't be called if the inner marker is null
   clearFromMap() {
 
-    this.googleMapMarker.setMap(null);
-    App.google.maps.event.clearInstanceListeners(this.googleMapMarker);
-    this.googleMapMarker = null;
+    this._googleMapMarker!.setMap(null);
+    google.maps.event.clearInstanceListeners(this._googleMapMarker!);
+    this._googleMapMarker = null;
   }
 
-  showOnMap(googleMap) {
+  // should no longer be needed, as markers are now only created when they are to be shown
+  /*
+  showOnMap(map: GoogleMap) {
 
-    this.googleMapMarker.setMap(googleMap);
-  }
+    this._googleMapMarker!.setMap(map);
+  } */
 
   // we need to make a new marker with each move, as otherwise it 
   // refuses to render.

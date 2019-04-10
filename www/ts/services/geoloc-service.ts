@@ -1,24 +1,29 @@
+import { Nullable } from './../misc/types';
+import LatLng from '../dataclasses/latng';
+import App from '../app';
+
 /**
  * Periodically updates the user's own position (via GPS).
  */
 
 // TODO: handle not having GPS on / turning it off while using the app (rn it crashes the app)
 
-class GeoLocService {
+export default class GeoLocService {
 
-  static get _CAMERA_MOVE_THRESHOLD() { return 0.001; };
-  static get _MAX_AGE() { return 3000; };
-  static get _TIME_OUT() { return 5000; };
+  private static readonly _CAMERA_MOVE_THRESHOLD = 0.001;
+  private static readonly _MAX_AGE = 3000;
+  private static readonly _TIME_OUT = 5000;
+  private static readonly _OPTIONS = { 
+
+    maximumAge: GeoLocService._MAX_AGE, // use cached results that are max this old
+    timeout: GeoLocService._TIME_OUT, // call onError if no success in this amount of ms
+    enableHighAccuracy: true
+  };
+
+  private _locTracker: number; // why it returns number is baffling tbh
 
   constructor() {
 
-    this._locTracker = null;
-    this._options = { 
-
-      maximumAge: GeoLocService._MAX_AGE, // use cached results that are max this old
-      timeout: GeoLocService._TIME_OUT, // call onError if no success in this amount of ms
-      enableHighAccuracy: true
-    }
   } // constructor
 
   start() {
@@ -26,13 +31,15 @@ class GeoLocService {
     const that = this;
 
     this._locTracker = navigator.geolocation.watchPosition(
-      function(pos) {
+
+      // its type comes from Cordova, I guess
+      function(pos: Position) {
 
         that._onSuccess.bind(that); // for some odd reason, this trick is needed for the function to retain the correct 'this' reference
         that._onSuccess(pos);
       }, 
       this._onError, 
-      this._options);
+      GeoLocService._OPTIONS);
   } // start
 
   stop() {
@@ -40,10 +47,10 @@ class GeoLocService {
     navigator.geolocation.clearWatch(this._locTracker);
   }
 
-  _onSuccess(pos) {
+  _onSuccess(pos: Position) {
 
     const newCoords = new LatLng(pos.coords.latitude, pos.coords.longitude);
-    const oldCoords = App.routeService.plannedTrip.getPosCoords();
+    const oldCoords = App.currentTrip.getPosCoords(); // TODO: update this
     
     App.routeService.plannedTrip.updatePosition(newCoords);
 

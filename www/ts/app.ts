@@ -1,5 +1,8 @@
+import { Nullable } from './misc/types';
+import { Trip, TripOptions } from './dataclasses/trip';
 import LatLng from './dataclasses/latng';
 import VisualTrip from './dataclasses/visual-trip';
+import GeoLocService from './services/geoloc-service';
 
 // not needed atm it seems.
 // to be able to use the google maps types in typescript
@@ -16,13 +19,31 @@ declare const GoogleMapsLoader: any;
 
 // app needs to be globally accessible (otherwise I'd have to pass it to almost everything, which is pointless & hopelessly wordy),
 // so I'm making most things in it static.
-class App {
+export default class App {
 
-  static mapService: MapService = new MapService();
-  static geoLocService: GeoLocService = new GeoLocService();
-  static routeService: RouteService = new RouteService(App.onRouteFetchSuccess, App.onRouteFetchFailure);
+  // periodically updated by the geoLocService (via get & set below) 
+  private static _currentPos: LatLng = new LatLng(0,0);
+
+  private static _prevTrip: Trip;
+  private static _currentTrip: Trip;
+
+  private static readonly _mapService: MapService = new MapService();
+  private static readonly _geoLocService: GeoLocService = new GeoLocService();
+  private static readonly _routeService: RouteService = new RouteService(App.onRouteFetchSuccess, App.onRouteFetchFailure);
+
   static google: any | null; // I'm not sure if this is even needed. the loader loads the API and the types
   // ensure that the correct calls can be made without typescript complaining about them.
+
+  // _currentTrip should never be null (even though many of its members may be)
+  private static readonly _DEFAULT_TRIP_OPTIONS: TripOptions = {
+
+    map: App._mapService.map,
+    speed: Trip.DEFAULT_SPEED,
+    startCoord: new LatLng(0,0),
+    destCoord: null,
+    travelMode: Trip.TravelMode.CYCLE
+  };
+  private static readonly _DEFAULT_TRIP = new Trip(App._DEFAULT_TRIP_OPTIONS);
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX INIT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -46,7 +67,10 @@ class App {
 
       UI.init();
 
-      App.geoLocService.start();
+      App._currentTrip = App._DEFAULT_TRIP;
+      App._prevTrip = App._currentTrip.copy(); // weird, but we need it to exist
+
+      App._geoLocService.start();
     }); // GoogleMapsLoader.load
   } // _initServices
 
@@ -106,7 +130,7 @@ class App {
     App.routeService.fetchRoute();
   }
 
-  onDestMarkerDragEnd(event: google.maps.MouseEvent) {
+  static onDestMarkerDragEnd(event: google.maps.MouseEvent) {
 
     App.routeService.updateDestination(event);
     App.routeService.fetchRoute();
@@ -119,7 +143,7 @@ class App {
     }, MapService.MARKER_DRAG_TIMEOUT);
   } // onDestMarkerDragEnd
 
-  onDestMarkerTap(event) {
+  static onDestMarkerTap(event) {
     
     console.log("tap event: " + JSON.stringify(event));
     // TODO: open an info window with place info
@@ -190,45 +214,92 @@ class App {
     } // switch
   } // onMapStyleToggleButtonClick
 
-  onCyclingLayerToggleButtonClick(event) {
+  onCyclingLayerToggleButtonClick(event: Event) {
 
-    App.mapService.toggleBikeLayer(event);
+    App._mapService.toggleBikeLayer(event);
   }
 
-  onTravelModeToggleButtonClick(event) {
+  onTravelModeToggleButtonClick(event: Event) {
 
-    App.routeService.plannedTrip.travelMode = event.target.value; 
+    App._routeService.plannedTrip.travelMode = event.target.value; 
   }
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LIFECYCLE METHODS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   private static onDeviceReady() {
 
-    App.receivedEvent('deviceready');
+    App._receivedEvent('deviceready');
 
-    document.addEventListener("pause", App.onPause, false);
-    document.addEventListener("resume", App.onResume, false);
+    document.addEventListener("pause", App._onPause, false);
+    document.addEventListener("resume", App._onResume, false);
 
     App.initServices();
   } // onDeviceReady
 
-  private static onPause() {
+  private static _onPause() {
 
-    App.geoLocService.stop();
+    App._geoLocService.stop();
   }
 
-  private static onResume() {
+  private static _onResume() {
     
-    App.geoLocService.start();
+    App._geoLocService.start();
   }
 
   // Update DOM on a received event
-  private static receivedEvent(id: string) {
+  private static _receivedEvent(id: string) {
 
     // console.log('Received Event: ' + id);
   } // _receivedEvent
 
+    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX GETTERS & SETTERS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  static get currentPos(): LatLng {
+
+    return App._currentPos;
+  }
+
+  static set currentPos(newPos: LatLng) {
+
+    App._currentPos = newPos;
+  }
+
+  static get currentTrip(): Trip {
+
+    return App._currentTrip;
+  }
+
+  static set currentTrip(newTrip: Trip) {
+
+    App._currentTrip = newTrip;
+  }
+
+  static get prevTrip(): Trip {
+
+    return App._prevTrip;
+  }
+
+  static set prevTrip(newTrip: Trip) {
+
+    App._prevTrip = newTrip;
+  }
+
 } // App
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
 
 const App2 = {
 
@@ -445,6 +516,6 @@ const App2 = {
     // console.log('Received Event: ' + id);
   } // _receivedEvent
 
-}; // App
+}; // App2 */
 
 App.initialize();
