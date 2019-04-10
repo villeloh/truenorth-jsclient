@@ -1,27 +1,30 @@
 
 /**
- * For emulating the Google Maps LatLng format.
+ * For emulating the Google Maps LatLng format, with added, useful methods.
  */
 
-function LatLng(lat, lng) {
+export default class LatLng {
 
-  this.lat = lat;
-  this.lng = lng;
+  // immutable class; if a LatLng needs to be updated, it should be replaced with
+  // a new instance.
+  constructor(readonly lat: number, readonly lng: number) {
 
-  // 'extra' properties in the objects given to the Google Maps API are
-  // apparently not a problem.
-  this.toString = function() {
+    this.lat = lat;
+    this.lng = lng;
+  }
+
+  toString() {
 
     return `lat.: ${this.lat}, lng.: ${this.lng}`;
-  };
+  }
 
   // used in GeoLocService for determining if the map should recenter when the user moves
-  this.differenceFrom = function(anotherLatLng) {
+  differenceFrom(anotherLatLng: LatLng) {
 
     const absLatDiff = Math.abs(Math.abs(this.lat) - Math.abs(anotherLatLng.lat));
     const absLngDiff = Math.abs(Math.abs(this.lng) - Math.abs(anotherLatLng.lng));
 
     return Math.max(absLatDiff, absLngDiff);
-  };
+  }
 
 } // LatLng

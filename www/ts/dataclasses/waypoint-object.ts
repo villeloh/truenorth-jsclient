@@ -1,14 +1,18 @@
+import LatLng from './latng';
 
 /**
  * For storing the inner waypoint objects that are needed by the fetchFor method in route-service.js.
  */
 
-function WayPointObject(latLng) {
+export default class WayPointObject {
 
-  this.location = latLng;
+  constructor(readonly location: LatLng) {
+    
+  }
 
-  this.toString = function() {
+  toString() {
 
     return `WP Object: ( lat.: ${this.location.lat}, lng.: ${this.location.lng} )`;
   };
+  
 } // WayPointObject

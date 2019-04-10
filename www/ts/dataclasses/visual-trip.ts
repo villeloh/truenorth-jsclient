@@ -1,12 +1,13 @@
+import LatLng from "./latng";
 
 /**
  * A VisualTrip contains all the relevant info for displaying valid (already fetched) routes on the map.
  */
 
 // trips always start from the current position, so it's not necessary to have a start field here
-class VisualTrip {
+export default class VisualTrip {
 
-  constructor(routeFetchResult, destCoords, wayPointCoordsArray, distance, duration) {
+  constructor(routeFetchResult, destCoords: LatLng, wayPointCoordsArray, distance: number, duration: number) {
 
     // they're displayable quantities, only known after the route fetch completes, 
     // so it makes sense to have them here (rather than in PlannedTrip.js)

@@ -1,9 +1,8 @@
 
 /**
- * This is getting a bit too object-oriented, but due to some display issues with markers etc,
- * it's best to have a PlannedTrip object with 'planned' speed, destination, etc. Then Trip can be
- * a 'possible' trip (i.e., the route request was successful), ready to be rendered on the map
- * with only the info that's contained in it / given to it.
+ * Due to some display issues with markers etc, it's best to have a PlannedTrip object with 'planned' speed, 
+ * destination, etc. Then Trip can be a 'possible' trip (i.e., the route request was successful), 
+ * ready to be rendered on the map with only the info that's contained in it / given to it.
  */
 class PlannedTrip {
 

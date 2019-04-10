@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "outDir": "./www/built",
+        "allowJs": true,
+        "target": "es5",
+		"allowSyntheticDefaultImports": true,
+		"strictNullChecks": true,
+		"noImplicitThis": true,
+		"noImplicitAny": true,
+		"experimentalDecorators": true
+    },
+    "include": [
+        "./www/**/*.ts",
+		"typings/*.d.ts"
+    ],
+	"exclude": [
+		"node_modules",
+		"./www/built"
+	]
+}

@@ -3,9 +3,16 @@
  * For storing and fetching routes.
  */
 
+interface ISuccessCallback {
+  (result: google.maps.DirectionsResult, plannedTrip: PlannedTrip): void;
+}
+
 class RouteService {
 
-  constructor(onFetchSuccessCallback, onFetchFailureCallback) {
+  private onFetchSuccess: Function;
+  private onFetchFailure: Function;
+
+  constructor(onFetchSuccessCallback: ISuccessCallback, onFetchFailureCallback: Function) {
 
     this.onFetchSuccess = onFetchSuccessCallback;
     this.onFetchFailure = onFetchFailureCallback;
@@ -62,7 +69,7 @@ class RouteService {
       this.plannedTrip.clear(); // NOTE: do NOT set plannedTrip to null! it breaks the whole app!
     }
   
-    updateDestination = (event) => {
+    updateDestination = (event: google.maps.MouseEvent) => {
   
       const destCoords = this.latLngFromClickEvent(event);
       this.plannedTrip.destCoords = destCoords;

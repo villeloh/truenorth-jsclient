@@ -1,3 +1,4 @@
+
 /**
  * For adding elements to the custom UI. The UI logic is contained elsewhere, in the relevant files.
  */
@@ -25,7 +26,7 @@ const UI = {
     App.mapService.addUIControl(App.google.maps.ControlPosition.TOP_RIGHT, buttonHolderDiv);
   },
 
-  // called from App on each menu click, as due to some visibility issues the menu has to be recreated
+  // called from App on each menu button click, as due to some visibility issues the menu has to be recreated
   // from scratch with each click of the menu button
   addMenu: function() {
 

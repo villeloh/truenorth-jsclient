@@ -51,14 +51,14 @@ const Utils = {
   }, // formatDuration
 
   // takes a route object from a DirectionsService fetch result
-  distanceInKm: function(route) {
+  distanceInKm: function(route): number {
 
     let total = 0;
     for (let i = 0; i < route.legs.length; i++) {
 
       total += route.legs[i].distance.value;
     }
-    return (total / 1000).toFixed(1);
+    return parseFloat((total / 1000).toFixed(1));
   }, // distanceInKm
 
   // not being used atm, but keeping it in case it's needed later on

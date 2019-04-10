@@ -1,15 +1,15 @@
+import LatLng from './latng';
 
 /**
  * 'Class' that encapsulates the user's own position.
  */
 // NOTE: only one should ever exist, and it's to be updated, not replaced;
 // so I guess it could be an object/singleton, or a class with static methods.
-// TODO: update to class that takes a map argument
 class Position {
 
-  static _POS_MARKER_URL = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png';
+  private static _POS_MARKER_URL = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png';
 
-  constructor(latLng, googleMap) {
+  constructor(latLng: LatLng, googleMap) {
 
     this.googleMap = googleMap;
     
