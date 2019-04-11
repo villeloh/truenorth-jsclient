@@ -9,17 +9,15 @@ export default class LatLng {
   // a new instance.
   constructor(readonly lat: number, readonly lng: number) {
 
-    this.lat = lat;
-    this.lng = lng;
   }
 
-  toString() {
+  toString(): string {
 
     return `lat.: ${this.lat}, lng.: ${this.lng}`;
   }
 
   // used in GeoLocService for determining if the map should recenter when the user moves
-  differenceFrom(anotherLatLng: LatLng) {
+  differenceFrom(anotherLatLng: LatLng): number {
 
     const absLatDiff = Math.abs(Math.abs(this.lat) - Math.abs(anotherLatLng.lat));
     const absLngDiff = Math.abs(Math.abs(this.lng) - Math.abs(anotherLatLng.lng));

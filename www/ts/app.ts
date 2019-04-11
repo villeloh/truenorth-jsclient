@@ -1,8 +1,11 @@
+import Marker from './dataclasses/marker';
 import { Nullable } from './misc/types';
 import { Trip, TripOptions } from './dataclasses/trip';
 import LatLng from './dataclasses/latng';
 import VisualTrip from './dataclasses/visual-trip';
 import GeoLocService from './services/geoloc-service';
+import RouteService from './services/route-service';
+import Utils from './misc/utils';
 
 // not needed atm it seems.
 // to be able to use the google maps types in typescript
@@ -17,19 +20,36 @@ import GeoLocService from './services/geoloc-service';
 // to be able to use the IIFE-enabled thingy... I'm sure there's a more proper way to do this, but it works for now.
 declare const GoogleMapsLoader: any;
 
+enum TravelMode {
+
+  WALK = 'WALKING',
+  CYCLE = 'BICYCLING'
+}
+
 // app needs to be globally accessible (otherwise I'd have to pass it to almost everything, which is pointless & hopelessly wordy),
 // so I'm making most things in it static.
 export default class App {
 
-  // periodically updated by the geoLocService (via get & set below) 
+  static get MAX_SPEED() { return 50; } // km/h  
+  static get DEFAULT_SPEED() { return 15; } // km/h
+
+  // speed and travel mode are not parts of Trip because they exist regardless if there's a current trip or not
+  private static _speed: number; // km/h
+  private static _travelMode: TravelMode; // BICYCLING / WALKING
+
+  static readonly TravelMode = TravelMode;
+
+  private static readonly _mapService: MapService = new MapService();
+  private static readonly _routeService: RouteService = new RouteService(App.onRouteFetchSuccess, App.onRouteFetchFailure);
+
+  // periodically updated by the geoLocService 
   private static _currentPos: LatLng = new LatLng(0,0);
+  private static _posMarker: Marker = new Marker(App._mapService.map, App._currentPos, "", false);
+
+  private static readonly _geoLocService: GeoLocService = new GeoLocService();
 
   private static _prevTrip: Trip;
   private static _currentTrip: Trip;
-
-  private static readonly _mapService: MapService = new MapService();
-  private static readonly _geoLocService: GeoLocService = new GeoLocService();
-  private static readonly _routeService: RouteService = new RouteService(App.onRouteFetchSuccess, App.onRouteFetchFailure);
 
   static google: any | null; // I'm not sure if this is even needed. the loader loads the API and the types
   // ensure that the correct calls can be made without typescript complaining about them.
@@ -38,10 +58,8 @@ export default class App {
   private static readonly _DEFAULT_TRIP_OPTIONS: TripOptions = {
 
     map: App._mapService.map,
-    speed: Trip.DEFAULT_SPEED,
     startCoord: new LatLng(0,0),
-    destCoord: null,
-    travelMode: Trip.TravelMode.CYCLE
+    destCoord: null
   };
   private static readonly _DEFAULT_TRIP = new Trip(App._DEFAULT_TRIP_OPTIONS);
 
@@ -115,11 +133,21 @@ export default class App {
 
   // -------------------------------- MAP TAPS & DRAGS -------------------------------------------------------------------
 
-  onGoogleMapLongPress(event: google.maps.MouseEvent) {
+  static onGoogleMapLongPress(event: google.maps.MouseEvent) {
 
-    App.routeService.updateDestination(event);
-    App.routeService.fetchRoute();
-  }
+    const destCoord: LatLng = Utils.latLngFromClickEvent(event);
+
+    // on first click, or when the map has been cleared
+    if (App.noCurrentTrip) {
+
+      App.currentTrip = Trip.makeTrip(destCoord);
+    } else {
+
+      App.currentTrip.destCoord = destCoord;
+    }
+
+    App.routeService.fetchRoute(App.currentTrip);
+  } // onGoogleMapLongPress
 
   onGoogleMapDoubleClick(event: google.maps.MouseEvent) {
 
@@ -214,14 +242,23 @@ export default class App {
     } // switch
   } // onMapStyleToggleButtonClick
 
-  onCyclingLayerToggleButtonClick(event: Event) {
+  onCyclingLayerToggleButtonClick(event: any) {
 
     App._mapService.toggleBikeLayer(event);
   }
 
-  onTravelModeToggleButtonClick(event: Event) {
+  onTravelModeToggleButtonClick(event: any) {
 
     App._routeService.plannedTrip.travelMode = event.target.value; 
+  }
+
+  // -------------------------------- GEOLOC --------------------------------------------------------------------------
+
+  // called by GeoLocService each time it gets a new location
+  static onGeoLocSuccess(newPos: LatLng) {
+
+    App._currentPos = newPos;
+    App._posMarker.moveTo(newPos);
   }
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LIFECYCLE METHODS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -282,6 +319,46 @@ export default class App {
   static set prevTrip(newTrip: Trip) {
 
     App._prevTrip = newTrip;
+  }
+
+  static get mapService(): MapService {
+
+    return App._mapService;
+  }
+
+  static get routeService(): RouteService {
+
+    return App._routeService;
+  }
+
+  static get speed(): number {
+
+    return App._speed;
+  }
+
+  static set speed(newSpeed: number) {
+
+    App._speed = newSpeed;
+  }
+
+  static get travelMode(): TravelMode {
+
+    return App._travelMode;
+  }
+
+  static set travelMode(newMode: TravelMode) {
+
+    App._travelMode = newMode;
+  }
+
+  static get posMarker(): Marker {
+
+    return App._posMarker;
+  }
+
+  static get noCurrentTrip() {
+
+    return App._currentTrip === null;
   }
 
 } // App

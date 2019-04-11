@@ -1,13 +1,15 @@
+import LatLng from '../dataclasses/latng';
+
 /**
  * For utility functions that don't really fit anywhere else.
  */
 
 // could be a class with static methods instead; i'm not sure which is superior 
 // from a performance pov (probably doesn't matter either way).
-const Utils = {
+export default class Utils {
 
   // used for checking the user-inputted speed in the menu's speed box
-  isValidSpeed: function(speedInKmH) {
+  static isValidSpeed(speedInKmH: any): boolean {
 
     // values of less than 1 lead to a great number of digits in the duration display
     if (speedInKmH < 1 || speedInKmH === "" || speedInKmH === null || speedInKmH === undefined) { 
@@ -15,11 +17,11 @@ const Utils = {
     } else {
       return true;
     }
-  }, // isValidSpeed
+  } // isValidSpeed
   
-  calcDuration: function(distance, speed) {
+  static calcDuration(distance: number, speed: number): number {
 
-    let duraInDecimHours;
+    let duraInDecimHours: number;
 
     if (Utils.isValidSpeed(speed)) {
 
@@ -32,9 +34,9 @@ const Utils = {
   }, // calcDuration
 
   // convert the duration to a more readable format (hours + minutes)
-  formatDuration: function(duraInDecimHours, fallBackText) {
+  static formatDuration(duraInDecimHours: number, fallBackText: string): string {
 
-    let text;
+    let text: string;
 
     // when arriving, the value should always be a Number (invalid values get converted to 0 beforehand)
     if (duraInDecimHours === 0) {
@@ -48,10 +50,10 @@ const Utils = {
       text = `${hours} h ${minutes} m`;
     }
     return text;
-  }, // formatDuration
+  } // formatDuration
 
   // takes a route object from a DirectionsService fetch result
-  distanceInKm: function(route): number {
+  static distanceInKm(route: google.maps.DirectionsRoute): number {
 
     let total = 0;
     for (let i = 0; i < route.legs.length; i++) {
@@ -59,7 +61,12 @@ const Utils = {
       total += route.legs[i].distance.value;
     }
     return parseFloat((total / 1000).toFixed(1));
-  }, // distanceInKm
+  } // distanceInKm
+
+  static latLngFromClickEvent(event: any): LatLng {
+  
+    return new LatLng(event.latLng.lat(), event.latLng.lng());
+  }
 
   // not being used atm, but keeping it in case it's needed later on
   /* decodePolyPoints: function(encodedPoints) {
@@ -68,4 +75,4 @@ const Utils = {
     return App.google.maps.geometry.encoding.decodePath(encodedPoints);
   } */
 
-}; // Utils
+} // Utils

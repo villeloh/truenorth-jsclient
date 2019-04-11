@@ -52,20 +52,20 @@ export default class Marker {
 
   // we need to make a new marker with each move, as otherwise it 
   // refuses to render.
-  // NOTE: not used atm, as all markers get remade with each 
-  // route change. may use it in the future.
-/* moveTo(newPos) {
+  moveTo(newPos: LatLng) {
 
     this.clearFromMap(); // erase the old marker
 
-    this.googleMapMarker = new App.google.maps.Marker({
+    const options = {
 
       position: newPos,
-      map: this.googleMap,
-      draggable: this.isDraggable,
-      label: this.label,
+      map: this._map,
+      draggable: this._isDraggable,
+      label: this._label,
       crossOnDrag: false
-    });
-  } // moveTo */
+    };
+
+    this._googleMapMarker = new google.maps.Marker(options);
+  } // moveTo
 
 } // Marker

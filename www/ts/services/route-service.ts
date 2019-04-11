@@ -1,3 +1,5 @@
+import { Nullable } from './../misc/types';
+import { Trip } from './../dataclasses/trip';
 
 /**
  * For storing and fetching routes.
@@ -7,38 +9,42 @@ interface ISuccessCallback {
   (result: google.maps.DirectionsResult, plannedTrip: PlannedTrip): void;
 }
 
-class RouteService {
+interface IFailureCallback {
+  (): void;
+}
 
-  private onFetchSuccess: Function;
-  private onFetchFailure: Function;
+export default class RouteService {
 
-  constructor(onFetchSuccessCallback: ISuccessCallback, onFetchFailureCallback: Function) {
+  private readonly _directionsService: google.maps.DirectionsService;
 
-    this.onFetchSuccess = onFetchSuccessCallback;
-    this.onFetchFailure = onFetchFailureCallback;
+  constructor(private onFetchSuccessCallback: ISuccessCallback, private onFetchFailureCallback: IFailureCallback) {
 
-    this._directionsService = new App.google.maps.DirectionsService();
-
+    this._directionsService = new google.maps.DirectionsService();
+/*
     this.prevPlannedTrip = null;
-    this.plannedTrip = new PlannedTrip(App.mapService.map); // ideally, take it from localStorage
+    this.plannedTrip = new PlannedTrip(App.mapService.map); // ideally, take it from localStorage */
   } // constructor
 
-  fetchRoute = () => {
+  // ideally, we'd return the altered trip (or null) from this method, but its async nature
+  // makes this tricky. perhaps move to that approach later?
+  fetchRoute(trip: Trip) {
 
-    // I don't understand why the context is lost in the route fetch callbacks...
+    if (trip.status !== Trip.Status.PREFETCH) return;
+
+    // Somehow the context is lost in the route fetch callbacks...
     // this is the only convenient workaround.
     const that = this;
 
-    const destCoords = this.plannedTrip.destCoords;
+    const destCoord = trip.destCoord;
 
     // null destCoords sometimes reach this method (after clicking on water twice or more in a row).
-    // for now, it's an unavoidable side effect of the way the plannedTrip state is managed.
-    if (destCoords === null) return; 
+    // for now, it's an unavoidable side effect of the way the trip state is managed.
+    if (destCoord === null) return;
 
     const request = {
 
-      origin: this.plannedTrip.getPosCoords(),
-      destination: destCoords,
+      origin: trip.startCoord,
+      destination: destCoord,
       travelMode: this.plannedTrip.travelMode, // comes from the travel mode toggle button
       optimizeWaypoints: false,
       avoidHighways: true,
@@ -50,12 +56,12 @@ class RouteService {
       if (status === 'OK') {
 
         // in practice, App's onRouteFetchSuccess
-        that.onFetchSuccess(result, that.plannedTrip);
+        that.onFetchSuccessCallback(result, that.plannedTrip);
 
       } else {
 
         console.log("Error fetching route: " + status);
-        that.onFetchFailure();
+        that.onFetchFailureCallback();
       }
     }); // this._dirService.route
   } // fetchRoute
@@ -92,11 +98,6 @@ class RouteService {
       const index = event.wpIndex;
       this.plannedTrip.removeWayPointObject(index);
     } // deleteWayPoint
-  
-    latLngFromClickEvent = (event) => {
-  
-      return new LatLng(event.latLng.lat(), event.latLng.lng());
-    }
   
     get plannedTrip() {
   

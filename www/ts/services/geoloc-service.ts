@@ -1,4 +1,3 @@
-import { Nullable } from './../misc/types';
 import LatLng from '../dataclasses/latng';
 import App from '../app';
 
@@ -10,7 +9,7 @@ import App from '../app';
 
 export default class GeoLocService {
 
-  private static readonly _CAMERA_MOVE_THRESHOLD = 0.001;
+  private static readonly _CAMERA_MOVE_THRESHOLD = 0.001; // seems to work ok; could be fine-tuned
   private static readonly _MAX_AGE = 3000;
   private static readonly _TIME_OUT = 5000;
   private static readonly _OPTIONS = { 
@@ -49,25 +48,26 @@ export default class GeoLocService {
 
   _onSuccess(pos: Position) {
 
-    const newCoords = new LatLng(pos.coords.latitude, pos.coords.longitude);
-    const oldCoords = App.currentTrip.getPosCoords(); // TODO: update this
+    const newCoord = new LatLng(pos.coords.latitude, pos.coords.longitude);
+    const oldCoord = App.currentPos;
     
-    App.routeService.plannedTrip.updatePosition(newCoords);
+    App.onGeoLocSuccess(newCoord); // update _currentPos in App
 
-    if (this._diffIsOverCameraMoveThreshold(oldCoords, newCoords)) {
+    if (this._diffIsOverCameraMoveThreshold(oldCoord, newCoord)) {
 
-      App.mapService.reCenter(newCoords); 
+      App.mapService.reCenter(newCoord); 
     }
   } // _onSuccess
 
-  _onError(error) {
+  // i'm not sure of its actual type
+  _onError(error: any) {
       
     console.log("GeoLoc error! Code: " + error.code);
     console.log("GeoLoc error! Msg: " + error.message);
   }
 
   // make the camera auto-follow the user only if the change in position is significant enough (i.e., they're cycling).
-  _diffIsOverCameraMoveThreshold(oldPos, newPos) {
+  _diffIsOverCameraMoveThreshold(oldPos: LatLng, newPos: LatLng) {
 
     const diff = oldPos.differenceFrom(newPos);
 

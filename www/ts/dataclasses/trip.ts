@@ -9,12 +9,6 @@ import Marker from './marker';
  * Replaces PlannedTrip and VisualTrip. With a bit of refactoring, only one Trip class is needed.
  */
 
-enum TravelMode {
-
-  WALK = 'WALKING',
-  CYCLE = 'BICYCLING'
-}
-
 enum Status {
 
   PREFETCH,
@@ -26,21 +20,17 @@ enum Status {
 export interface TripOptions {
 
     readonly map: GoogleMap,
-    readonly speed: number,
     readonly startCoord: LatLng,
     readonly destCoord: Nullable<LatLng>, // it can be null in certain situations, mainly when clicking on water multiple times in a row
-    readonly wayPointObjects?: Array<WayPointObject>, // not all trips have waypoints
-    readonly travelMode: TravelMode
+    readonly wayPointObjects?: Array<WayPointObject> // not all trips have waypoints
 } // TripOptions
 
 export class Trip {
 
   private _map: GoogleMap;
-  private _speed: number;
   private _startCoord: LatLng;
   private _destCoord: Nullable<LatLng>;
   private _wayPointObjects: Array<WayPointObject>;
-  private _travelMode: TravelMode;
 
   // these fields can only be set after the route fetch returns successfully
   private _distance: Nullable<number>; // km/h
@@ -52,21 +42,15 @@ export class Trip {
   private _status: Status;
 
   // a workaround to include enum in a class. wtf, TypeScript?
-  static readonly TravelMode = TravelMode;
   static readonly Status = Status;
-
-  static get MAX_SPEED() { return 50; } // km/h  
-  static get DEFAULT_SPEED() { return 15; } // km/h
 
   constructor(options: TripOptions) {
 
     // object destructuring should be used here, but it doesn't want to play ball with 'this'
     this._map = options.map;
-    this._speed = options.speed;
     this._startCoord = options.startCoord
     this._destCoord = options.destCoord;
     this._wayPointObjects = options.wayPointObjects || []; // typescript would allow undefined here; seems it's not infallible?
-    this._travelMode = options.travelMode; // no need for a default here, as the travel mode comes from the ui widget
     this._status = Status.PREFETCH;
 
     this._distance = null;
@@ -77,6 +61,17 @@ export class Trip {
     // NOTE: the position marker is managed separately, as it doesn't depend on the trip in any way (it's always visible)
   } // constructor
 
+  // convenience factory method for use in App
+  static makeTrip(destCoord: LatLng): Trip {
+
+    const options: TripOptions = {
+      map: App.mapService.map,
+      startCoord: App.currentPos,
+      destCoord: destCoord,
+      wayPointObjects: App.currentTrip.wayPointObjects || []
+    }
+    return new Trip(options);
+  } // makeTrip
 
   // shows the Trip on the map
   visualize() {
@@ -104,7 +99,6 @@ export class Trip {
     const options: TripOptions = {
 
       map: this._map,
-      speed: this._speed,
       startCoord: this._startCoord,
       destCoord: this._destCoord,
       wayPointObjects: [],
@@ -127,26 +121,6 @@ export class Trip {
   set startCoord(newCoord: LatLng) {
 
     this._startCoord = newCoord;
-  }
-
-  get speed(): number {
-
-    return this._speed;
-  }
-
-  set speed(newSpeed: number) {
-
-    this._speed = newSpeed;
-  }
-
-  get travelMode(): TravelMode {
-
-    return this._travelMode;
-  }
-
-  set travelMode(newMode) {
-
-    this._travelMode = newMode;
   }
 
   get destCoord(): Nullable<LatLng> {
