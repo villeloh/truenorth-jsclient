@@ -1,4 +1,4 @@
-define(["require", "exports", "../misc/click-handler", "../components/cycling-layer-toggle-button", "../dataclasses/latng", "../app"], function (require, exports, click_handler_1, cycling_layer_toggle_button_1, latng_1, app_1) {
+define(["require", "exports", "../misc/click-handler", "./route-renderer", "../components/cycling-layer-toggle-button", "../dataclasses/latlng", "../app"], function (require, exports, click_handler_1, route_renderer_1, cycling_layer_toggle_button_1, latlng_1, app_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var MapService = (function () {
@@ -21,7 +21,7 @@ define(["require", "exports", "../misc/click-handler", "../components/cycling-la
             };
             this.mapHolderDiv = document.getElementById('map');
             this._map = new google.maps.Map(this.mapHolderDiv, mapOptions);
-            this._routeRenderer = new RouteRenderer(this._map);
+            this._routeRenderer = new route_renderer_1.default(this._map);
             this._setListeners();
         }
         MapService.prototype.reCenter = function (newCoord) {
@@ -109,7 +109,7 @@ define(["require", "exports", "../misc/click-handler", "../components/cycling-la
         MapService.MARKER_DRAG_TIMEOUT = 100;
         MapService._DEFAULT_ZOOM = 8;
         MapService._MIN_ZOOM = 5;
-        MapService._INITIAL_CENTER_COORDS = new latng_1.default(0, 0);
+        MapService._INITIAL_CENTER_COORDS = new latlng_1.default(0, 0);
         return MapService;
     }());
     exports.default = MapService;

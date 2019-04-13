@@ -1,7 +1,8 @@
 import { GoogleMap } from './../misc/types';
 import ClickHandler from '../misc/click-handler';
+import RouteRenderer from './route-renderer';
 import CyclingLayerToggleButton from '../components/cycling-layer-toggle-button';
-import LatLng from '../dataclasses/latng';
+import LatLng from '../dataclasses/latlng';
 import App from '../app';
 
 /**

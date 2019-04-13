@@ -4,7 +4,7 @@
  * NOTE: perhaps it should be called 'Renderer', instead, and have different rendering options?
  */
 
-class RouteRenderer {
+export default class RouteRenderer {
 
   private static readonly _ROUTE_COLOR = '#2B7CFF'; // darkish blue
 

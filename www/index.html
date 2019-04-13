@@ -25,43 +25,48 @@
     <meta charset="utf-8">
     <link rel="stylesheet" type="text/css" href="css/app.css">
     <title>TrueNorth</title>
+    <script>
+      // these need to be defined, or module loading will fail SILENTLY (ffs -.-)
+      module = {exports:{}}; exports = {};
+      window.require = function(name) { return window[name]; };
+    </script>
   </head>
   <body>
     <div class="app">
       <div id="map">
       </div>
     </div>
-    <script data-main="built/app" src="ts/require.js"></script>
+    <script data-main="scripts/app" src="ts/require.js"></script>
     <script type="text/javascript" src="cordova.js"></script>
 
     <script type="text/javascript" src="ts/google-api/google.js"></script>
 
-    <script type="text/javascript" src="built/dataclasses/latng.js"></script>
-    <script type="text/javascript" src="built/dataclasses/waypoint-object.js"></script>
-    <script type="text/javascript" src="built/dataclasses/marker.js"></script>
-    <script type="text/javascript" src="built/dataclasses/trip.js"></script>
+    <script type="text/javascript" src="scripts/dataclasses/latlng.js"></script>
+    <script type="text/javascript" src="scripts/dataclasses/waypoint-object.js"></script>
+    <script type="text/javascript" src="scripts/dataclasses/marker.js"></script>
+    <script type="text/javascript" src="scripts/dataclasses/trip.js"></script>
 
-    <script type="text/javascript" src="built/misc/env.js"></script>
-    <script type="text/javascript" src="built/misc/click-handler.js"></script>
-    <script type="text/javascript" src="built/misc/utils.js"></script>
-    <script type="text/javascript" src="built/misc/ui.js"></script>
-    <script type="text/javascript" src="built/misc/types.js"></script>
+    <script type="text/javascript" src="scripts/misc/env.js"></script>
+    <script type="text/javascript" src="scripts/misc/click-handler.js"></script>
+    <script type="text/javascript" src="scripts/misc/utils.js"></script>
+    <script type="text/javascript" src="scripts/misc/ui.js"></script>
+    <script type="text/javascript" src="scripts/misc/types.js"></script>
 
-    <script type="text/javascript" src="built/components/location-button.js"></script>
-    <script type="text/javascript" src="built/components/map-style-toggle-button.js"></script>
-    <script type="text/javascript" src="built/components/cycling-layer-toggle-button.js"></script>
-    <script type="text/javascript" src="built/components/travel-mode-toggle-button.js"></script>
-    <script type="text/javascript" src="built/components/menu.js"></script>
-    <script type="text/javascript" src="built/components/menu-button.js"></script>
-    <script type="text/javascript" src="built/components/speed-input.js"></script>
-    <script type="text/javascript" src="built/components/info-header.js"></script>
-    <script type="text/javascript" src="built/components/clear-button.js"></script>
+    <script type="text/javascript" src="scripts/components/location-button.js"></script>
+    <script type="text/javascript" src="scripts/components/map-style-toggle-button.js"></script>
+    <script type="text/javascript" src="scripts/components/cycling-layer-toggle-button.js"></script>
+    <script type="text/javascript" src="scripts/components/travel-mode-toggle-button.js"></script>
+    <script type="text/javascript" src="scripts/components/menu.js"></script>
+    <script type="text/javascript" src="scripts/components/menu-button.js"></script>
+    <script type="text/javascript" src="scripts/components/speed-input.js"></script>
+    <script type="text/javascript" src="scripts/components/info-header.js"></script>
+    <script type="text/javascript" src="scripts/components/clear-button.js"></script>
 
-    <script type="text/javascript" src="built/services/geoloc-service.js"></script>
-    <script type="text/javascript" src="built/services/route-service.js"></script>
-    <script type="text/javascript" src="built/services/route-renderer.js"></script>
-    <script type="text/javascript" src="built/services/map-service.js"></script>
+    <script type="text/javascript" src="scripts/services/geoloc-service.js"></script>
+    <script type="text/javascript" src="scripts/services/route-service.js"></script>
+    <script type="text/javascript" src="scripts/services/route-renderer.js"></script>
+    <script type="text/javascript" src="scripts/services/map-service.js"></script>
 
-    <script type="text/javascript" src="built/app.js"></script>
+    <script type="text/javascript" src="scripts/app.js"></script>
   </body>
 </html>

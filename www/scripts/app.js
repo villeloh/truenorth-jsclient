@@ -1,4 +1,4 @@
-define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./dataclasses/latng", "./services/map-service", "./services/geoloc-service", "./services/route-service", "./misc/utils", "./misc/env", "./components/menu", "./components/info-header", "./components/map-style-toggle-button", "./misc/ui"], function (require, exports, marker_1, trip_1, latng_1, map_service_1, geoloc_service_1, route_service_1, utils_1, env_1, menu_1, info_header_1, map_style_toggle_button_1, ui_1) {
+define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./dataclasses/latlng", "./services/map-service", "./services/geoloc-service", "./services/route-service", "./misc/utils", "./misc/env", "./components/menu", "./components/info-header", "./components/map-style-toggle-button", "./misc/ui"], function (require, exports, marker_1, trip_1, latlng_1, map_service_1, geoloc_service_1, route_service_1, utils_1, env_1, menu_1, info_header_1, map_style_toggle_button_1, ui_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var TravelMode;
@@ -14,7 +14,9 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             document.addEventListener('deviceready', App.onDeviceReady.bind(App), false);
         }
     };
-    AppContainer.initialize();
+    window.onload = function () {
+        AppContainer.initialize();
+    };
     var App = (function () {
         function App() {
         }
@@ -248,12 +250,12 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         });
         App._mapService = new map_service_1.default();
         App._routeService = new route_service_1.default(App.onRouteFetchSuccess, App.onRouteFetchFailure);
-        App._currentPos = new latng_1.default(0, 0);
+        App._currentPos = new latlng_1.default(0, 0);
         App._posMarker = new marker_1.default(App._mapService.map, App._currentPos, "", false);
         App._geoLocService = new geoloc_service_1.default();
         App._DEFAULT_TRIP_OPTIONS = {
             map: App._mapService.map,
-            startCoord: new latng_1.default(0, 0),
+            startCoord: new latlng_1.default(0, 0),
             destCoord: null,
             status: trip_1.Trip.Status.PREFETCH
         };

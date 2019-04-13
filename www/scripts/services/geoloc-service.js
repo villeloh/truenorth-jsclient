@@ -1,4 +1,4 @@
-define(["require", "exports", "../dataclasses/latng", "../app"], function (require, exports, latng_1, app_1) {
+define(["require", "exports", "../dataclasses/latlng", "../app"], function (require, exports, latlng_1, app_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var GeoLocService = (function () {
@@ -15,7 +15,7 @@ define(["require", "exports", "../dataclasses/latng", "../app"], function (requi
             navigator.geolocation.clearWatch(this._locTracker);
         };
         GeoLocService.prototype._onSuccess = function (pos) {
-            var newCoord = new latng_1.default(pos.coords.latitude, pos.coords.longitude);
+            var newCoord = new latlng_1.default(pos.coords.latitude, pos.coords.longitude);
             var oldCoord = app_1.default.currentPos;
             app_1.default.onGeoLocSuccess(newCoord);
             if (this._diffIsOverCameraMoveThreshold(oldCoord, newCoord)) {

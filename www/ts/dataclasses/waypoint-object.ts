@@ -1,4 +1,4 @@
-import LatLng from './latng';
+import LatLng from './latlng';
 
 /**
  * For storing the inner waypoint objects that are needed by the fetchRoute method in RouteService.

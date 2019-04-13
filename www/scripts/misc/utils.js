@@ -1,4 +1,4 @@
-define(["require", "exports", "../dataclasses/latng"], function (require, exports, latng_1) {
+define(["require", "exports", "../dataclasses/latlng"], function (require, exports, latlng_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Utils = (function () {
@@ -43,7 +43,7 @@ define(["require", "exports", "../dataclasses/latng"], function (require, export
             return parseFloat((total / 1000).toFixed(1));
         };
         Utils.latLngFromClickEvent = function (event) {
-            return new latng_1.default(event.latLng.lat(), event.latLng.lng());
+            return new latlng_1.default(event.latLng.lat(), event.latLng.lng());
         };
         return Utils;
     }());

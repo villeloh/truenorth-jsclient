@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "outDir": "./www/built",
+        "outDir": "./www/scripts",
         "allowJs": true,
         "target": "es5",
 		"module": "amd",
@@ -12,6 +12,7 @@
 		"experimentalDecorators": true,
 		"removeComments": true,
 		"suppressImplicitAnyIndexErrors": true,
+		"forceConsistentCasingInFileNames": true,
 		"lib": ["es2015", "dom"]
     },
     "include": [
@@ -20,6 +21,6 @@
     ],
 	"exclude": [
 		"node_modules",
-		"./www/built"
+		"./www/scripts"
 	]
 }

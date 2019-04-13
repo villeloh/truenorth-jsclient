@@ -1,6 +1,6 @@
 import Marker from './dataclasses/marker';
 import { Trip, TripOptions } from './dataclasses/trip';
-import LatLng from './dataclasses/latng';
+import LatLng from './dataclasses/latlng';
 import MapService from './services/map-service';
 import GeoLocService from './services/geoloc-service';
 import RouteService from './services/route-service';
@@ -46,7 +46,10 @@ const AppContainer = {
   }
 };
 
-AppContainer.initialize();
+window.onload = function () {
+  
+  AppContainer.initialize();
+}
 
 // app needs to be globally accessible (otherwise I'd have to pass it to almost everything, which is pointless & hopelessly wordy),
 // so I'm making all things in it static.

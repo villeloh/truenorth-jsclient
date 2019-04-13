@@ -1,4 +1,4 @@
-import LatLng from '../dataclasses/latng';
+import LatLng from '../dataclasses/latlng';
 
 /**
  * For utility functions that don't really fit anywhere else.

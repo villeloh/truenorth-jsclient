@@ -1,7 +1,7 @@
 import { Nullable, GoogleMap } from './../misc/types';
 import { TripOptions } from './trip';
 import App from '../app'; // this doesn't feel right... but we need access to it
-import LatLng from './latng';
+import LatLng from './latlng';
 import WayPointObject from './waypoint-object';
 import Marker from './marker';
 

@@ -1,5 +1,5 @@
 import { GoogleMap } from './../misc/types';
-import LatLng from './latng';
+import LatLng from './latlng';
 import App from '../app';
 
 /**

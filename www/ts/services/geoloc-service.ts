@@ -1,4 +1,4 @@
-import LatLng from '../dataclasses/latng';
+import LatLng from '../dataclasses/latlng';
 import App from '../app';
 
 /**
