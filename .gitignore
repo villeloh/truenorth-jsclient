@@ -1,6 +1,6 @@
 
 # Make-shift '.env file' for PERSONAL use
-env.js
+env.ts
 
 # Dependency directories
 node_modules/
