@@ -16,3 +16,5 @@ const LocationButton = {
   }
   
 }; // LocationButton
+
+export default LocationButton;

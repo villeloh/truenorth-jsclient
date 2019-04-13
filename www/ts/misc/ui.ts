@@ -1,4 +1,11 @@
 
+import App from '../app';
+import MenuButton from '../components/menu-button';
+import Menu from '../components/menu';
+import LocationButton from '../components/location-button';
+import InfoHeader from '../components/info-header';
+import ClearButton from '../components/clear-button';
+
 /**
  * For adding elements to the custom UI. The UI logic is contained elsewhere, in the relevant files.
  */
@@ -7,16 +14,16 @@ const UI = {
 
   mapService: null,
 
-  init: function() {
+  init: function(): void {
 
     this._addLocationButton();
     this._addMenuButton();
     // this._addMenu(); // added from GoogleMap now, due to some issues with menu visibility
     this._addInfoHeader();
     this._addClearButton();
-  },
+  }, // init
 
-  _addMenuButton: function() {
+  _addMenuButton: function(): void {
 
     const buttonHolderDiv = document.createElement('div');
     // buttonHolderDiv.id = MenuButton.DIV_ID; // it seems like it can just be an invisible holder, so no id is needed
@@ -28,7 +35,7 @@ const UI = {
 
   // called from App on each menu button click, as due to some visibility issues the menu has to be recreated
   // from scratch with each click of the menu button
-  addMenu: function() {
+  addMenu: function(): void {
 
     const menuHolderDiv = document.createElement('div');
     menuHolderDiv.id = Menu.DIV_ID;
@@ -46,7 +53,7 @@ const UI = {
   }, // _addMenu
 
   // adds a custom ui button for recentering the map at the user's location
-  _addLocationButton: function() {
+  _addLocationButton: function(): void {
 
     const buttonHolderDiv = document.createElement('div');
     LocationButton.addTo(buttonHolderDiv);
@@ -55,7 +62,7 @@ const UI = {
     App.mapService.addUIControl(App.google.maps.ControlPosition.RIGHT_BOTTOM, buttonHolderDiv);
   },
 
-  _addClearButton: function() {
+  _addClearButton: function(): void {
 
     const buttonHolderDiv = document.createElement('div');
     buttonHolderDiv.style.margin = '2.5%';
@@ -64,7 +71,7 @@ const UI = {
     App.mapService.addUIControl(App.google.maps.ControlPosition.TOP_LEFT, buttonHolderDiv);
   },
 
-  _addInfoHeader: function() {
+  _addInfoHeader: function(): void {
 
     const holderDiv = document.createElement('div');
     holderDiv.style.width = '65%';
@@ -73,13 +80,15 @@ const UI = {
     InfoHeader.addTo(holderDiv);
 
     App.mapService.addUIControl(App.google.maps.ControlPosition.TOP_CENTER, holderDiv);
-  },
+  }, // _addInfoHeader
 
-  removeElement: function(elementId) {
+  removeElement: function(elementId: string): void {
 
     // Removes an element from the document
     const element = document.getElementById(elementId);
-    element.parentNode.removeChild(element);
+    element!.parentNode!.removeChild(element!);
   }
 
 }; // UI
+
+export default UI;

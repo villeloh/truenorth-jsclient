@@ -13,10 +13,12 @@ const TravelModeToggleButton = {
 
     parentDiv.innerHTML = `<div id=${TravelModeToggleButton.OUTER_DIV_ID}>
     <select id=${TravelModeToggleButton.SELECT_ID} onchange="App.onTravelModeToggleButtonClick(event)">
-      <option value=${PlannedTrip.CYCLE_MODE}>cycle</option>
-      <option value=${PlannedTrip.WALK_MODE}>walk</option>
+      <option value=${App.TravelMode.BICYCLING}>cycle</option>
+      <option value=${App.TravelMode.WALKING}>walk</option>
     </select>
     </div>`;
   } // addTo
   
 }; // TravelModeToggleButton
+
+export default TravelModeToggleButton;

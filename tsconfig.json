@@ -3,6 +3,7 @@
         "outDir": "./www/built",
         "allowJs": true,
         "target": "es5",
+		"module": "amd",
 		"allowSyntheticDefaultImports": true,
 		"strictNullChecks": true,
 		"noImplicitReturns": true,
@@ -14,7 +15,7 @@
 		"lib": ["es2015", "dom"]
     },
     "include": [
-        "./www/**/*.ts",
+        "./www/**/*",
 		"typings/*.d.ts"
     ],
 	"exclude": [

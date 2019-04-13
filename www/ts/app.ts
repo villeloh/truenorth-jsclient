@@ -1,11 +1,18 @@
 import Marker from './dataclasses/marker';
-import { Nullable } from './misc/types';
 import { Trip, TripOptions } from './dataclasses/trip';
 import LatLng from './dataclasses/latng';
-import VisualTrip from './dataclasses/visual-trip';
+import MapService from './services/map-service';
 import GeoLocService from './services/geoloc-service';
 import RouteService from './services/route-service';
 import Utils from './misc/utils';
+import Env from './misc/env';
+import Menu from './components/menu'; // TODO: combine the UI elements in one module, in order to have a more concise import
+import InfoHeader from './components/info-header';
+import MapStyleToggleButton from './components/map-style-toggle-button';
+import UI from './misc/ui';
+
+// to be able to use the IIFE-enabled thingy... I'm sure there's a more proper way to do this, but it works for now.
+declare const GoogleMapsLoader: any;
 
 // not needed atm it seems.
 // to be able to use the google maps types in typescript
@@ -17,27 +24,46 @@ import Utils from './misc/utils';
  * @author Ville Lohkovuori (2019)
  */
 
-// to be able to use the IIFE-enabled thingy... I'm sure there's a more proper way to do this, but it works for now.
-declare const GoogleMapsLoader: any;
-
+// even though only the first two modes are used, typescript complains if we fail
+// to include all of them.
 enum TravelMode {
 
-  WALK = 'WALKING',
-  CYCLE = 'BICYCLING'
+  WALKING = google.maps.TravelMode.WALKING,
+  BICYCLING = google.maps.TravelMode.BICYCLING,
+  DRIVING = google.maps.TravelMode.DRIVING,
+  TRANSIT = google.maps.TravelMode.TRANSIT
 }
 
+// needed in order to make Cordova work.
+const AppContainer = {
+
+  // app 'constructor'
+  initialize(): void {
+
+    console.log("called initialize");
+
+    document.addEventListener('deviceready', App.onDeviceReady.bind(App), false);
+  }
+};
+
+AppContainer.initialize();
+
 // app needs to be globally accessible (otherwise I'd have to pass it to almost everything, which is pointless & hopelessly wordy),
-// so I'm making most things in it static.
+// so I'm making all things in it static.
 export default class App {
 
   static get MAX_SPEED() { return 50; } // km/h  
   static get DEFAULT_SPEED() { return 15; } // km/h
 
+  static get TravelMode() {
+
+    return TravelMode;
+  }
+
   // speed and travel mode are not parts of Trip because they exist regardless if there's a current trip or not
   private static _speed: number; // km/h
-  private static _travelMode: TravelMode; // BICYCLING / WALKING
+  private static _travelMode: google.maps.TravelMode; // BICYCLING / WALKING
 
-  static readonly TravelMode = TravelMode;
 
   private static readonly _mapService: MapService = new MapService();
   private static readonly _routeService: RouteService = new RouteService(App.onRouteFetchSuccess, App.onRouteFetchFailure);
@@ -51,7 +77,7 @@ export default class App {
   private static _prevTrip: Trip;
   private static _currentTrip: Trip;
 
-  static google: any | null; // I'm not sure if this is even needed. the loader loads the API and the types
+  static google: any; // I'm not sure if this is even needed. the loader loads the API and the global types
   // ensure that the correct calls can be made without typescript complaining about them.
 
   // _currentTrip should never be null (even though many of its members may be)
@@ -59,20 +85,17 @@ export default class App {
 
     map: App._mapService.map,
     startCoord: new LatLng(0,0),
-    destCoord: null
+    destCoord: null,
+    status: Trip.Status.PREFETCH
   };
   private static readonly _DEFAULT_TRIP = new Trip(App._DEFAULT_TRIP_OPTIONS);
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX INIT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  // app 'constructor'
-  static initialize() {
-
-    document.addEventListener('deviceready', App.onDeviceReady.bind(this), false);
-  }
-
   // called down below in onDeviceReady
-  private static initServices() {
+  private static initServices(): void {
+
+    console.log("called initServices");
 
     GoogleMapsLoader.KEY = Env.API_KEY;
     GoogleMapsLoader.LANGUAGE = 'en';
@@ -88,58 +111,57 @@ export default class App {
       App._currentTrip = App._DEFAULT_TRIP;
       App._prevTrip = App._currentTrip.copy(); // weird, but we need it to exist
 
+      App._posMarker.setIcon(Marker.POS_MARKER_URL); 
+
       App._geoLocService.start();
     }); // GoogleMapsLoader.load
   } // _initServices
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX API QUERY RESPONSES XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  // 'slimming down' this method is an enticing proposition, but otoh it shows very clearly what's going on
-  static onRouteFetchSuccess(fetchResult: google.maps.DirectionsResult, successfulPlannedTrip: PlannedTrip) {
+  static onRouteFetchSuccess(fetchResult: google.maps.DirectionsResult, successfulTrip: Trip): void {
 
-    App.routeService.prevPlannedTrip = successfulPlannedTrip.copy(); // save the trip in case the next one is unsuccessful
-
-    App.mapService.deleteVisualTrip(); // clears the old polyline and markers from the map (if they exist)
+    App.currentTrip.clear(); // clears the old polyline and markers from the map (if they exist)
     
-    const route = fetchResult.routes[0];
+    const route: google.maps.DirectionsRoute = fetchResult.routes[0];
 
     const dist: number = Utils.distanceInKm(route);
-    const dura: number = Utils.calcDuration(dist, successfulPlannedTrip.speed);
+    const dura: number = Utils.calcDuration(dist, App.speed);
 
-    const destCoords: LatLng = successfulPlannedTrip.destCoords;
-    const wayPointCoords: Array<LatLng> = successfulPlannedTrip.getAllWayPointCoords();
+    successfulTrip.distance = dist;
+    successfulTrip.duration = dura;
+    successfulTrip.fetchResult = fetchResult;
+    successfulTrip.status = Trip.Status.SHOWN;
+    
+    App.prevTrip = successfulTrip.copy(); // save the trip in case the next one is unsuccessful
+    App.currentTrip = successfulTrip;
+    App.currentTrip.showOnMap();
 
-    const tripToDisplay = new VisualTrip(fetchResult, destCoords, wayPointCoords, dist, dura);
-
-    App.mapService.visualTrip = tripToDisplay; // maybe its state should be kept in App instead?
-    App.mapService.showVisualTripOnMap(); // shows the destination and waypoint markers and the polyline
-
-    // I'm not sure if this is the best location for this operation... tbd.
     InfoHeader.updateDistance(dist);
     InfoHeader.updateDuration(dura);
   } // onRouteFetchSuccess
 
   // usually occurs when clicking on water, mountains, etc
-  static onRouteFetchFailure() {
+  static onRouteFetchFailure(): void {
 
     // restore a successful trip (in most situations; failure is harmless though)
-    App.routeService.plannedTrip = App.routeService.prevPlannedTrip.copy(); 
+    App.currentTrip = App.prevTrip.copy(); 
 
-    App.routeService.fetchRoute(); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
+    App.routeService.fetchRoute(App.currentTrip); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
   }
-
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX UI ACTION RESPONSES XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   // -------------------------------- MAP TAPS & DRAGS -------------------------------------------------------------------
 
-  static onGoogleMapLongPress(event: google.maps.MouseEvent) {
+  static onGoogleMapLongPress(event: any): void {
 
     const destCoord: LatLng = Utils.latLngFromClickEvent(event);
 
     // on first click, or when the map has been cleared
-    if (App.noCurrentTrip) {
+    if (App.noCurrentDest) {
 
+      App.currentTrip.clear(); // just in case...
       App.currentTrip = Trip.makeTrip(destCoord);
     } else {
 
@@ -149,19 +171,20 @@ export default class App {
     App.routeService.fetchRoute(App.currentTrip);
   } // onGoogleMapLongPress
 
-  onGoogleMapDoubleClick(event: google.maps.MouseEvent) {
+  static onGoogleMapDoubleClick(event: any): void {
 
     // waypoints cannot be added without a valid destination
-    if (App.mapService.noVisualTrip) return;
+    if (App.noCurrentDest) return;
 
-    App.routeService.addWayPoint(event);
-    App.routeService.fetchRoute();
+    const clickedPos = Utils.latLngFromClickEvent(event);
+    App.currentTrip.addWayPointObject(clickedPos);
+    App.routeService.fetchRoute(App.currentTrip);
   }
 
-  static onDestMarkerDragEnd(event: google.maps.MouseEvent) {
+  static onDestMarkerDragEnd(event:any): void {
 
-    App.routeService.updateDestination(event);
-    App.routeService.fetchRoute();
+    App.currentTrip.destCoord = Utils.latLngFromClickEvent(event);
+    App.routeService.fetchRoute(App.currentTrip);
 
     App.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
 
@@ -171,16 +194,18 @@ export default class App {
     }, MapService.MARKER_DRAG_TIMEOUT);
   } // onDestMarkerDragEnd
 
-  static onDestMarkerTap(event) {
+  static onDestMarkerTap(event: any): void {
     
     console.log("tap event: " + JSON.stringify(event));
     // TODO: open an info window with place info
   }
 
-  onWayPointMarkerDragEnd(event) {
+  static onWayPointMarkerDragEnd(event: any): void {
 
-    App.routeService.updateWayPoint(event);
-    App.routeService.fetchRoute();
+    const latLng = Utils.latLngFromClickEvent(event);
+    App.currentTrip.updateWayPointObject(event.wpIndex, latLng);
+
+    App.routeService.fetchRoute(App.currentTrip);
 
     App.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
 
@@ -190,33 +215,34 @@ export default class App {
     }, MapService.MARKER_DRAG_TIMEOUT);
   } // onWayPointMarkerDragEnd
 
-  onWayPointDblClick(event) {
+  static onWayPointDblClick(event: any): void {
 
-    App.routeService.deleteWayPoint(event);
-    App.routeService.fetchRoute();
+    App.currentTrip.removeWayPointObject(event.wpIndex);
+    App.routeService.fetchRoute(App.currentTrip);
   }
 
   // -------------------------------- OVERLAY UI CLICKS ---------------------------------------------------------------
 
-  onLocButtonClick() {
+  static onLocButtonClick(): void {
 
-    App.mapService.reCenter(App.routeService.plannedTrip.getPosCoords());
+    App.mapService.reCenter(App.currentPos);
   }
 
-  onClearButtonClick() {
+  static onClearButtonClick(): void {
 
-    if (App.mapService.noVisualTrip) return;
+    if (App.noCurrentDest) return;
 
-    App.mapService.fullClear();
+    App.currentTrip.clear();
+    InfoHeader.reset();
   }
 
   // toggles the right-hand corner menu
-  onMenuButtonClick(event) {
+  static onMenuButtonClick(event: any): void {
 
     Menu.toggleVisibility(event);
   }
 
-  onMapStyleToggleButtonClick(event) {
+  static onMapStyleToggleButtonClick(event: any): void {
     
     const textHolderDiv = event.target;
     const value = textHolderDiv.innerText; // supposedly expensive... but .textContent refuses to work with the switch, even though the type is string!
@@ -224,15 +250,15 @@ export default class App {
     switch (value) {
       case MapStyleToggleButton.NORMAL_TXT:
         
-        App.mapService.map.setMapTypeId(App.google.maps.MapTypeId.ROADMAP);
+        App.mapService.map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
         break;
       case MapStyleToggleButton.SAT_TXT:
         
-        App.mapService.map.setMapTypeId(App.google.maps.MapTypeId.HYBRID);
+        App.mapService.map.setMapTypeId(google.maps.MapTypeId.HYBRID);
         break;
       case MapStyleToggleButton.TERRAIN_TXT:
         
-        App.mapService.map.setMapTypeId(App.google.maps.MapTypeId.TERRAIN);
+        App.mapService.map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
         break;
       default:
 
@@ -242,28 +268,32 @@ export default class App {
     } // switch
   } // onMapStyleToggleButtonClick
 
-  onCyclingLayerToggleButtonClick(event: any) {
+  static onCyclingLayerToggleButtonClick(event: any): void {
 
-    App._mapService.toggleBikeLayer(event);
+    App.mapService.toggleBikeLayer(event);
   }
 
-  onTravelModeToggleButtonClick(event: any) {
+  static onTravelModeToggleButtonClick(event: any): void {
 
-    App._routeService.plannedTrip.travelMode = event.target.value; 
+    App.travelMode = event.target.value; 
   }
 
   // -------------------------------- GEOLOC --------------------------------------------------------------------------
 
   // called by GeoLocService each time it gets a new location
-  static onGeoLocSuccess(newPos: LatLng) {
+  static onGeoLocSuccess(newPos: LatLng): void {
 
-    App._currentPos = newPos;
-    App._posMarker.moveTo(newPos);
+    App.prevTrip.startCoord = newPos;
+    App.currentTrip.startCoord = newPos; // it needs to keep 'in sync' with the geoloc updates. reactive programming would be a big help here!
+
+    App.posMarker.clearFromMap();
+    App.currentPos = newPos; // currentPos may be useless rn, but it could be used if moving to MobX / RxJs
+    App.posMarker.moveTo(newPos);
   }
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LIFECYCLE METHODS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  private static onDeviceReady() {
+  static onDeviceReady(): void {
 
     App._receivedEvent('deviceready');
 
@@ -273,18 +303,18 @@ export default class App {
     App.initServices();
   } // onDeviceReady
 
-  private static _onPause() {
+  private static _onPause(): void {
 
     App._geoLocService.stop();
   }
 
-  private static _onResume() {
+  private static _onResume(): void {
     
     App._geoLocService.start();
   }
 
   // Update DOM on a received event
-  private static _receivedEvent(id: string) {
+  private static _receivedEvent(id: string): void {
 
     // console.log('Received Event: ' + id);
   } // _receivedEvent
@@ -341,12 +371,12 @@ export default class App {
     App._speed = newSpeed;
   }
 
-  static get travelMode(): TravelMode {
+  static get travelMode(): google.maps.TravelMode {
 
     return App._travelMode;
   }
 
-  static set travelMode(newMode: TravelMode) {
+  static set travelMode(newMode: google.maps.TravelMode) {
 
     App._travelMode = newMode;
   }
@@ -356,243 +386,9 @@ export default class App {
     return App._posMarker;
   }
 
-  static get noCurrentTrip() {
+  static get noCurrentDest() {
 
-    return App._currentTrip === null;
+    return App._currentTrip.destCoord === null;
   }
 
 } // App
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-
-const App2 = {
-
-  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX INIT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-  google: null,
-  geoLocService: null,
-  mapService: null,
-  routeService: null,
-
-  // Application Constructor
-  _initialize: function() {
-
-    document.addEventListener('deviceready', this._onDeviceReady.bind(this), false);
-  },
-
-  // called down below in _onDeviceReady
-  _initServices: function() {
-
-    GoogleMapsLoader.KEY = Env.API_KEY;
-    GoogleMapsLoader.LANGUAGE = 'en';
-    GoogleMapsLoader.LIBRARIES = ['geometry', 'places'];
-
-    GoogleMapsLoader.load(google => {
-
-      this.google = google;
-
-      this.mapService = new MapService(); // must be done before setting up other services
-      
-      this.routeService = new RouteService(this.onRouteFetchSuccess, this.onRouteFetchFailure);
-      
-      UI.init();
-
-      this.geoLocService = new GeoLocService();
-      this.geoLocService.start();
-    }); // GoogleMapsLoader.load
-  }, // _initServices
-
-  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX API QUERY RESPONSES XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-  // 'slimming down' this method is an enticing proposition, but otoh it shows very clearly what's going on
-  onRouteFetchSuccess: (fetchResult, successfulPlannedTrip) => {
-
-    App.routeService.prevPlannedTrip = successfulPlannedTrip.copy(); // save the trip in case the next one is unsuccessful
-
-    App.mapService.deleteVisualTrip(); // clears the old polyline and markers from the map (if they exist)
-    
-    const route = fetchResult.routes[0];
-
-    const dist = Utils.distanceInKm(route);
-    const dura = Utils.calcDuration(dist, successfulPlannedTrip.speed);
-
-    const destCoords = successfulPlannedTrip.destCoords;
-    const wayPointCoords = successfulPlannedTrip.getAllWayPointCoords();
-
-    const tripToDisplay = new VisualTrip(fetchResult, destCoords, wayPointCoords, dist, dura);
-
-    App.mapService.visualTrip = tripToDisplay; // maybe its state should be kept in App instead?
-    App.mapService.showVisualTripOnMap(); // shows the destination and waypoint markers and the polyline
-
-    // I'm not sure if this is the best location for this operation... tbd.
-    InfoHeader.updateDistance(dist);
-    InfoHeader.updateDuration(dura);
-  }, // onRouteFetchSuccess
-
-  // usually occurs when clicking on water, mountains, etc
-  onRouteFetchFailure: () => {
-
-    App.routeService.plannedTrip = App.routeService.prevPlannedTrip.copy(); // restore a successful trip (in most situations; failure is harmless though)
-
-    App.routeService.fetchRoute(); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
-  },
-
-  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX UI ACTION RESPONSES XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-  // -------------------------------- MAP TAPS & DRAGS -------------------------------------------------------------------
-
-  onGoogleMapLongPress: (event) => {
-
-    App.routeService.updateDestination(event);
-    App.routeService.fetchRoute();
-  },
-
-  onGoogleMapDoubleClick: (event) => {
-
-    // waypoints cannot be added without a valid destination
-    if (App.mapService.noVisualTrip) return;
-
-    App.routeService.addWayPoint(event);
-    App.routeService.fetchRoute();
-  },
-
-  onDestMarkerDragEnd: (event) => {
-
-    App.routeService.updateDestination(event);
-    App.routeService.fetchRoute();
-
-    App.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
-
-    setTimeout(() => {
-
-      App.mapService.markerDragEventJustStopped = false;
-    }, MapService.MARKER_DRAG_TIMEOUT);
-  }, // onDestMarkerDragEnd
-
-  onDestMarkerTap: (event) => {
-    
-    console.log("tap event: " + JSON.stringify(event));
-    // TODO: open an info window with place info
-  },
-
-  onWayPointMarkerDragEnd: (event) => {
-
-    App.routeService.updateWayPoint(event);
-    App.routeService.fetchRoute();
-
-    App.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
-
-    setTimeout(() => {
-
-      App.mapService.markerDragEventJustStopped = false;
-    }, MapService.MARKER_DRAG_TIMEOUT);
-  }, // onWayPointMarkerDragEnd
-
-  onWayPointDblClick: (event) => {
-
-    App.routeService.deleteWayPoint(event);
-    App.routeService.fetchRoute();
-  },
-
-  // -------------------------------- OVERLAY UI CLICKS ---------------------------------------------------------------
-
-  onLocButtonClick: () => {
-
-    App.mapService.reCenter(App.routeService.plannedTrip.getPosCoords());
-  },
-
-  onClearButtonClick: () => {
-
-    if (App.mapService.noVisualTrip) return;
-
-    App.mapService.fullClear();
-  },
-
-  // toggles the right-hand corner menu
-  onMenuButtonClick: (event) => {
-
-    Menu.toggleVisibility(event);
-  },
-
-  onMapStyleToggleButtonClick: (event) => {
-    
-    const textHolderDiv = event.target;
-    const value = textHolderDiv.innerText; // supposedly expensive... but .textContent refuses to work with the switch, even though the type is string!
-  
-    switch (value) {
-      case MapStyleToggleButton.NORMAL_TXT:
-        
-        App.mapService.map.setMapTypeId(App.google.maps.MapTypeId.ROADMAP);
-        break;
-      case MapStyleToggleButton.SAT_TXT:
-        
-        App.mapService.map.setMapTypeId(App.google.maps.MapTypeId.HYBRID);
-        break;
-      case MapStyleToggleButton.TERRAIN_TXT:
-        
-        App.mapService.map.setMapTypeId(App.google.maps.MapTypeId.TERRAIN);
-        break;
-      default:
-
-        console.log("something is badly wrong with map style toggle clicks...");
-        console.log("text value in default statement: " + value);
-        break;
-    } // switch
-  }, // onMapStyleToggleButtonClick
-
-  onCyclingLayerToggleButtonClick: (event) => {
-
-    App.mapService.toggleBikeLayer(event);
-  },
-
-  onTravelModeToggleButtonClick: (event) => {
-
-    App.routeService.plannedTrip.travelMode = event.target.value; 
-  },
-
-  // NOTE: the speed input contains its own onValueChange method (it should technically be here, but its so simple yet huge that I put it in speed-input.js)
-
-  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LIFECYCLE METHODS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
-  _onDeviceReady: function() {
-
-    this._receivedEvent('deviceready');
-
-    document.addEventListener("pause", this._onPause, false);
-    document.addEventListener("resume", this._onResume, false);
-
-    this._initServices();
-  }, // _onDeviceReady
-
-  _onPause: function() {
-
-    App.geoLocService.stop();
-  },
-
-  _onResume: function () {
-    
-    App.geoLocService.start();
-  },
-
-  // Update DOM on a received event
-  _receivedEvent: function(id) {
-
-    // console.log('Received Event: ' + id);
-  } // _receivedEvent
-
-}; // App2 */
-
-App.initialize();

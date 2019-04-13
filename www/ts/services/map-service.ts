@@ -1,3 +1,9 @@
+import { GoogleMap } from './../misc/types';
+import ClickHandler from '../misc/click-handler';
+import CyclingLayerToggleButton from '../components/cycling-layer-toggle-button';
+import LatLng from '../dataclasses/latng';
+import App from '../app';
+
 /**
  * The map and the various methods and actions on it.
  */
@@ -5,25 +11,35 @@
 // I couldn't think of a better name for it. 'Container' would imply it's a pure ui element;
 // 'GoogleMap' confuses it with the embedded map element. 'Service' is really supposed to be 
 // something that does things periodically, but for now this will have to do. 
-class MapService {
+export default class MapService {
 
-  static get MARKER_DRAG_TIMEOUT() { return 100; }
+  static readonly MARKER_DRAG_TIMEOUT = 100; // ms
 
-  static get _DEFAULT_ZOOM() { return 8; }
-  static get _MIN_ZOOM() { return 5; }
-  static get _INITIAL_CENTER_COORDS() { return new LatLng(0,0); }
+  private static readonly  _DEFAULT_ZOOM = 8;
+  private static readonly _MIN_ZOOM = 5;
+  private static readonly _INITIAL_CENTER_COORDS = new LatLng(0,0);
+
+  // needed in ClickHandler in order not to fire a superfluous route fetch on long press 
+  private _markerDragEventJustStopped: boolean = false;
+  
+  mapHolderDiv: any; // too complicated with the proper type
+
+  private readonly _bikeLayer = new google.maps.BicyclingLayer();
+  private _bikeLayerOn: boolean = false;
+
+  private readonly _map: GoogleMap;
+  private readonly _routeRenderer: RouteRenderer;
+
+  private readonly _clickHandler = new ClickHandler();
 
   constructor() {
-
-    // needed in ClickHandler in order not to fire a superfluous route fetch on long press  
-    this.markerDragEventJustStopped = false;
 
     const mapOptions = {
 
       center: MapService._INITIAL_CENTER_COORDS,
       zoom: MapService._DEFAULT_ZOOM, 
       minZoom: MapService._MIN_ZOOM,
-      fullscreenControl: false,
+      fullscreenControl: false, // missing from the typings, but it works when assigning to object
       gestureHandling: 'greedy',
       mapTypeControl: false,
       // mapTypeControlOptions: { style: google.maps.MapTypeControlStyle.DROPDOWN_MENU },
@@ -35,80 +51,57 @@ class MapService {
 
     this.mapHolderDiv = document.getElementById('map');
 
-    this.map = new App.google.maps.Map(this.mapHolderDiv, mapOptions);
+    this._map = new google.maps.Map(this.mapHolderDiv, mapOptions);
 
-    this.visualTrip = null;
-
-    this.bikeLayer = new App.google.maps.BicyclingLayer();
-    this.bikeLayerOn = false;
-
-    this.routeRenderer = new RouteRenderer(this.map); // for showing fetched routes on the map
-
-    this.clickHandler = new ClickHandler();
+    this._routeRenderer = new RouteRenderer(this._map);
 
     this._setListeners();
   } // constructor
 
-  fullClear = () => {
-
-    App.routeService.deletePlannedTrips();
-    this.deleteVisualTrip();
-
-    InfoHeader.reset();
-  } // fullClear
-
-  showVisualTripOnMap = () => {
-
-    this.visualTrip.displayOnMap(this.map);
+  reCenter(newCoord: LatLng): void {
+    
+    this._map.setCenter(newCoord);
   }
   
-  // called from Route.js on every route fetch
-  deleteVisualTrip = () => {
+  // called from ui.ts to add the map ui controls
+  addUIControl(position: any, control: any): void {
 
-    if (this.noVisualTrip) return;
-
-    this.routeRenderer.clearPolyLine();
-    
-    this.visualTrip.clear();
-    this.visualTrip = null;
-  } // deleteVisualTrip
-
-  get noVisualTrip() {
-    
-    return this.visualTrip === null;
+    this._map.controls[position].push(control);
   }
 
-  reCenter = (newCoords) => {
-    
-    this.map.setCenter(newCoords);
-  }
-  
-  // called from ui.js to add the map ui controls
-  addUIControl = (position, control) => {
-
-    this.map.controls[position].push(control);
-  }
-
-  toggleBikeLayer = (event) => {
+  toggleBikeLayer(event: any): void {
 
     const toggleBtn = event.target.parentElement;
 
-    if (this.bikeLayerOn) {
+    if (this._bikeLayerOn) {
 
       CyclingLayerToggleButton.applyOffStyles(toggleBtn);
-      this.bikeLayer.setMap(null);
-      this.bikeLayerOn = false;
+
+      // @ts-ignore (we need to set the map to null here)
+      this._bikeLayer.setMap(null);
+      this._bikeLayerOn = false;
     } else {
 
       CyclingLayerToggleButton.applyOnStyles(toggleBtn);
-      this.bikeLayer.setMap(this.map);
-      this.bikeLayerOn = true;
+      this._bikeLayer.setMap(this._map);
+      this._bikeLayerOn = true;
     }
   } // toggleBikeLayer
 
-  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX GETTERS & SETTERS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  // wrapper method for a less convoluted call in Trip
+  renderOnMap(fetchResult: google.maps.DirectionsResult) {
 
-  get markerDragEventJustStopped() {
+    this._routeRenderer.renderOnMap(fetchResult);
+  }
+
+  clearPolyLineFromMap() {
+
+    this._routeRenderer.clearPolyLine();
+  }
+
+  // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX GETTERS & SETTERS & INIT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  get markerDragEventJustStopped(): boolean {
 
     return this._markerDragEventJustStopped;
   }
@@ -118,46 +111,27 @@ class MapService {
     this._markerDragEventJustStopped = value;
   }
 
-  get visualTrip() {
-
-    return this._visualTrip;
-  }
-
-  set visualTrip(trip) {
-
-    this._visualTrip = trip;
-  }
-
-  get map() {
+  get map(): GoogleMap {
 
     return this._map;
   }
-
-  set map(value) {
-
-    this._map = value;
-  }
   
-  get clickHandler() {
+  get clickHandler(): ClickHandler {
 
     return this._clickHandler;
   }
 
-  set clickHandler(handler) {
-
-    this._clickHandler = handler;
-  }
-
-  _setListeners() {
+  _setListeners(): void {
 
     this.map.addListener('click', function(e) {
 
-      e.id = ClickHandler.SINGLE;
+      e.id = ClickHandler.ClickType.SINGLE;
       App.mapService.clickHandler.handle(e);
     });
+    
     this.map.addListener('dblclick', function(e) { 
 
-      e.id = ClickHandler.DOUBLE;
+      e.id = ClickHandler.ClickType.DOUBLE;
       App.mapService.clickHandler.handle(e);
     });
 
@@ -188,15 +162,15 @@ class MapService {
     
     // DOM events seem to be the only option for listening for 'long press' type of events.
     // these fire on *every* click though, which makes things messy to say the least
-    App.google.maps.event.addDomListener(this.mapHolderDiv, 'touchstart', function(e) {
+    App.google.maps.event.addDomListener(this.mapHolderDiv, 'touchstart', function(e: any) {
 
-      e.id = ClickHandler.LONG_START;
+      e.id = ClickHandler.ClickType.LONG_START;
       App.mapService.clickHandler.handle(e); 
     });
 
-    App.google.maps.event.addDomListener(this.mapHolderDiv, 'touchend', function(e) {
+    App.google.maps.event.addDomListener(this.mapHolderDiv, 'touchend', function(e: any) {
       
-      e.id = ClickHandler.LONG_END;
+      e.id = ClickHandler.ClickType.LONG_END;
       App.mapService.clickHandler.handle(e);
     });
   } // _setListeners

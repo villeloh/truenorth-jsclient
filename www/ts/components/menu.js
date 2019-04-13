@@ -79,3 +79,5 @@ const Menu = {
   } // toggleVisibility
 
 }; // Menu
+
+export default Menu;

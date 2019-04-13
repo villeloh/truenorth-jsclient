@@ -1,16 +1,17 @@
 import LatLng from './latng';
 
 /**
- * For storing the inner waypoint objects that are needed by the fetchFor method in route-service.js.
+ * For storing the inner waypoint objects that are needed by the fetchRoute method in RouteService.
  */
 
 export default class WayPointObject {
 
-  constructor(readonly location: LatLng) {
+  // typescript insists on having the stopover property, even though it's useless
+  constructor(readonly location: LatLng, readonly stopover = true) {
     
   }
 
-  toString() {
+  toString(): string {
 
     return `WP Object: ( lat.: ${this.location.lat}, lng.: ${this.location.lng} )`;
   };

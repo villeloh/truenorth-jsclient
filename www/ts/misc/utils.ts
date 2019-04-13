@@ -4,8 +4,6 @@ import LatLng from '../dataclasses/latng';
  * For utility functions that don't really fit anywhere else.
  */
 
-// could be a class with static methods instead; i'm not sure which is superior 
-// from a performance pov (probably doesn't matter either way).
 export default class Utils {
 
   // used for checking the user-inputted speed in the menu's speed box
@@ -31,7 +29,7 @@ export default class Utils {
       duraInDecimHours = 0;
     }
     return duraInDecimHours;
-  }, // calcDuration
+  } // calcDuration
 
   // convert the duration to a more readable format (hours + minutes)
   static formatDuration(duraInDecimHours: number, fallBackText: string): string {

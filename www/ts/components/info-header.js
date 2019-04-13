@@ -48,3 +48,5 @@ const InfoHeader = {
   }, // updateDuration
 
 }; // InfoHeader
+
+export default InfoHeader;

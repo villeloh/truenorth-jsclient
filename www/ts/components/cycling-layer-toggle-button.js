@@ -49,3 +49,5 @@ const CyclingLayerToggleButton = {
   }
 
 }; // CyclingLayerToggleButton
+
+export default CyclingLayerToggleButton;

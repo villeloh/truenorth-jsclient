@@ -1,146 +1,264 @@
-/**
- * Overall holder/central hub for app, containing the responses to ui actions and route fetches.
- * @author Ville Lohkovuori (2019)
- */
-var App = {
-    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX INIT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    google: null,
-    geoLocService: null,
-    mapService: null,
-    routeService: null,
-    // Application Constructor
-    _initialize: function () {
-        document.addEventListener('deviceready', this._onDeviceReady.bind(this), false);
-    },
-    // called down below in _onDeviceReady
-    _initServices: function () {
-        var _this = this;
-        GoogleMapsLoader.KEY = Env.API_KEY;
-        GoogleMapsLoader.LANGUAGE = 'en';
-        GoogleMapsLoader.LIBRARIES = ['geometry', 'places'];
-        GoogleMapsLoader.load(function (google) {
-            _this.google = google;
-            _this.mapService = new MapService(); // must be done before setting up other services
-            _this.routeService = new RouteService(_this.onRouteFetchSuccess, _this.onRouteFetchFailure);
-            UI.init();
-            _this.geoLocService = new GeoLocService();
-            _this.geoLocService.start();
-        }); // GoogleMapsLoader.load
-    },
-    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX API QUERY RESPONSES XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    // 'slimming down' this method is an enticing proposition, but otoh it shows very clearly what's going on
-    onRouteFetchSuccess: function (fetchResult, successfulPlannedTrip) {
-        App.routeService.prevPlannedTrip = successfulPlannedTrip.copy(); // save the trip in case the next one is unsuccessful
-        App.mapService.deleteVisualTrip(); // clears the old polyline and markers from the map (if they exist)
-        var route = fetchResult.routes[0];
-        var dist = Utils.distanceInKm(route);
-        var dura = Utils.calcDuration(dist, successfulPlannedTrip.speed);
-        var destCoords = successfulPlannedTrip.destCoords;
-        var wayPointCoords = successfulPlannedTrip.getAllWayPointCoords();
-        var tripToDisplay = new VisualTrip(fetchResult, destCoords, wayPointCoords, dist, dura);
-        App.mapService.visualTrip = tripToDisplay; // maybe its state should be kept in App instead?
-        App.mapService.showVisualTripOnMap(); // shows the destination and waypoint markers and the polyline
-        // I'm not sure if this is the best location for this operation... tbd.
-        InfoHeader.updateDistance(dist);
-        InfoHeader.updateDuration(dura);
-    },
-    // usually occurs when clicking on water, mountains, etc
-    onRouteFetchFailure: function () {
-        App.routeService.plannedTrip = App.routeService.prevPlannedTrip.copy(); // restore a successful trip (in most situations; failure is harmless though)
-        App.routeService.fetchRoute(); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
-    },
-    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX UI ACTION RESPONSES XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    // -------------------------------- MAP TAPS & DRAGS -------------------------------------------------------------------
-    onGoogleMapLongPress: function (event) {
-        App.routeService.updateDestination(event);
-        App.routeService.fetchRoute();
-    },
-    onGoogleMapDoubleClick: function (event) {
-        // waypoints cannot be added without a valid destination
-        if (App.mapService.noVisualTrip)
-            return;
-        App.routeService.addWayPoint(event);
-        App.routeService.fetchRoute();
-    },
-    onDestMarkerDragEnd: function (event) {
-        App.routeService.updateDestination(event);
-        App.routeService.fetchRoute();
-        App.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
-        setTimeout(function () {
-            App.mapService.markerDragEventJustStopped = false;
-        }, MapService.MARKER_DRAG_TIMEOUT);
-    },
-    onDestMarkerTap: function (event) {
-        console.log("tap event: " + JSON.stringify(event));
-        // TODO: open an info window with place info
-    },
-    onWayPointMarkerDragEnd: function (event) {
-        App.routeService.updateWayPoint(event);
-        App.routeService.fetchRoute();
-        App.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
-        setTimeout(function () {
-            App.mapService.markerDragEventJustStopped = false;
-        }, MapService.MARKER_DRAG_TIMEOUT);
-    },
-    onWayPointDblClick: function (event) {
-        App.routeService.deleteWayPoint(event);
-        App.routeService.fetchRoute();
-    },
-    // -------------------------------- OVERLAY UI CLICKS ---------------------------------------------------------------
-    onLocButtonClick: function () {
-        App.mapService.reCenter(App.routeService.plannedTrip.getPosCoords());
-    },
-    onClearButtonClick: function () {
-        if (App.mapService.noVisualTrip)
-            return;
-        App.mapService.fullClear();
-    },
-    // toggles the right-hand corner menu
-    onMenuButtonClick: function (event) {
-        Menu.toggleVisibility(event);
-    },
-    onMapStyleToggleButtonClick: function (event) {
-        var textHolderDiv = event.target;
-        var value = textHolderDiv.innerText; // supposedly expensive... but .textContent refuses to work with the switch, even though the type is string!
-        switch (value) {
-            case MapStyleToggleButton.NORMAL_TXT:
-                App.mapService.map.setMapTypeId(App.google.maps.MapTypeId.ROADMAP);
-                break;
-            case MapStyleToggleButton.SAT_TXT:
-                App.mapService.map.setMapTypeId(App.google.maps.MapTypeId.HYBRID);
-                break;
-            case MapStyleToggleButton.TERRAIN_TXT:
-                App.mapService.map.setMapTypeId(App.google.maps.MapTypeId.TERRAIN);
-                break;
-            default:
-                console.log("something is badly wrong with map style toggle clicks...");
-                console.log("text value in default statement: " + value);
-                break;
-        } // switch
-    },
-    onCyclingLayerToggleButtonClick: function (event) {
-        App.mapService.toggleBikeLayer(event);
-    },
-    onTravelModeToggleButtonClick: function (event) {
-        App.routeService.plannedTrip.travelMode = event.target.value;
-    },
-    // NOTE: the speed input contains its own onValueChange method (it should technically be here, but its so simple yet huge that I put it in speed-input.js)
-    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LIFECYCLE METHODS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-    _onDeviceReady: function () {
-        this._receivedEvent('deviceready');
-        document.addEventListener("pause", this._onPause, false);
-        document.addEventListener("resume", this._onResume, false);
-        this._initServices();
-    },
-    _onPause: function () {
-        App.geoLocService.stop();
-    },
-    _onResume: function () {
-        App.geoLocService.start();
-    },
-    // Update DOM on a received event
-    _receivedEvent: function (id) {
-        // console.log('Received Event: ' + id);
-    } // _receivedEvent
-}; // App
-App._initialize();
+define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./dataclasses/latng", "./services/map-service", "./services/geoloc-service", "./services/route-service", "./misc/utils", "./misc/env", "./components/menu", "./components/info-header", "./components/map-style-toggle-button", "./misc/ui"], function (require, exports, marker_1, trip_1, latng_1, map_service_1, geoloc_service_1, route_service_1, utils_1, env_1, menu_1, info_header_1, map_style_toggle_button_1, ui_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var TravelMode;
+    (function (TravelMode) {
+        TravelMode[TravelMode["WALKING"] = google.maps.TravelMode.WALKING] = "WALKING";
+        TravelMode[TravelMode["BICYCLING"] = google.maps.TravelMode.BICYCLING] = "BICYCLING";
+        TravelMode[TravelMode["DRIVING"] = google.maps.TravelMode.DRIVING] = "DRIVING";
+        TravelMode[TravelMode["TRANSIT"] = google.maps.TravelMode.TRANSIT] = "TRANSIT";
+    })(TravelMode || (TravelMode = {}));
+    var AppContainer = {
+        initialize: function () {
+            console.log("called initialize");
+            document.addEventListener('deviceready', App.onDeviceReady.bind(App), false);
+        }
+    };
+    AppContainer.initialize();
+    var App = (function () {
+        function App() {
+        }
+        Object.defineProperty(App, "MAX_SPEED", {
+            get: function () { return 50; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(App, "DEFAULT_SPEED", {
+            get: function () { return 15; },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(App, "TravelMode", {
+            get: function () {
+                return TravelMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        App.initServices = function () {
+            console.log("called initServices");
+            GoogleMapsLoader.KEY = env_1.default.API_KEY;
+            GoogleMapsLoader.LANGUAGE = 'en';
+            GoogleMapsLoader.LIBRARIES = ['geometry', 'places'];
+            GoogleMapsLoader.load(function (google) {
+                App.google = google;
+                ui_1.default.init();
+                App._currentTrip = App._DEFAULT_TRIP;
+                App._prevTrip = App._currentTrip.copy();
+                App._posMarker.setIcon(marker_1.default.POS_MARKER_URL);
+                App._geoLocService.start();
+            });
+        };
+        App.onRouteFetchSuccess = function (fetchResult, successfulTrip) {
+            App.currentTrip.clear();
+            var route = fetchResult.routes[0];
+            var dist = utils_1.default.distanceInKm(route);
+            var dura = utils_1.default.calcDuration(dist, App.speed);
+            successfulTrip.distance = dist;
+            successfulTrip.duration = dura;
+            successfulTrip.fetchResult = fetchResult;
+            successfulTrip.status = trip_1.Trip.Status.SHOWN;
+            App.prevTrip = successfulTrip.copy();
+            App.currentTrip = successfulTrip;
+            App.currentTrip.showOnMap();
+            info_header_1.default.updateDistance(dist);
+            info_header_1.default.updateDuration(dura);
+        };
+        App.onRouteFetchFailure = function () {
+            App.currentTrip = App.prevTrip.copy();
+            App.routeService.fetchRoute(App.currentTrip);
+        };
+        App.onGoogleMapLongPress = function (event) {
+            var destCoord = utils_1.default.latLngFromClickEvent(event);
+            if (App.noCurrentDest) {
+                App.currentTrip.clear();
+                App.currentTrip = trip_1.Trip.makeTrip(destCoord);
+            }
+            else {
+                App.currentTrip.destCoord = destCoord;
+            }
+            App.routeService.fetchRoute(App.currentTrip);
+        };
+        App.onGoogleMapDoubleClick = function (event) {
+            if (App.noCurrentDest)
+                return;
+            var clickedPos = utils_1.default.latLngFromClickEvent(event);
+            App.currentTrip.addWayPointObject(clickedPos);
+            App.routeService.fetchRoute(App.currentTrip);
+        };
+        App.onDestMarkerDragEnd = function (event) {
+            App.currentTrip.destCoord = utils_1.default.latLngFromClickEvent(event);
+            App.routeService.fetchRoute(App.currentTrip);
+            App.mapService.markerDragEventJustStopped = true;
+            setTimeout(function () {
+                App.mapService.markerDragEventJustStopped = false;
+            }, map_service_1.default.MARKER_DRAG_TIMEOUT);
+        };
+        App.onDestMarkerTap = function (event) {
+            console.log("tap event: " + JSON.stringify(event));
+        };
+        App.onWayPointMarkerDragEnd = function (event) {
+            var latLng = utils_1.default.latLngFromClickEvent(event);
+            App.currentTrip.updateWayPointObject(event.wpIndex, latLng);
+            App.routeService.fetchRoute(App.currentTrip);
+            App.mapService.markerDragEventJustStopped = true;
+            setTimeout(function () {
+                App.mapService.markerDragEventJustStopped = false;
+            }, map_service_1.default.MARKER_DRAG_TIMEOUT);
+        };
+        App.onWayPointDblClick = function (event) {
+            App.currentTrip.removeWayPointObject(event.wpIndex);
+            App.routeService.fetchRoute(App.currentTrip);
+        };
+        App.onLocButtonClick = function () {
+            App.mapService.reCenter(App.currentPos);
+        };
+        App.onClearButtonClick = function () {
+            if (App.noCurrentDest)
+                return;
+            App.currentTrip.clear();
+            info_header_1.default.reset();
+        };
+        App.onMenuButtonClick = function (event) {
+            menu_1.default.toggleVisibility(event);
+        };
+        App.onMapStyleToggleButtonClick = function (event) {
+            var textHolderDiv = event.target;
+            var value = textHolderDiv.innerText;
+            switch (value) {
+                case map_style_toggle_button_1.default.NORMAL_TXT:
+                    App.mapService.map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+                    break;
+                case map_style_toggle_button_1.default.SAT_TXT:
+                    App.mapService.map.setMapTypeId(google.maps.MapTypeId.HYBRID);
+                    break;
+                case map_style_toggle_button_1.default.TERRAIN_TXT:
+                    App.mapService.map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
+                    break;
+                default:
+                    console.log("something is badly wrong with map style toggle clicks...");
+                    console.log("text value in default statement: " + value);
+                    break;
+            }
+        };
+        App.onCyclingLayerToggleButtonClick = function (event) {
+            App.mapService.toggleBikeLayer(event);
+        };
+        App.onTravelModeToggleButtonClick = function (event) {
+            App.travelMode = event.target.value;
+        };
+        App.onGeoLocSuccess = function (newPos) {
+            App.prevTrip.startCoord = newPos;
+            App.currentTrip.startCoord = newPos;
+            App.posMarker.clearFromMap();
+            App.currentPos = newPos;
+            App.posMarker.moveTo(newPos);
+        };
+        App.onDeviceReady = function () {
+            App._receivedEvent('deviceready');
+            document.addEventListener("pause", App._onPause, false);
+            document.addEventListener("resume", App._onResume, false);
+            App.initServices();
+        };
+        App._onPause = function () {
+            App._geoLocService.stop();
+        };
+        App._onResume = function () {
+            App._geoLocService.start();
+        };
+        App._receivedEvent = function (id) {
+        };
+        Object.defineProperty(App, "currentPos", {
+            get: function () {
+                return App._currentPos;
+            },
+            set: function (newPos) {
+                App._currentPos = newPos;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(App, "currentTrip", {
+            get: function () {
+                return App._currentTrip;
+            },
+            set: function (newTrip) {
+                App._currentTrip = newTrip;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(App, "prevTrip", {
+            get: function () {
+                return App._prevTrip;
+            },
+            set: function (newTrip) {
+                App._prevTrip = newTrip;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(App, "mapService", {
+            get: function () {
+                return App._mapService;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(App, "routeService", {
+            get: function () {
+                return App._routeService;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(App, "speed", {
+            get: function () {
+                return App._speed;
+            },
+            set: function (newSpeed) {
+                App._speed = newSpeed;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(App, "travelMode", {
+            get: function () {
+                return App._travelMode;
+            },
+            set: function (newMode) {
+                App._travelMode = newMode;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(App, "posMarker", {
+            get: function () {
+                return App._posMarker;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(App, "noCurrentDest", {
+            get: function () {
+                return App._currentTrip.destCoord === null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        App._mapService = new map_service_1.default();
+        App._routeService = new route_service_1.default(App.onRouteFetchSuccess, App.onRouteFetchFailure);
+        App._currentPos = new latng_1.default(0, 0);
+        App._posMarker = new marker_1.default(App._mapService.map, App._currentPos, "", false);
+        App._geoLocService = new geoloc_service_1.default();
+        App._DEFAULT_TRIP_OPTIONS = {
+            map: App._mapService.map,
+            startCoord: new latng_1.default(0, 0),
+            destCoord: null,
+            status: trip_1.Trip.Status.PREFETCH
+        };
+        App._DEFAULT_TRIP = new trip_1.Trip(App._DEFAULT_TRIP_OPTIONS);
+        return App;
+    }());
+    exports.default = App;
+});

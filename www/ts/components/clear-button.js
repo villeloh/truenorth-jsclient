@@ -19,3 +19,5 @@ const ClearButton = {
   }
 
 }; // ClearButton
+
+export default ClearButton;

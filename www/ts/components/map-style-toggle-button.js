@@ -19,3 +19,5 @@ const MapStyleToggleButton = {
   }
   
 }; // MapStyleToggleButton
+
+export default MapStyleToggleButton;

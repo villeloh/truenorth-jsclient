@@ -16,14 +16,9 @@ enum ClickType {
 export default class ClickHandler {
 
   static get ClickType() {
+
     return ClickType;
   }
-
-  // accessed when sending the click events from GoogleMap
-/*static get SINGLE() { return 1; }
-  static get DOUBLE() { return 2; }
-  static get LONG_START() { return 3; }
-  static get LONG_END() { return 4; } */
 
   private static readonly _DOUBLE_CLICK_TIMEOUT: number = 300;
   private static readonly _SINGLE_CLICK_TIMEOUT: number = 300;
@@ -31,7 +26,7 @@ export default class ClickHandler {
 
   private _isLongPress: boolean = false;
   private _doubleClickInProgress: boolean = false;
-  private _gMapClickEvent: any = null;
+  private _gMapClickEvent: any;
 
   constructor() {
   }
@@ -47,7 +42,7 @@ export default class ClickHandler {
   }
 
   // i'm sure there's a simpler way to do this, but whatever, it works
-  handle(event: any) {
+  handle(event: any): void{
 
     switch (event.id) {
       case ClickHandler.ClickType.SINGLE:

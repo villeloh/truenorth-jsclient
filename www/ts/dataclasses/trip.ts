@@ -6,14 +6,17 @@ import WayPointObject from './waypoint-object';
 import Marker from './marker';
 
 /**
- * Replaces PlannedTrip and VisualTrip. With a bit of refactoring, only one Trip class is needed.
+ * A Trip encapsulates most things that are needed to fetch routes and show them on the map 
+ * (distance, duration, and own position are managed separately in App.ts).
  */
 
+// these are not very useful atm, but they could be in the near future
 enum Status {
 
   PREFETCH,
   FAILED,
-  SUCCEEDED
+  SUCCEEDED,
+  SHOWN
 }
 
 // just make one and give it to the Trip constructor (Java Engineers: lul wut?!)
@@ -22,7 +25,8 @@ export interface TripOptions {
     readonly map: GoogleMap,
     readonly startCoord: LatLng,
     readonly destCoord: Nullable<LatLng>, // it can be null in certain situations, mainly when clicking on water multiple times in a row
-    readonly wayPointObjects?: Array<WayPointObject> // not all trips have waypoints
+    readonly wayPointObjects?: Array<WayPointObject>, // not all trips have waypoints
+    readonly status: Status
 } // TripOptions
 
 export class Trip {
@@ -48,14 +52,18 @@ export class Trip {
 
     // object destructuring should be used here, but it doesn't want to play ball with 'this'
     this._map = options.map;
-    this._startCoord = options.startCoord
+    this._startCoord = options.startCoord;
     this._destCoord = options.destCoord;
-    this._wayPointObjects = options.wayPointObjects || []; // typescript would allow undefined here; seems it's not infallible?
-    this._status = Status.PREFETCH;
+    this._wayPointObjects = options.wayPointObjects || []; // to avoid 'undefined'
+    this._status = options.status;
 
+    // ideally, distance & duration of App.currentTrip would be observable values that auto-update the info header on each change
     this._distance = null;
     this._duration = null;
-    this._fetchResult = null;
+
+    this._fetchResult = null; // storing the fetch result in the Trip object is convenient, but seems wrong somehow
+
+    // the markers could be part of MapService's state, but this is more convenient
     this._destMarker = null;
     this._wayPointMarkers = [];
     // NOTE: the position marker is managed separately, as it doesn't depend on the trip in any way (it's always visible)
@@ -66,32 +74,33 @@ export class Trip {
 
     const options: TripOptions = {
       map: App.mapService.map,
-      startCoord: App.currentPos,
+      startCoord: App.currentTrip.startCoord,
       destCoord: destCoord,
-      wayPointObjects: App.currentTrip.wayPointObjects || []
+      wayPointObjects: App.currentTrip.wayPointObjects || [],
+      status: Trip.Status.PREFETCH
     }
     return new Trip(options);
   } // makeTrip
 
-  // shows the Trip on the map
-  visualize() {
+  showOnMap(): void {
 
-    // TODO: re-think this logic...
-    // show the polyline on the map
-    App.mapService.routeRenderer.renderOnMap(this.fetchResult);
+    // show the polyline on the map.
+    // NOTE: I'm not sure if this is the best pattern for showing the route.
+    // perhaps mapService's render method should take the Trip as an argument, instead, and be called from App?
+    App.mapService.renderOnMap(this._fetchResult!); // when we call this, it will exist
 
-    // show the dest marker and waypoints
-    this._destMarker!.showOnMap(this._map);
+    // show the dest marker
+    if (this._destCoord !== null) {
 
-    // this also shows the markers on the map, as their map is set to this._map on creation
-    this.fillWayPointMarkersArray();
+      // calling the setter sets the listeners as well
+      this.destMarker = Marker.makeDestMarker(this._destCoord); // shows it as well
+    } else {
+      this._destMarker = null; // should already be null, but it doesn't hurt
+    }
 
-    /*
-    this._wayPointMarkers.forEach(marker => {
-
-      marker.showOnMap(this._map);
-    }); */
-  } // visualize
+    // this also adds listeners and shows the markers on the map
+    this.makeWayPointMarkers();
+  } // showOnMap
 
   // needed in order not to cause an infinite loop of requests (at least I think this was the cause...)
   copy(): Trip {
@@ -102,7 +111,7 @@ export class Trip {
       startCoord: this._startCoord,
       destCoord: this._destCoord,
       wayPointObjects: [],
-      travelMode: this._travelMode
+      status: Trip.Status.PREFETCH
     };
     this._wayPointObjects.forEach(wpObj => { 
       
@@ -117,7 +126,7 @@ export class Trip {
     return this._startCoord;
   }
 
-  // it will need to be called every time the position updates
+  // called every time the user's position updates
   set startCoord(newCoord: LatLng) {
 
     this._startCoord = newCoord;
@@ -133,17 +142,17 @@ export class Trip {
     this._destCoord = newCoord;
   }
 
-  addWayPointObject(latLng: LatLng) {
+  addWayPointObject(latLng: LatLng): void {
 
     this._wayPointObjects.push(new WayPointObject(latLng));
   }
 
-  updateWayPointObject(index: number, newCoord: LatLng) {
+  updateWayPointObject(index: number, newCoord: LatLng): void {
 
     this._wayPointObjects[index] = new WayPointObject(newCoord); // WayPointObjects are immutable, so a new one must be created
   }
 
-  removeWayPointObject(index: number) {
+  removeWayPointObject(index: number): void {
 
     this._wayPointObjects.splice(index, 1);
   }
@@ -160,7 +169,7 @@ export class Trip {
 
   // for getting the plain latLngs inside the WayPointObjects
   // (needed for rendering markers on the map)
-  getAllWayPointCoords() {
+  getAllWayPointCoords(): Array<LatLng> {
 
     return this._wayPointObjects.map(wpObj => {
 
@@ -212,11 +221,12 @@ export class Trip {
 
     this._destMarker = marker;
     
+    // it's convenient to auto-add them, but technically a violation of the get/set pattern
     this._destMarker.addListener('dragend', App.onDestMarkerDragEnd);
     this._destMarker.addListener('click', App.onDestMarkerTap);
   }
 
-  fillWayPointMarkersArray() {
+  makeWayPointMarkers(): void {
 
     let labelNum: number = 1;
 
@@ -225,8 +235,8 @@ export class Trip {
 
     for (let i = 0; i < wayPointCoordsArray.length; i++) {
 
-      // the markers can be visible right away, as this method is called only in visualize() above
-      const marker = new Marker(this._map, wayPointCoordsArray[i], labelNum+"", true);
+      // the markers are visible on the map right away
+      const marker = Marker.makeWayPointMarker(wayPointCoordsArray[i], labelNum+"");
 
       labelNum++;
 
@@ -242,15 +252,18 @@ export class Trip {
 
       this._wayPointMarkers.push(marker);
     } // for
-  } // fillWayPointMarkersArray
+  } // makeWayPointMarkers
 
-  clear() {
+  // i.e., clear it both from the map and as a 'planned' trip
+  clear(): void {
 
     this._destCoord = null;
     this._wayPointObjects.length = 0; // there is never a case where only the waypoints are cleared, so it's ok to do this here
 
     this._distance = null;
     this._duration = null;
+
+    App.mapService.clearPolyLineFromMap();
 
     this._destMarker!.clearFromMap();
     this._wayPointMarkers.map(marker => {

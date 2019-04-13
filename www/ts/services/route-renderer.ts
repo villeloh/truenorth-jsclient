@@ -1,17 +1,18 @@
 
 /**
  * Renders routes on the map.
+ * NOTE: perhaps it should be called 'Renderer', instead, and have different rendering options?
  */
 
 class RouteRenderer {
 
-  static get _ROUTE_COLOR() { return '#2B7CFF'; } // darkish blue
+  private static readonly _ROUTE_COLOR = '#2B7CFF'; // darkish blue
 
-  constructor(googleMap) {
+  private readonly _renderer: google.maps.DirectionsRenderer;
 
-    this._googleMap = googleMap;
+  constructor(private readonly _googleMap: google.maps.Map) {
 
-    this._renderer = new App.google.maps.DirectionsRenderer({
+    this._renderer = new google.maps.DirectionsRenderer({
       draggable: false,
       suppressMarkers: true,
       suppressBicyclingLayer: true,
@@ -30,12 +31,13 @@ class RouteRenderer {
     }); // _renderer
   } // constructor
 
-  clearPolyLine() {
+  clearPolyLine(): void {
 
+    // @ts-ignore (we need to set the map to null here)
     this._renderer.setMap(null);
   }
 
-  renderOnMap(fetchResult) {
+  renderOnMap(fetchResult: google.maps.DirectionsResult): void {
 
     this._renderer.setMap(this._googleMap);
     this._renderer.setDirections(fetchResult); // renders polyline on the map

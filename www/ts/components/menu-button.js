@@ -19,3 +19,5 @@ const MenuButton = {
   }
 
 }; // MenuButton
+
+export default MenuButton;

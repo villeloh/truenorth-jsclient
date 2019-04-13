@@ -23,9 +23,9 @@ export default class GeoLocService {
 
   constructor() {
 
-  } // constructor
+  }
 
-  start() {
+  start(): void {
 
     const that = this;
 
@@ -41,12 +41,12 @@ export default class GeoLocService {
       GeoLocService._OPTIONS);
   } // start
 
-  stop() {
+  stop(): void {
 
     navigator.geolocation.clearWatch(this._locTracker);
   }
 
-  _onSuccess(pos: Position) {
+  _onSuccess(pos: Position): void {
 
     const newCoord = new LatLng(pos.coords.latitude, pos.coords.longitude);
     const oldCoord = App.currentPos;
@@ -60,16 +60,16 @@ export default class GeoLocService {
   } // _onSuccess
 
   // i'm not sure of its actual type
-  _onError(error: any) {
+  _onError(error: any): void {
       
     console.log("GeoLoc error! Code: " + error.code);
     console.log("GeoLoc error! Msg: " + error.message);
   }
 
   // make the camera auto-follow the user only if the change in position is significant enough (i.e., they're cycling).
-  _diffIsOverCameraMoveThreshold(oldPos: LatLng, newPos: LatLng) {
+  _diffIsOverCameraMoveThreshold(oldPos: LatLng, newPos: LatLng): boolean {
 
-    const diff = oldPos.differenceFrom(newPos);
+    const diff: number = oldPos.differenceFrom(newPos);
 
     return diff > GeoLocService._CAMERA_MOVE_THRESHOLD;
   } // _diffIsOverCameraMoveThreshold

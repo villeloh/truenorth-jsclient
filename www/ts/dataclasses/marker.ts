@@ -1,18 +1,26 @@
-import { GoogleMapListenerCallback, Nullable, GoogleMap } from './../misc/types';
+import { GoogleMap } from './../misc/types';
 import LatLng from './latng';
+import App from '../app';
 
 /**
  * A convenience wrapper for the GoogleMaps Marker element.
  * I put this in dataclasses for now; it's a bit of a hybrid between a visual element and a dataclass.
  */
 
+// adding listeners in the Google Maps API methods requires this function signature
+interface IGoogleMapListenerCallback { 
+  (...args: Array<any>): void;
+}
+
 export default class Marker {
 
-  private _googleMapMarker: Nullable<google.maps.Marker>;
+  static readonly POS_MARKER_URL = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png';
+
+  private _googleMapMarker: google.maps.Marker;
 
   constructor(
     private _map: GoogleMap, 
-    private _position: LatLng, 
+    private _position: LatLng,
     private _label: string, 
     private _isDraggable: boolean) {
 
@@ -28,19 +36,28 @@ export default class Marker {
     this._googleMapMarker = new google.maps.Marker(markerOptions);
   } // constructor
 
-  // takes a string and a function, like the underlying 
-  // addListener method that it wraps
-  addListener(eventName: string, callback: GoogleMapListenerCallback) {
+  // convenience factories, to avoid giving so many arguments (and making clear what's being created).
+  // might replace these with optional arguments to the main constructor.
+  static makeDestMarker(destCoord: LatLng): Marker {
 
-    this._googleMapMarker!.addListener(eventName, callback);
+    return new Marker(App.mapService.map, destCoord, "", true);
   }
 
-  // this won't be called if the inner marker is null
-  clearFromMap() {
+  static makeWayPointMarker(coord: LatLng, label: string): Marker {
 
-    this._googleMapMarker!.setMap(null);
-    google.maps.event.clearInstanceListeners(this._googleMapMarker!);
-    this._googleMapMarker = null;
+    return new Marker(App.mapService.map, coord, label, true);
+  }
+
+  addListener(eventName: string, callback: IGoogleMapListenerCallback): void {
+
+    this._googleMapMarker.addListener(eventName, callback);
+  }
+
+  clearFromMap(): void {
+
+    // @ts-ignore: next line (wouldn't allow to set the map to null, when it's the only viable option)
+    this._googleMapMarker.setMap(null);
+    google.maps.event.clearInstanceListeners(this._googleMapMarker);
   }
 
   // should no longer be needed, as markers are now only created when they are to be shown
@@ -52,7 +69,7 @@ export default class Marker {
 
   // we need to make a new marker with each move, as otherwise it 
   // refuses to render.
-  moveTo(newPos: LatLng) {
+  moveTo(newPos: LatLng): void {
 
     this.clearFromMap(); // erase the old marker
 
@@ -63,9 +80,15 @@ export default class Marker {
       draggable: this._isDraggable,
       label: this._label,
       crossOnDrag: false
-    };
+    }; // options
 
     this._googleMapMarker = new google.maps.Marker(options);
   } // moveTo
+
+  // the position marker needs this
+  setIcon(iconUrl: string): void {
+
+    this._googleMapMarker.setIcon(iconUrl);
+  }
 
 } // Marker

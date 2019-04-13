@@ -19,8 +19,8 @@ export default class LatLng {
   // used in GeoLocService for determining if the map should recenter when the user moves
   differenceFrom(anotherLatLng: LatLng): number {
 
-    const absLatDiff = Math.abs(Math.abs(this.lat) - Math.abs(anotherLatLng.lat));
-    const absLngDiff = Math.abs(Math.abs(this.lng) - Math.abs(anotherLatLng.lng));
+    const absLatDiff: number = Math.abs(Math.abs(this.lat) - Math.abs(anotherLatLng.lat));
+    const absLngDiff: number = Math.abs(Math.abs(this.lng) - Math.abs(anotherLatLng.lng));
 
     return Math.max(absLatDiff, absLngDiff);
   }
