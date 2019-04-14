@@ -24,16 +24,14 @@ declare const GoogleMapsLoader: any;
  * @author Ville Lohkovuori (2019)
  */
 
-// even though only the first two modes are used, typescript complains if we fail
-// to include all of them.
+// can't use the proper google types here, as the google object has yet to be initialized
 enum TravelMode {
 
-  WALKING = google.maps.TravelMode.WALKING,
-  BICYCLING = google.maps.TravelMode.BICYCLING,
-  DRIVING = google.maps.TravelMode.DRIVING,
-  TRANSIT = google.maps.TravelMode.TRANSIT
+  WALKING = 'WALKING',
+  BICYCLING = 'BICYCLING'
 }
 
+/*
 // needed in order to make Cordova work.
 const AppContainer = {
 
@@ -49,7 +47,7 @@ const AppContainer = {
 window.onload = function () {
   
   AppContainer.initialize();
-}
+} */
 
 // app needs to be globally accessible (otherwise I'd have to pass it to almost everything, which is pointless & hopelessly wordy),
 // so I'm making all things in it static.
@@ -65,15 +63,15 @@ export default class App {
 
   // speed and travel mode are not parts of Trip because they exist regardless if there's a current trip or not
   private static _speed: number; // km/h
-  private static _travelMode: google.maps.TravelMode; // BICYCLING / WALKING
+  private static _travelMode: any; // BICYCLING / WALKING
 
 
-  private static readonly _mapService: MapService = new MapService();
-  private static readonly _routeService: RouteService = new RouteService(App.onRouteFetchSuccess, App.onRouteFetchFailure);
+  private static _mapService: any;
+  private static _routeService: any;
 
   // periodically updated by the geoLocService 
   private static _currentPos: LatLng = new LatLng(0,0);
-  private static _posMarker: Marker = new Marker(App._mapService.map, App._currentPos, "", false);
+  private static _posMarker: any;
 
   private static readonly _geoLocService: GeoLocService = new GeoLocService();
 
@@ -83,17 +81,16 @@ export default class App {
   static google: any; // I'm not sure if this is even needed. the loader loads the API and the global types
   // ensure that the correct calls can be made without typescript complaining about them.
 
-  // _currentTrip should never be null (even though many of its members may be)
-  private static readonly _DEFAULT_TRIP_OPTIONS: TripOptions = {
-
-    map: App._mapService.map,
-    startCoord: new LatLng(0,0),
-    destCoord: null,
-    status: Trip.Status.PREFETCH
-  };
-  private static readonly _DEFAULT_TRIP = new Trip(App._DEFAULT_TRIP_OPTIONS);
-
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX INIT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+
+  // app 'constructor'
+  static initialize(): void {
+
+    console.log("called initialize");
+
+    document.addEventListener('deviceready', App.onDeviceReady.bind(App), false);
+  }
 
   // called down below in onDeviceReady
   private static initServices(): void {
@@ -106,15 +103,35 @@ export default class App {
 
     GoogleMapsLoader.load(function(google: any) {
 
-      // may be unnecessary
       App.google = google;
 
-      UI.init();
+      // NOTE: the MapService needs to be created first, as a lot of other things depend on
+      // the google map object within it already existing. (the map could be moved to App to 
+      // fix this, but it's not a priority atm)
+      App._mapService = new MapService();
+      App._routeService = new RouteService(App.onRouteFetchSuccess, App.onRouteFetchFailure);
+        
+      // _currentTrip should never be null (even though many of its members may be)
+      const defaultTripOptions: TripOptions = {
 
-      App._currentTrip = App._DEFAULT_TRIP;
+        map: App._mapService.map, // this needs to be done here as we need the initialized google object for the map
+        startCoord: new LatLng(0,0),
+        destCoord: null,
+        status: Trip.Status.SUCCEEDED
+      };
+
+      const defaultTrip = new Trip(defaultTripOptions);
+
+      App._currentTrip = defaultTrip;
       App._prevTrip = App._currentTrip.copy(); // weird, but we need it to exist
 
+    
+      App._posMarker = new Marker(App._mapService.map, App._currentPos, "", false);
       App._posMarker.setIcon(Marker.POS_MARKER_URL); 
+
+      App._travelMode = App.TravelMode.BICYCLING;
+
+      UI.init();
 
       App._geoLocService.start();
     }); // GoogleMapsLoader.load
@@ -124,7 +141,11 @@ export default class App {
 
   static onRouteFetchSuccess(fetchResult: google.maps.DirectionsResult, successfulTrip: Trip): void {
 
-    App.currentTrip.clear(); // clears the old polyline and markers from the map (if they exist)
+    // if there is a previous trip to be cleared
+    if (App.prevTrip.destCoord !== null) {
+
+      App.currentTrip.clear(); // clear the old polyline and markers from the map (if they exist)
+    }
     
     const route: google.maps.DirectionsRoute = fetchResult.routes[0];
 
@@ -159,12 +180,16 @@ export default class App {
 
   static onGoogleMapLongPress(event: any): void {
 
+    if (App.currentTrip.status === Trip.Status.SUCCEEDED) {
+
+      App.prevTrip = App.currentTrip.copy();
+    }
+
     const destCoord: LatLng = Utils.latLngFromClickEvent(event);
 
     // on first click, or when the map has been cleared
     if (App.noCurrentDest) {
 
-      App.currentTrip.clear(); // just in case...
       App.currentTrip = Trip.makeTrip(destCoord);
     } else {
 
@@ -395,3 +420,5 @@ export default class App {
   }
 
 } // App
+
+App.initialize();

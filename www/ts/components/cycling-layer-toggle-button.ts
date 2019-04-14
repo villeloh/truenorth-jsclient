@@ -1,3 +1,4 @@
+import App from '../app';
 
 /**
  * Button that toggles the cycling layer off/on. It's different from the MapStyleToggleButtons, because 
@@ -16,10 +17,19 @@ const CyclingLayerToggleButton = {
 
   TEXT: 'C.LAYER',
 
-  addTo: function(parentDiv) {
+  addTo: function(parentDiv: any) {
 
+    const outerDiv = document.createElement('div');
+    outerDiv.id = CyclingLayerToggleButton.OUTER_DIV_ID;
+    const innerDiv = document.createElement('div');
+    innerDiv.id = CyclingLayerToggleButton.INNER_DIV_ID;
+    innerDiv.innerHTML = CyclingLayerToggleButton.TEXT;
+    outerDiv.addEventListener('click', App.onCyclingLayerToggleButtonClick);
+    outerDiv.appendChild(innerDiv);
+    parentDiv.appendChild(outerDiv);
+/*
     parentDiv.innerHTML = `<div id=${CyclingLayerToggleButton.OUTER_DIV_ID} onclick="App.onCyclingLayerToggleButtonClick(event)">
-    <div id=${CyclingLayerToggleButton.INNER_DIV_ID}>${CyclingLayerToggleButton.TEXT}</div></div>`;
+    <div id=${CyclingLayerToggleButton.INNER_DIV_ID}>${CyclingLayerToggleButton.TEXT}</div></div>`; */
   },
 
   // called when recreating the menu; it's a way to 'recall' its correct state after destruction
@@ -36,13 +46,13 @@ const CyclingLayerToggleButton = {
     } // if-else
   }, // setInitialStyles
 
-  applyOffStyles: function(buttonDiv) {
+  applyOffStyles: function(buttonDiv: any) {
 
     buttonDiv.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_OFF;
     buttonDiv.style.border = CyclingLayerToggleButton.BORDER_OFF;
   },
 
-  applyOnStyles: function(buttonDiv) {
+  applyOnStyles: function(buttonDiv: any) {
 
     buttonDiv.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_ON;
     buttonDiv.style.border = CyclingLayerToggleButton.BORDER_ON;

@@ -1,3 +1,4 @@
+import App from '../app';
 
 /**
  * A button to clear the map with. Ideally, a double-click would be used to clear the map, and single clicks
@@ -11,12 +12,24 @@ const ClearButton = {
   _INNER_DIV_ID: 'clear-btn-inner',
   _TEXT: 'CLEAR',
 
-  addTo: function(parentDiv) {
+  addTo: function(parentDiv: any) {
+
+    const outerDiv: HTMLDivElement = document.createElement('div');
+    outerDiv.id = ClearButton._OUTER_DIV_ID;
+    const innerDiv: HTMLDivElement = document.createElement('div');
+    innerDiv.id = ClearButton._INNER_DIV_ID;
+    innerDiv.innerHTML = ClearButton._TEXT;
+    outerDiv.appendChild(innerDiv);
+    outerDiv.addEventListener('click', App.onClearButtonClick);
+    parentDiv.appendChild(outerDiv);
+  }
+/*
+  addTo: function(parentDiv: any) {
 
     parentDiv.innerHTML = `<div id=${ClearButton._OUTER_DIV_ID} onclick="App.onClearButtonClick()">
       <div id=${ClearButton._INNER_DIV_ID}>${ClearButton._TEXT}</div>
     </div>`;
-  }
+  } */
 
 }; // ClearButton
 

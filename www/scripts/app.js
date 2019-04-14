@@ -3,20 +3,9 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
     Object.defineProperty(exports, "__esModule", { value: true });
     var TravelMode;
     (function (TravelMode) {
-        TravelMode[TravelMode["WALKING"] = google.maps.TravelMode.WALKING] = "WALKING";
-        TravelMode[TravelMode["BICYCLING"] = google.maps.TravelMode.BICYCLING] = "BICYCLING";
-        TravelMode[TravelMode["DRIVING"] = google.maps.TravelMode.DRIVING] = "DRIVING";
-        TravelMode[TravelMode["TRANSIT"] = google.maps.TravelMode.TRANSIT] = "TRANSIT";
+        TravelMode["WALKING"] = "WALKING";
+        TravelMode["BICYCLING"] = "BICYCLING";
     })(TravelMode || (TravelMode = {}));
-    var AppContainer = {
-        initialize: function () {
-            console.log("called initialize");
-            document.addEventListener('deviceready', App.onDeviceReady.bind(App), false);
-        }
-    };
-    window.onload = function () {
-        AppContainer.initialize();
-    };
     var App = (function () {
         function App() {
         }
@@ -37,6 +26,10 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             enumerable: true,
             configurable: true
         });
+        App.initialize = function () {
+            console.log("called initialize");
+            document.addEventListener('deviceready', App.onDeviceReady.bind(App), false);
+        };
         App.initServices = function () {
             console.log("called initServices");
             GoogleMapsLoader.KEY = env_1.default.API_KEY;
@@ -44,15 +37,28 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             GoogleMapsLoader.LIBRARIES = ['geometry', 'places'];
             GoogleMapsLoader.load(function (google) {
                 App.google = google;
-                ui_1.default.init();
-                App._currentTrip = App._DEFAULT_TRIP;
+                App._mapService = new map_service_1.default();
+                App._routeService = new route_service_1.default(App.onRouteFetchSuccess, App.onRouteFetchFailure);
+                var defaultTripOptions = {
+                    map: App._mapService.map,
+                    startCoord: new latlng_1.default(0, 0),
+                    destCoord: null,
+                    status: trip_1.Trip.Status.SUCCEEDED
+                };
+                var defaultTrip = new trip_1.Trip(defaultTripOptions);
+                App._currentTrip = defaultTrip;
                 App._prevTrip = App._currentTrip.copy();
+                App._posMarker = new marker_1.default(App._mapService.map, App._currentPos, "", false);
                 App._posMarker.setIcon(marker_1.default.POS_MARKER_URL);
+                App._travelMode = App.TravelMode.BICYCLING;
+                ui_1.default.init();
                 App._geoLocService.start();
             });
         };
         App.onRouteFetchSuccess = function (fetchResult, successfulTrip) {
-            App.currentTrip.clear();
+            if (App.prevTrip.destCoord !== null) {
+                App.currentTrip.clear();
+            }
             var route = fetchResult.routes[0];
             var dist = utils_1.default.distanceInKm(route);
             var dura = utils_1.default.calcDuration(dist, App.speed);
@@ -71,9 +77,11 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.routeService.fetchRoute(App.currentTrip);
         };
         App.onGoogleMapLongPress = function (event) {
+            if (App.currentTrip.status === trip_1.Trip.Status.SUCCEEDED) {
+                App.prevTrip = App.currentTrip.copy();
+            }
             var destCoord = utils_1.default.latLngFromClickEvent(event);
             if (App.noCurrentDest) {
-                App.currentTrip.clear();
                 App.currentTrip = trip_1.Trip.makeTrip(destCoord);
             }
             else {
@@ -116,6 +124,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.mapService.reCenter(App.currentPos);
         };
         App.onClearButtonClick = function () {
+            console.log("called clear!");
             if (App.noCurrentDest)
                 return;
             App.currentTrip.clear();
@@ -248,19 +257,10 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             enumerable: true,
             configurable: true
         });
-        App._mapService = new map_service_1.default();
-        App._routeService = new route_service_1.default(App.onRouteFetchSuccess, App.onRouteFetchFailure);
         App._currentPos = new latlng_1.default(0, 0);
-        App._posMarker = new marker_1.default(App._mapService.map, App._currentPos, "", false);
         App._geoLocService = new geoloc_service_1.default();
-        App._DEFAULT_TRIP_OPTIONS = {
-            map: App._mapService.map,
-            startCoord: new latlng_1.default(0, 0),
-            destCoord: null,
-            status: trip_1.Trip.Status.PREFETCH
-        };
-        App._DEFAULT_TRIP = new trip_1.Trip(App._DEFAULT_TRIP_OPTIONS);
         return App;
     }());
     exports.default = App;
+    App.initialize();
 });

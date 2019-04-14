@@ -16,7 +16,7 @@ export default class MapService {
 
   static readonly MARKER_DRAG_TIMEOUT = 100; // ms
 
-  private static readonly  _DEFAULT_ZOOM = 8;
+  private static readonly _DEFAULT_ZOOM = 8;
   private static readonly _MIN_ZOOM = 5;
   private static readonly _INITIAL_CENTER_COORDS = new LatLng(0,0);
 
@@ -25,10 +25,10 @@ export default class MapService {
   
   mapHolderDiv: any; // too complicated with the proper type
 
-  private readonly _bikeLayer = new google.maps.BicyclingLayer();
+  private readonly _bikeLayer: any;
   private _bikeLayerOn: boolean = false;
 
-  private readonly _map: GoogleMap;
+  private readonly _map: any;
   private readonly _routeRenderer: RouteRenderer;
 
   private readonly _clickHandler = new ClickHandler();
@@ -52,7 +52,9 @@ export default class MapService {
 
     this.mapHolderDiv = document.getElementById('map');
 
-    this._map = new google.maps.Map(this.mapHolderDiv, mapOptions);
+    this._map = new App.google.maps.Map(this.mapHolderDiv, mapOptions);
+
+    this._bikeLayer = new google.maps.BicyclingLayer();
 
     this._routeRenderer = new RouteRenderer(this._map);
 
@@ -120,6 +122,11 @@ export default class MapService {
   get clickHandler(): ClickHandler {
 
     return this._clickHandler;
+  }
+
+  get bikeLayerOn(): boolean {
+
+    return this._bikeLayerOn;
   }
 
   _setListeners(): void {

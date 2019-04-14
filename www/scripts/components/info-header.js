@@ -1,4 +1,4 @@
-define(["require", "exports"], function (require, exports) {
+define(["require", "exports", "../misc/utils"], function (require, exports, utils_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var InfoHeader = {
@@ -24,7 +24,7 @@ define(["require", "exports"], function (require, exports) {
         },
         updateDuration: function (valueInDecimH) {
             var innerP = document.getElementById(InfoHeader._INNER_P_ID_DURA);
-            innerP.textContent = Utils.formatDuration(valueInDecimH, InfoHeader._DEFAULT_DURA);
+            innerP.textContent = utils_1.default.formatDuration(valueInDecimH, InfoHeader._DEFAULT_DURA);
         },
     };
     exports.default = InfoHeader;

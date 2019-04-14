@@ -4,7 +4,6 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
     var MapService = (function () {
         function MapService() {
             this._markerDragEventJustStopped = false;
-            this._bikeLayer = new google.maps.BicyclingLayer();
             this._bikeLayerOn = false;
             this._clickHandler = new click_handler_1.default();
             var mapOptions = {
@@ -20,7 +19,8 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
                 disableDoubleClickZoom: true
             };
             this.mapHolderDiv = document.getElementById('map');
-            this._map = new google.maps.Map(this.mapHolderDiv, mapOptions);
+            this._map = new app_1.default.google.maps.Map(this.mapHolderDiv, mapOptions);
+            this._bikeLayer = new google.maps.BicyclingLayer();
             this._routeRenderer = new route_renderer_1.default(this._map);
             this._setListeners();
         }
