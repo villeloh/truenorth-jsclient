@@ -1,4 +1,4 @@
-define(["require", "exports", "./../dataclasses/trip", "../app"], function (require, exports, trip_1, app_1) {
+define(["require", "exports", "../app"], function (require, exports, app_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RouteService = (function () {
@@ -8,9 +8,6 @@ define(["require", "exports", "./../dataclasses/trip", "../app"], function (requ
             this._directionsService = new google.maps.DirectionsService();
         }
         RouteService.prototype.fetchRoute = function (trip) {
-            console.log("called fetch");
-            if (trip.status !== trip_1.Trip.Status.PREFETCH)
-                return;
             var that = this;
             var destCoord = trip.destCoord;
             if (destCoord === null)
@@ -29,7 +26,6 @@ define(["require", "exports", "./../dataclasses/trip", "../app"], function (requ
             };
             this._directionsService.route(request, function (result, status) {
                 if (status === google.maps.DirectionsStatus.OK) {
-                    trip.status = trip_1.Trip.Status.SUCCEEDED;
                     that.onFetchSuccessCallback(result, trip);
                 }
                 else {

@@ -1,6 +1,5 @@
-import { GoogleMap } from './../misc/types';
+import { GoogleMap, Nullable } from './../misc/types';
 import LatLng from './latlng';
-import App from '../app';
 
 /**
  * A convenience wrapper for the GoogleMaps Marker element.
@@ -19,7 +18,7 @@ export default class Marker {
   private _googleMapMarker: google.maps.Marker;
 
   constructor(
-    private _map: GoogleMap, 
+    private _map: Nullable<GoogleMap>, 
     private _position: LatLng,
     private _label: string, 
     private _isDraggable: boolean) {
@@ -33,6 +32,7 @@ export default class Marker {
       crossOnDrag: false // it's not in the typedef file (too new? oversight?), but assigning to an object and then passing it seems to work
     };
 
+    // @ts-ignore (it needs to accept a null map like a good little bitch)
     this._googleMapMarker = new google.maps.Marker(markerOptions);
   } // constructor
 
@@ -40,12 +40,12 @@ export default class Marker {
   // might replace these with optional arguments to the main constructor.
   static makeDestMarker(destCoord: LatLng): Marker {
 
-    return new Marker(App.mapService.map, destCoord, "", true);
+    return new Marker(null, destCoord, "", true);
   }
 
   static makeWayPointMarker(coord: LatLng, label: string): Marker {
 
-    return new Marker(App.mapService.map, coord, label, true);
+    return new Marker(null, coord, label, true);
   }
 
   addListener(eventName: string, callback: IGoogleMapListenerCallback): void {
@@ -60,12 +60,14 @@ export default class Marker {
     google.maps.event.clearInstanceListeners(this._googleMapMarker);
   }
 
-  // should no longer be needed, as markers are now only created when they are to be shown
-  /*
+  // ideally, this wouldn't be needed, as markers could be shown on creation.
+  // due to the way that VisualTrip and its rendering are set up atm, though, 
+  // it's logical to have this method.
   showOnMap(map: GoogleMap) {
 
     this._googleMapMarker!.setMap(map);
-  } */
+    return this;
+  }
 
   // we need to make a new marker with each move, as otherwise it 
   // refuses to render.

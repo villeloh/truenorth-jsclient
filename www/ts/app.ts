@@ -10,6 +10,7 @@ import Menu from './components/menu'; // TODO: combine the UI elements in one mo
 import InfoHeader from './components/info-header';
 import MapStyleToggleButton from './components/map-style-toggle-button';
 import UI from './misc/ui';
+import VisualTrip from './dataclasses/visual-trip';
 
 // to be able to use the IIFE-enabled thingy... I'm sure there's a more proper way to do this, but it works for now.
 declare const GoogleMapsLoader: any;
@@ -78,6 +79,8 @@ export default class App {
   private static _prevTrip: Trip;
   private static _currentTrip: Trip;
 
+  private static _DEFAULT_TRIP: Trip;
+
   static google: any; // I'm not sure if this is even needed. the loader loads the API and the global types
   // ensure that the correct calls can be made without typescript complaining about them.
 
@@ -94,8 +97,6 @@ export default class App {
 
   // called down below in onDeviceReady
   private static initServices(): void {
-
-    console.log("called initServices");
 
     GoogleMapsLoader.KEY = Env.API_KEY;
     GoogleMapsLoader.LANGUAGE = 'en';
@@ -118,13 +119,13 @@ export default class App {
 
         map: App._mapService.map, // this needs to be done here as we need the initialized google object for the map
         startCoord: new LatLng(0,0),
-        destCoord: null,
-        status: Trip.Status.SUCCEEDED
+        destCoord: null
       };
 
       const defaultTrip = new Trip(defaultTripOptions);
 
       App._currentTrip = defaultTrip;
+      App._DEFAULT_TRIP = defaultTrip;
       App._prevTrip = App._currentTrip.copy(); // weird, but we need it to exist
 
     
@@ -143,10 +144,9 @@ export default class App {
 
   static onRouteFetchSuccess(fetchResult: google.maps.DirectionsResult, successfulTrip: Trip): void {
 
-    // if there is a previous trip to be cleared
-    if (App.prevTrip.destCoord !== null) {
+    if (App.hasVisualTrip) {
 
-      App.currentTrip.clear(); // clear the old polyline and markers from the map (if they exist)
+      App.mapService.clearTripFromMap(); // clear the old polyline and markers from the map
     }
     
     const route: google.maps.DirectionsRoute = fetchResult.routes[0];
@@ -154,14 +154,14 @@ export default class App {
     const dist: number = Utils.distanceInKm(route);
     const dura: number = Utils.calcDuration(dist, App.speed);
 
-    successfulTrip.distance = dist;
-    successfulTrip.duration = dura;
-    successfulTrip.fetchResult = fetchResult;
-    successfulTrip.status = Trip.Status.SHOWN;
+    // it always has a valid destCoord, since the fetch was successful
+    const visualTrip = new VisualTrip(fetchResult, successfulTrip.destCoord!, successfulTrip.getAllWayPointCoords(), dist, dura);
     
     App.prevTrip = successfulTrip.copy(); // save the trip in case the next one is unsuccessful
-    App.currentTrip = successfulTrip;
-    App.currentTrip.showOnMap();
+    // App.currentTrip = successfulTrip; // should be unnecessary, as it is already the same trip
+    App.mapService.renderTripOnMap(visualTrip);
+
+    console.log("hasVisualTrip after setting it: " + App.hasVisualTrip);
 
     InfoHeader.updateDistance(dist);
     InfoHeader.updateDuration(dura);
@@ -172,6 +172,7 @@ export default class App {
 
     // restore a successful trip (in most situations; failure is harmless though)
     App.currentTrip = App.prevTrip.copy(); 
+    App.prevTrip = App._DEFAULT_TRIP.copy(); // to prevent issues with clicking on water, etc
 
     App.routeService.fetchRoute(App.currentTrip); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
   }
@@ -182,7 +183,7 @@ export default class App {
 
   static onGoogleMapLongPress(event: any): void {
 
-    if (App.currentTrip.status === Trip.Status.SUCCEEDED) {
+    if (App.hasVisualTrip) {
 
       App.prevTrip = App.currentTrip.copy();
     }
@@ -190,7 +191,7 @@ export default class App {
     const destCoord: LatLng = Utils.latLngFromClickEvent(event);
 
     // on first click, or when the map has been cleared
-    if (App.noCurrentDest) {
+    if (!App.hasVisualTrip) {
 
       App.currentTrip = Trip.makeTrip(destCoord);
     } else {
@@ -204,7 +205,7 @@ export default class App {
   static onGoogleMapDoubleClick(event: any): void {
 
     // waypoints cannot be added without a valid destination
-    if (App.noCurrentDest) return;
+    if (!App.hasVisualTrip) return;
 
     const clickedPos = Utils.latLngFromClickEvent(event);
     App.currentTrip.addWayPointObject(clickedPos);
@@ -245,7 +246,7 @@ export default class App {
     }, MapService.MARKER_DRAG_TIMEOUT);
   } // onWayPointMarkerDragEnd
 
-  static onWayPointDblClick(event: any): void {
+  static onWayPointMarkerDblClick(event: any): void {
 
     App.currentTrip.removeWayPointObject(event.wpIndex);
     App.routeService.fetchRoute(App.currentTrip);
@@ -260,9 +261,10 @@ export default class App {
 
   static onClearButtonClick(): void {
 
-    if (App.noCurrentDest) return;
+    if (!App.hasVisualTrip) return;
 
-    App.currentTrip.clear();
+    App.prevTrip = App._DEFAULT_TRIP;
+    App.mapService.clearTripFromMap();
     InfoHeader.reset();
   }
 
@@ -351,6 +353,11 @@ export default class App {
 
     // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX GETTERS & SETTERS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+  static get hasVisualTrip(): boolean {
+
+    return App.mapService.visualTrip !== null;
+  }
+
   static get currentPos(): LatLng {
 
     return App._currentPos;
@@ -414,11 +421,6 @@ export default class App {
   static get posMarker(): Marker {
 
     return App._posMarker;
-  }
-
-  static get noCurrentDest() {
-
-    return App._currentTrip.destCoord === null;
   }
 
 } // App

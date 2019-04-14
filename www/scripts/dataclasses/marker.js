@@ -1,4 +1,4 @@
-define(["require", "exports", "../app"], function (require, exports, app_1) {
+define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Marker = (function () {
@@ -17,10 +17,10 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
             this._googleMapMarker = new google.maps.Marker(markerOptions);
         }
         Marker.makeDestMarker = function (destCoord) {
-            return new Marker(app_1.default.mapService.map, destCoord, "", true);
+            return new Marker(null, destCoord, "", true);
         };
         Marker.makeWayPointMarker = function (coord, label) {
-            return new Marker(app_1.default.mapService.map, coord, label, true);
+            return new Marker(null, coord, label, true);
         };
         Marker.prototype.addListener = function (eventName, callback) {
             this._googleMapMarker.addListener(eventName, callback);
@@ -28,6 +28,10 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
         Marker.prototype.clearFromMap = function () {
             this._googleMapMarker.setMap(null);
             google.maps.event.clearInstanceListeners(this._googleMapMarker);
+        };
+        Marker.prototype.showOnMap = function (map) {
+            this._googleMapMarker.setMap(map);
+            return this;
         };
         Marker.prototype.moveTo = function (newPos) {
             this.clearFromMap();

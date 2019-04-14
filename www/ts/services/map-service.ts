@@ -1,9 +1,10 @@
-import { GoogleMap } from './../misc/types';
+import { GoogleMap, Nullable } from './../misc/types';
 import ClickHandler from '../misc/click-handler';
 import RouteRenderer from './route-renderer';
 import CyclingLayerToggleButton from '../components/cycling-layer-toggle-button';
 import LatLng from '../dataclasses/latlng';
 import App from '../app';
+import VisualTrip from '../dataclasses/visual-trip';
 
 /**
  * The map and the various methods and actions on it.
@@ -33,6 +34,8 @@ export default class MapService {
 
   private readonly _clickHandler = new ClickHandler();
 
+  private _visualTrip: Nullable<VisualTrip>;
+
   constructor() {
 
     const mapOptions = {
@@ -55,6 +58,8 @@ export default class MapService {
     this._map = new App.google.maps.Map(this.mapHolderDiv, mapOptions);
 
     this._bikeLayer = new google.maps.BicyclingLayer();
+
+    this._visualTrip = null;
 
     this._routeRenderer = new RouteRenderer(this._map);
 
@@ -91,14 +96,19 @@ export default class MapService {
     }
   } // toggleBikeLayer
 
-  // wrapper method for a less convoluted call in Trip
-  renderOnMap(fetchResult: google.maps.DirectionsResult) {
+  renderTripOnMap(visualTrip: VisualTrip) {
 
-    this._routeRenderer.renderOnMap(fetchResult);
+    this._visualTrip = visualTrip;
+    this._visualTrip.showMarkersOnMap(this._map);
+    this._routeRenderer.renderRouteOnMap(visualTrip.routeResult);
   }
 
-  clearPolyLineFromMap() {
+  clearTripFromMap() {
 
+    if (this._visualTrip === null) return;
+
+    this._visualTrip.clearMarkersFromMap();
+    this._visualTrip = null;
     this._routeRenderer.clearPolyLine();
   }
 
@@ -127,6 +137,11 @@ export default class MapService {
   get bikeLayerOn(): boolean {
 
     return this._bikeLayerOn;
+  }
+
+  get visualTrip(): Nullable<VisualTrip> {
+
+    return this._visualTrip;
   }
 
   _setListeners(): void {

@@ -23,9 +23,9 @@ define(["require", "exports"], function (require, exports) {
         RouteRenderer.prototype.clearPolyLine = function () {
             this._renderer.setMap(null);
         };
-        RouteRenderer.prototype.renderOnMap = function (fetchResult) {
+        RouteRenderer.prototype.renderRouteOnMap = function (routeResult) {
             this._renderer.setMap(this._googleMap);
-            this._renderer.setDirections(fetchResult);
+            this._renderer.setDirections(routeResult);
         };
         RouteRenderer._ROUTE_COLOR = '#2B7CFF';
         return RouteRenderer;

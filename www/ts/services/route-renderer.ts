@@ -1,3 +1,4 @@
+import VisualTrip from "../dataclasses/visual-trip";
 
 /**
  * Renders routes on the map.
@@ -37,10 +38,12 @@ export default class RouteRenderer {
     this._renderer.setMap(null);
   }
 
-  renderOnMap(fetchResult: google.maps.DirectionsResult): void {
+  // Note: this only renders the polyline; the markers are managed 
+  // separately, bacause they're not part of the *route*, as such.
+  renderRouteOnMap(routeResult: google.maps.DirectionsResult): void {
 
     this._renderer.setMap(this._googleMap);
-    this._renderer.setDirections(fetchResult); // renders polyline on the map
+    this._renderer.setDirections(routeResult); // renders polyline on the map
   }
 
 } // RouteRenderer

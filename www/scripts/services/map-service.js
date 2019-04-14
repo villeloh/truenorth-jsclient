@@ -21,6 +21,7 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
             this.mapHolderDiv = document.getElementById('map');
             this._map = new app_1.default.google.maps.Map(this.mapHolderDiv, mapOptions);
             this._bikeLayer = new google.maps.BicyclingLayer();
+            this._visualTrip = null;
             this._routeRenderer = new route_renderer_1.default(this._map);
             this._setListeners();
         }
@@ -43,10 +44,16 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
                 this._bikeLayerOn = true;
             }
         };
-        MapService.prototype.renderOnMap = function (fetchResult) {
-            this._routeRenderer.renderOnMap(fetchResult);
+        MapService.prototype.renderTripOnMap = function (visualTrip) {
+            this._visualTrip = visualTrip;
+            this._visualTrip.showMarkersOnMap(this._map);
+            this._routeRenderer.renderRouteOnMap(visualTrip.routeResult);
         };
-        MapService.prototype.clearPolyLineFromMap = function () {
+        MapService.prototype.clearTripFromMap = function () {
+            if (this._visualTrip === null)
+                return;
+            this._visualTrip.clearMarkersFromMap();
+            this._visualTrip = null;
             this._routeRenderer.clearPolyLine();
         };
         Object.defineProperty(MapService.prototype, "markerDragEventJustStopped", {
@@ -76,6 +83,13 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
         Object.defineProperty(MapService.prototype, "bikeLayerOn", {
             get: function () {
                 return this._bikeLayerOn;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(MapService.prototype, "visualTrip", {
+            get: function () {
+                return this._visualTrip;
             },
             enumerable: true,
             configurable: true

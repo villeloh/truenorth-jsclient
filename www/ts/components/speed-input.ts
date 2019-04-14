@@ -54,11 +54,11 @@ const SpeedInput = {
       App.speed = 0;
     }
 
-    if (App.noCurrentDest) return; // the planned trip always has a speed, but it's only used if there's a possible trip that's being displayed
+    if (App.mapService.visualTrip === null) return; // the planned trip always has a speed, but it's only used if there's a possible trip that's being displayed
 
     // update the top screen info header with the new duration.
-    App.currentTrip.duration = Utils.calcDuration(App.currentTrip.distance!, App.speed); // we have a distance if we have a valid destination
-    InfoHeader.updateDuration(App.currentTrip.duration);
+    const newDura = Utils.calcDuration(App.mapService.visualTrip.distance, App.speed);
+    InfoHeader.updateDuration(newDura);
   } // onValueChange
 
 }; // SpeedInput

@@ -1,4 +1,4 @@
-define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./dataclasses/latlng", "./services/map-service", "./services/geoloc-service", "./services/route-service", "./misc/utils", "./misc/env", "./components/menu", "./components/info-header", "./components/map-style-toggle-button", "./misc/ui"], function (require, exports, marker_1, trip_1, latlng_1, map_service_1, geoloc_service_1, route_service_1, utils_1, env_1, menu_1, info_header_1, map_style_toggle_button_1, ui_1) {
+define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./dataclasses/latlng", "./services/map-service", "./services/geoloc-service", "./services/route-service", "./misc/utils", "./misc/env", "./components/menu", "./components/info-header", "./components/map-style-toggle-button", "./misc/ui", "./dataclasses/visual-trip"], function (require, exports, marker_1, trip_1, latlng_1, map_service_1, geoloc_service_1, route_service_1, utils_1, env_1, menu_1, info_header_1, map_style_toggle_button_1, ui_1, visual_trip_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var TravelMode;
@@ -21,7 +21,6 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             document.addEventListener('deviceready', App.onDeviceReady.bind(App), false);
         };
         App.initServices = function () {
-            console.log("called initServices");
             GoogleMapsLoader.KEY = env_1.default.API_KEY;
             GoogleMapsLoader.LANGUAGE = 'en';
             GoogleMapsLoader.LIBRARIES = ['geometry', 'places'];
@@ -33,11 +32,11 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 var defaultTripOptions = {
                     map: App._mapService.map,
                     startCoord: new latlng_1.default(0, 0),
-                    destCoord: null,
-                    status: trip_1.Trip.Status.SUCCEEDED
+                    destCoord: null
                 };
                 var defaultTrip = new trip_1.Trip(defaultTripOptions);
                 App._currentTrip = defaultTrip;
+                App._DEFAULT_TRIP = defaultTrip;
                 App._prevTrip = App._currentTrip.copy();
                 App._posMarker = new marker_1.default(App._mapService.map, App._currentPos, "", false);
                 App._posMarker.setIcon(marker_1.default.POS_MARKER_URL);
@@ -47,32 +46,30 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             });
         };
         App.onRouteFetchSuccess = function (fetchResult, successfulTrip) {
-            if (App.prevTrip.destCoord !== null) {
-                App.currentTrip.clear();
+            if (App.hasVisualTrip) {
+                App.mapService.clearTripFromMap();
             }
             var route = fetchResult.routes[0];
             var dist = utils_1.default.distanceInKm(route);
             var dura = utils_1.default.calcDuration(dist, App.speed);
-            successfulTrip.distance = dist;
-            successfulTrip.duration = dura;
-            successfulTrip.fetchResult = fetchResult;
-            successfulTrip.status = trip_1.Trip.Status.SHOWN;
+            var visualTrip = new visual_trip_1.default(fetchResult, successfulTrip.destCoord, successfulTrip.getAllWayPointCoords(), dist, dura);
             App.prevTrip = successfulTrip.copy();
-            App.currentTrip = successfulTrip;
-            App.currentTrip.showOnMap();
+            App.mapService.renderTripOnMap(visualTrip);
+            console.log("hasVisualTrip after setting it: " + App.hasVisualTrip);
             info_header_1.default.updateDistance(dist);
             info_header_1.default.updateDuration(dura);
         };
         App.onRouteFetchFailure = function () {
             App.currentTrip = App.prevTrip.copy();
+            App.prevTrip = App._DEFAULT_TRIP.copy();
             App.routeService.fetchRoute(App.currentTrip);
         };
         App.onGoogleMapLongPress = function (event) {
-            if (App.currentTrip.status === trip_1.Trip.Status.SUCCEEDED) {
+            if (App.hasVisualTrip) {
                 App.prevTrip = App.currentTrip.copy();
             }
             var destCoord = utils_1.default.latLngFromClickEvent(event);
-            if (App.noCurrentDest) {
+            if (!App.hasVisualTrip) {
                 App.currentTrip = trip_1.Trip.makeTrip(destCoord);
             }
             else {
@@ -81,7 +78,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.routeService.fetchRoute(App.currentTrip);
         };
         App.onGoogleMapDoubleClick = function (event) {
-            if (App.noCurrentDest)
+            if (!App.hasVisualTrip)
                 return;
             var clickedPos = utils_1.default.latLngFromClickEvent(event);
             App.currentTrip.addWayPointObject(clickedPos);
@@ -107,7 +104,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 App.mapService.markerDragEventJustStopped = false;
             }, map_service_1.default.MARKER_DRAG_TIMEOUT);
         };
-        App.onWayPointDblClick = function (event) {
+        App.onWayPointMarkerDblClick = function (event) {
             App.currentTrip.removeWayPointObject(event.wpIndex);
             App.routeService.fetchRoute(App.currentTrip);
         };
@@ -115,9 +112,10 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.mapService.reCenter(App.currentPos);
         };
         App.onClearButtonClick = function () {
-            if (App.noCurrentDest)
+            if (!App.hasVisualTrip)
                 return;
-            App.currentTrip.clear();
+            App.prevTrip = App._DEFAULT_TRIP;
+            App.mapService.clearTripFromMap();
             info_header_1.default.reset();
         };
         App.onMenuButtonClick = function (event) {
@@ -169,6 +167,13 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         };
         App._receivedEvent = function (id) {
         };
+        Object.defineProperty(App, "hasVisualTrip", {
+            get: function () {
+                return App.mapService.visualTrip !== null;
+            },
+            enumerable: true,
+            configurable: true
+        });
         Object.defineProperty(App, "currentPos", {
             get: function () {
                 return App._currentPos;
@@ -236,13 +241,6 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         Object.defineProperty(App, "posMarker", {
             get: function () {
                 return App._posMarker;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(App, "noCurrentDest", {
-            get: function () {
-                return App._currentTrip.destCoord === null;
             },
             enumerable: true,
             configurable: true
