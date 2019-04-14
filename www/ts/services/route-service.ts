@@ -32,6 +32,8 @@ export default class RouteService {
   // makes this tricky. perhaps move to that approach later?
   fetchRoute(trip: Trip) {
 
+    console.log("called fetch");
+
     if (trip.status !== Trip.Status.PREFETCH) return;
 
     // Somehow the context is lost in the route fetch callbacks...
@@ -43,6 +45,12 @@ export default class RouteService {
     // null destCoords sometimes reach this method (after clicking on water twice or more in a row).
     // for now, it's an unavoidable side effect of the way the trip state is managed.
     if (destCoord === null) return;
+
+    console.log("wps in fetch:");
+    trip.wayPointObjects.forEach(obj => {
+
+      console.log(obj.toString());
+    });
 
     const request: google.maps.DirectionsRequest = {
 

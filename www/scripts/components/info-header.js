@@ -10,6 +10,7 @@ define(["require", "exports", "../misc/utils"], function (require, exports, util
         _INNER_P_ID_DIVISOR: 'info-header-p-divisor',
         addTo: function (parentDiv) {
             var outerDiv = document.createElement('div');
+            outerDiv.id = InfoHeader._OUTER_DIV_ID;
             var p1 = document.createElement('p');
             p1.id = InfoHeader._INNER_P_ID_DIST;
             p1.innerHTML = InfoHeader._DEFAULT_DIST;

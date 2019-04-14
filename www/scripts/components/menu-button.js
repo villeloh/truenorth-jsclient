@@ -11,6 +11,7 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
             outerDiv.id = MenuButton._OUTER_DIV_ID;
             var innerDiv = document.createElement('div');
             innerDiv.id = MenuButton._INNER_DIV_ID;
+            innerDiv.innerHTML = MenuButton.CLOSED_SYMBOL;
             outerDiv.addEventListener('click', app_1.default.onMenuButtonClick);
             outerDiv.appendChild(innerDiv);
             parentDiv.appendChild(outerDiv);

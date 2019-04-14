@@ -79,9 +79,11 @@ export default class Marker {
       map: this._map,
       draggable: this._isDraggable,
       label: this._label,
-      crossOnDrag: false
+      crossOnDrag: false,
+      icon: this._googleMapMarker.getIcon()
     }; // options
 
+    // @ts-ignore (warning about incompatible types, due to the icon field in options)
     this._googleMapMarker = new google.maps.Marker(options);
   } // moveTo
 

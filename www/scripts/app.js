@@ -9,16 +9,6 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
     var App = (function () {
         function App() {
         }
-        Object.defineProperty(App, "MAX_SPEED", {
-            get: function () { return 50; },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(App, "DEFAULT_SPEED", {
-            get: function () { return 15; },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(App, "TravelMode", {
             get: function () {
                 return TravelMode;
@@ -39,6 +29,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 App.google = google;
                 App._mapService = new map_service_1.default();
                 App._routeService = new route_service_1.default(App.onRouteFetchSuccess, App.onRouteFetchFailure);
+                App._speed = App.DEFAULT_SPEED;
                 var defaultTripOptions = {
                     map: App._mapService.map,
                     startCoord: new latlng_1.default(0, 0),
@@ -256,6 +247,8 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             enumerable: true,
             configurable: true
         });
+        App.MAX_SPEED = 50;
+        App.DEFAULT_SPEED = 15;
         App._currentPos = new latlng_1.default(0, 0);
         App._geoLocService = new geoloc_service_1.default();
         return App;

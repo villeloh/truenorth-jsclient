@@ -62,8 +62,6 @@ export default class Utils {
   } // distanceInKm
 
   static latLngFromClickEvent(event: any): LatLng {
-
-    console.log("click event: " + JSON.stringify(event));
   
     return new LatLng(event.latLng.lat(), event.latLng.lng());
   }

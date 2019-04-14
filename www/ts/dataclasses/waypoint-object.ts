@@ -6,9 +6,12 @@ import LatLng from './latlng';
 
 export default class WayPointObject {
 
+  readonly location: any;
+
   // typescript insists on having the stopover property, even though it's useless
-  constructor(readonly location: LatLng, readonly stopover = true) {
+  constructor(latLng: LatLng, readonly stopover = true) {
     
+    this.location = latLng;
   }
 
   toString(): string {

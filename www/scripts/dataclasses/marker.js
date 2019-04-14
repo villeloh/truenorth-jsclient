@@ -36,7 +36,8 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
                 map: this._map,
                 draggable: this._isDraggable,
                 label: this._label,
-                crossOnDrag: false
+                crossOnDrag: false,
+                icon: this._googleMapMarker.getIcon()
             };
             this._googleMapMarker = new google.maps.Marker(options);
         };

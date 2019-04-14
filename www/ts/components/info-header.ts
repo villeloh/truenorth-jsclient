@@ -17,6 +17,7 @@ const InfoHeader = {
   addTo: function(parentDiv: any) {
 
     const outerDiv = document.createElement('div');
+    outerDiv.id = InfoHeader._OUTER_DIV_ID;
 
     const p1 = document.createElement('p');
     p1.id = InfoHeader._INNER_P_ID_DIST;

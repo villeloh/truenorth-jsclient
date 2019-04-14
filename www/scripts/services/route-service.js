@@ -8,12 +8,17 @@ define(["require", "exports", "./../dataclasses/trip", "../app"], function (requ
             this._directionsService = new google.maps.DirectionsService();
         }
         RouteService.prototype.fetchRoute = function (trip) {
+            console.log("called fetch");
             if (trip.status !== trip_1.Trip.Status.PREFETCH)
                 return;
             var that = this;
             var destCoord = trip.destCoord;
             if (destCoord === null)
                 return;
+            console.log("wps in fetch:");
+            trip.wayPointObjects.forEach(function (obj) {
+                console.log(obj.toString());
+            });
             var request = {
                 origin: trip.startCoord,
                 destination: destCoord,

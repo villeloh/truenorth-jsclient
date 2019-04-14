@@ -53,8 +53,8 @@ window.onload = function () {
 // so I'm making all things in it static.
 export default class App {
 
-  static get MAX_SPEED() { return 50; } // km/h  
-  static get DEFAULT_SPEED() { return 15; } // km/h
+  static readonly MAX_SPEED = 50; // km/h  
+  static readonly DEFAULT_SPEED = 15; // km/h
 
   static get TravelMode() {
 
@@ -66,12 +66,12 @@ export default class App {
   private static _travelMode: any; // BICYCLING / WALKING
 
 
-  private static _mapService: any;
-  private static _routeService: any;
+  private static _mapService: MapService;
+  private static _routeService: RouteService;
 
   // periodically updated by the geoLocService 
   private static _currentPos: LatLng = new LatLng(0,0);
-  private static _posMarker: any;
+  private static _posMarker: Marker;
 
   private static readonly _geoLocService: GeoLocService = new GeoLocService();
 
@@ -110,6 +110,8 @@ export default class App {
       // fix this, but it's not a priority atm)
       App._mapService = new MapService();
       App._routeService = new RouteService(App.onRouteFetchSuccess, App.onRouteFetchFailure);
+
+      App._speed = App.DEFAULT_SPEED;
         
       // _currentTrip should never be null (even though many of its members may be)
       const defaultTripOptions: TripOptions = {

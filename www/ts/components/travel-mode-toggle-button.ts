@@ -20,8 +20,10 @@ const TravelModeToggleButton = {
     select.addEventListener('change', App.onTravelModeToggleButtonClick);
 
     const cycleOption = document.createElement('option');
+    cycleOption.innerHTML = "cycle";
     cycleOption.value = App.TravelMode.BICYCLING;
     const walkOption = document.createElement('option');
+    walkOption.innerHTML = "walk";
     walkOption.value = App.TravelMode.WALKING;
     
     select.appendChild(cycleOption);

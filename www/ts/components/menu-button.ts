@@ -19,6 +19,7 @@ const MenuButton = {
 
     const innerDiv = document.createElement('div');
     innerDiv.id = MenuButton._INNER_DIV_ID;
+    innerDiv.innerHTML = MenuButton.CLOSED_SYMBOL;
 
     outerDiv.addEventListener('click', App.onMenuButtonClick);
     

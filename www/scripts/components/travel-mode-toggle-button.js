@@ -11,8 +11,10 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
             select.id = TravelModeToggleButton.SELECT_ID;
             select.addEventListener('change', app_1.default.onTravelModeToggleButtonClick);
             var cycleOption = document.createElement('option');
+            cycleOption.innerHTML = "cycle";
             cycleOption.value = app_1.default.TravelMode.BICYCLING;
             var walkOption = document.createElement('option');
+            walkOption.innerHTML = "walk";
             walkOption.value = app_1.default.TravelMode.WALKING;
             select.appendChild(cycleOption);
             select.appendChild(walkOption);
