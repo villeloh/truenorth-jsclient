@@ -12,8 +12,6 @@ import ClearButton from '../components/clear-button';
 
 const UI = {
 
-  mapService: null,
-
   init: function(): void {
 
     this._addLocationButton();

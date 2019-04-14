@@ -1,3 +1,4 @@
+import App from '../app';
 
 /**
  * Make the main right-hand corner menu button.
@@ -11,11 +12,22 @@ const MenuButton = {
   _OUTER_DIV_ID: 'menu-btn-outer',
   _INNER_DIV_ID: 'menu-btn-inner',
 
-  addTo: function (parentDiv) {
+  addTo: function (parentDiv: any) {
+
+    const outerDiv = document.createElement('div');
+    outerDiv.id = MenuButton._OUTER_DIV_ID;
+
+    const innerDiv = document.createElement('div');
+    innerDiv.id = MenuButton._INNER_DIV_ID;
+
+    outerDiv.addEventListener('click', App.onMenuButtonClick);
     
-    parentDiv.innerHTML += `<div id=${MenuButton._OUTER_DIV_ID} onclick="App.onMenuButtonClick(event)">
+    outerDiv.appendChild(innerDiv);
+    parentDiv.appendChild(outerDiv);
+    
+   /* parentDiv.innerHTML += `<div id=${MenuButton._OUTER_DIV_ID} onclick="App.onMenuButtonClick(event)">
       <div id=${MenuButton._INNER_DIV_ID}>${MenuButton.CLOSED_SYMBOL}</div>
-    </div>`;
+    </div>`; */
   }
 
 }; // MenuButton

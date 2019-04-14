@@ -124,7 +124,6 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.mapService.reCenter(App.currentPos);
         };
         App.onClearButtonClick = function () {
-            console.log("called clear!");
             if (App.noCurrentDest)
                 return;
             App.currentTrip.clear();

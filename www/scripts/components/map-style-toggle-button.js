@@ -1,4 +1,4 @@
-define(["require", "exports"], function (require, exports) {
+define(["require", "exports", "../app"], function (require, exports, app_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var MapStyleToggleButton = {
@@ -8,7 +8,14 @@ define(["require", "exports"], function (require, exports) {
         OUTER_DIV_CLASS: 'map-style-btn-outer',
         INNER_DIV_CLASS: 'map-style-btn-inner',
         addTo: function (parentDiv, btnText) {
-            parentDiv.innerHTML += "<div class=" + MapStyleToggleButton.OUTER_DIV_CLASS + " onclick=\"App.onMapStyleToggleButtonClick(event)\">\n    <div class=" + MapStyleToggleButton.INNER_DIV_CLASS + ">" + btnText + "</div></div>";
+            var outerDiv = document.createElement('div');
+            outerDiv.className = MapStyleToggleButton.OUTER_DIV_CLASS;
+            var innerDiv = document.createElement('div');
+            innerDiv.className = MapStyleToggleButton.INNER_DIV_CLASS;
+            innerDiv.innerHTML = btnText;
+            outerDiv.addEventListener('click', app_1.default.onMapStyleToggleButtonClick);
+            outerDiv.appendChild(innerDiv);
+            parentDiv.appendChild(outerDiv);
         }
     };
     exports.default = MapStyleToggleButton;

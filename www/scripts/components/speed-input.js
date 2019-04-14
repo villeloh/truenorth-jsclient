@@ -1,29 +1,36 @@
-define(["require", "exports"], function (require, exports) {
+define(["require", "exports", "../app", "../misc/utils", "../components/info-header"], function (require, exports, app_1, utils_1, info_header_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var SpeedInput = {
         INPUT_ID: 'speed-input',
         addTo: function (parentDiv) {
-            parentDiv.innerHTML = "<input \n      type=\"number\" \n      id=" + SpeedInput.INPUT_ID + " \n      step=1\n      max=" + App.MAX_SPEED + " \n      value=" + App.speed + " \n      oninput=\"SpeedInput.onValueChange(event)\"\n    >";
+            var input = document.createElement('input');
+            input.type = "number";
+            input.id = SpeedInput.INPUT_ID;
+            input.step = "1";
+            input.max = app_1.default.MAX_SPEED + "";
+            input.value = app_1.default.speed + "";
+            input.addEventListener('input', SpeedInput.onValueChange);
+            parentDiv.appendChild(input);
         },
         onValueChange: function (event) {
             var value = event.target.value;
-            if (value > App.MAX_SPEED) {
-                event.target.value = App.MAX_SPEED;
+            if (value > app_1.default.MAX_SPEED) {
+                event.target.value = app_1.default.MAX_SPEED;
             }
             else if (value < 0) {
                 event.target.value = 0;
             }
-            if (Utils.isValidSpeed(event.target.value)) {
-                App.speed = event.target.value;
+            if (utils_1.default.isValidSpeed(event.target.value)) {
+                app_1.default.speed = event.target.value;
             }
             else {
-                App.speed = 0;
+                app_1.default.speed = 0;
             }
-            if (App.noCurrentDest)
+            if (app_1.default.noCurrentDest)
                 return;
-            App.currentTrip.duration = Utils.calcDuration(App.currentTrip.distance, App.speed);
-            InfoHeader.updateDuration(App.currentTrip.duration);
+            app_1.default.currentTrip.duration = utils_1.default.calcDuration(app_1.default.currentTrip.distance, app_1.default.speed);
+            info_header_1.default.updateDuration(app_1.default.currentTrip.duration);
         }
     };
     exports.default = SpeedInput;

@@ -1,3 +1,6 @@
+import App from '../app';
+import Utils from '../misc/utils';
+import InfoHeader from '../components/info-header';
 
 /**
  * A simple input box for giving the estimated (average) cycling speed.
@@ -8,8 +11,18 @@ const SpeedInput = {
 
   INPUT_ID: 'speed-input',
 
-  addTo: function(parentDiv) {
+  addTo: function(parentDiv: any) {
 
+    const input = document.createElement('input');
+    input.type = "number";
+    input.id = SpeedInput.INPUT_ID;
+    input.step = "1";
+    input.max = App.MAX_SPEED+"";
+    input.value = App.speed+"";
+    input.addEventListener('input', SpeedInput.onValueChange);
+
+    parentDiv.appendChild(input);
+    /*
     parentDiv.innerHTML = `<input 
       type="number" 
       id=${SpeedInput.INPUT_ID} 
@@ -17,12 +30,12 @@ const SpeedInput = {
       max=${App.MAX_SPEED} 
       value=${App.speed} 
       oninput="SpeedInput.onValueChange(event)"
-    >`;
+    >`; */
   }, // addTo
 
   // technically it's a violation of the general design principle of the app to put this here, 
   // but I'm trying not to bloat App.ts and this is the best candidate to tuck away in its own file.
-  onValueChange: function(event) {
+  onValueChange: function(event: any): void {
 
     const value = event.target.value;
 
@@ -44,7 +57,7 @@ const SpeedInput = {
     if (App.noCurrentDest) return; // the planned trip always has a speed, but it's only used if there's a possible trip that's being displayed
 
     // update the top screen info header with the new duration.
-    App.currentTrip.duration = Utils.calcDuration(App.currentTrip.distance, App.speed);
+    App.currentTrip.duration = Utils.calcDuration(App.currentTrip.distance!, App.speed); // we have a distance if we have a valid destination
     InfoHeader.updateDuration(App.currentTrip.duration);
   } // onValueChange
 

@@ -73,6 +73,13 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
             enumerable: true,
             configurable: true
         });
+        Object.defineProperty(MapService.prototype, "bikeLayerOn", {
+            get: function () {
+                return this._bikeLayerOn;
+            },
+            enumerable: true,
+            configurable: true
+        });
         MapService.prototype._setListeners = function () {
             this.map.addListener('click', function (e) {
                 e.id = click_handler_1.default.ClickType.SINGLE;

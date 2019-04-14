@@ -2,7 +2,6 @@ define(["require", "exports", "../app", "../components/menu-button", "../compone
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UI = {
-        mapService: null,
         init: function () {
             this._addLocationButton();
             this._addMenuButton();

@@ -9,7 +9,18 @@ define(["require", "exports", "../misc/utils"], function (require, exports, util
         _INNER_P_ID_DURA: 'info-header-p-dura',
         _INNER_P_ID_DIVISOR: 'info-header-p-divisor',
         addTo: function (parentDiv) {
-            parentDiv.innerHTML = "<div id=" + InfoHeader._OUTER_DIV_ID + ">\n      <p id=" + InfoHeader._INNER_P_ID_DIST + ">" + InfoHeader._DEFAULT_DIST + "</p>\n      <p id=" + InfoHeader._INNER_P_ID_DIVISOR + ">&nbsp;|&nbsp;</p>\n      <p id=" + InfoHeader._INNER_P_ID_DURA + ">" + InfoHeader._DEFAULT_DURA + "</p>\n    <div>";
+            var outerDiv = document.createElement('div');
+            var p1 = document.createElement('p');
+            p1.id = InfoHeader._INNER_P_ID_DIST;
+            p1.innerHTML = InfoHeader._DEFAULT_DIST;
+            var p2 = document.createElement('p');
+            p2.id = InfoHeader._INNER_P_ID_DIVISOR;
+            p2.innerHTML = '&nbsp;|&nbsp;';
+            var p3 = document.createElement('p');
+            p3.id = InfoHeader._INNER_P_ID_DURA;
+            p3.innerHTML = InfoHeader._DEFAULT_DURA;
+            outerDiv.append(p1, p2, p3);
+            parentDiv.appendChild(outerDiv);
         },
         reset: function () {
             var innerDistP = document.getElementById(InfoHeader._INNER_P_ID_DIST);

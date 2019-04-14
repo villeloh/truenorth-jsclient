@@ -1,3 +1,9 @@
+import MapStyleToggleButton from '../components/map-style-toggle-button';
+import CyclingLayerToggleButton from '../components/cycling-layer-toggle-button';
+import TravelModeToggleButton from '../components/travel-mode-toggle-button';
+import SpeedInput from '../components/speed-input';
+import MenuButton from '../components/menu-button';
+import UI from '../misc/ui';
 
 /**
  * Make the main right hand corner menu (containing the map type controls etc).
@@ -9,7 +15,7 @@ const Menu = {
 
   isVisible: false,
 
-  addTo: function(parentDiv) {
+  addTo: function(parentDiv: any) {
 
     Menu._addMapStyleToggleButtons(parentDiv);
     Menu._addCyclingLayerToggleButton(parentDiv);
@@ -18,14 +24,14 @@ const Menu = {
   }, // make
 
   // if called first, no extra holder div is needed
-  _addMapStyleToggleButtons: function (parentDiv) {
+  _addMapStyleToggleButtons: function (parentDiv: any) {
     
     MapStyleToggleButton.addTo(parentDiv, MapStyleToggleButton.NORMAL_TXT);
     MapStyleToggleButton.addTo(parentDiv, MapStyleToggleButton.SAT_TXT);
     MapStyleToggleButton.addTo(parentDiv, MapStyleToggleButton.TERRAIN_TXT);
   }, // addMapStyleToggleButtons
 
-  _addCyclingLayerToggleButton: function(parentDiv) {
+  _addCyclingLayerToggleButton: function(parentDiv: any) {
     
     const buttonHolderDiv = document.createElement('div');
     buttonHolderDiv.style.marginTop = '20%'; // separate it from the other buttons
@@ -41,7 +47,7 @@ const Menu = {
     }, 50);
   }, // _addCyclingLayerToggleButton
 
-  _addTravelModeToggleButton: function(parentDiv) {
+  _addTravelModeToggleButton: function(parentDiv: any) {
 
     // we need a holder div because otherwise the .innerHTML assignment in addTo() erases all other menu items
     const buttonHolderDiv = document.createElement('div'); 
@@ -49,7 +55,7 @@ const Menu = {
     parentDiv.appendChild(buttonHolderDiv);
   },
 
-  _addSpeedInput: function(parentDiv) {
+  _addSpeedInput: function(parentDiv: any) {
 
     const holderDiv = document.createElement('div');
     SpeedInput.addTo(holderDiv);
@@ -59,19 +65,19 @@ const Menu = {
   // technically, it removes / recreates the menu with each click.
   // this is needed because zoom events 'reset' the map, which makes 
   // the menu become visible with each zoom if it's present in the DOM.
-  toggleVisibility: (event) => {
+  toggleVisibility: (event: any) => {
 
     const menuBtnTextHolderDiv = event.target;
 
-    if (this.isVisible) {
+    if (Menu.isVisible) {
 
-      this.isVisible = false;
+      Menu.isVisible = false;
       UI.removeElement(Menu.DIV_ID);
       menuBtnTextHolderDiv.textContent = MenuButton.CLOSED_SYMBOL;
       menuBtnTextHolderDiv.style.fontSize = '26px'; // the symbols for the open and closed menu are of different sizes in the same font, so the other one has to be made larger
     } else {
 
-      this.isVisible = true;
+      Menu.isVisible = true;
       UI.addMenu();
       menuBtnTextHolderDiv.textContent = MenuButton.OPEN_SYMBOL;
       menuBtnTextHolderDiv.style.fontSize = '20px';

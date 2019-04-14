@@ -43,6 +43,7 @@ define(["require", "exports", "../dataclasses/latlng"], function (require, expor
             return parseFloat((total / 1000).toFixed(1));
         };
         Utils.latLngFromClickEvent = function (event) {
+            console.log("click event: " + JSON.stringify(event));
             return new latlng_1.default(event.latLng.lat(), event.latLng.lng());
         };
         return Utils;
