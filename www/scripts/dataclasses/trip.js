@@ -4,23 +4,20 @@ define(["require", "exports", "../app", "./waypoint-object"], function (require,
     var Trip = (function () {
         function Trip(options) {
             this._map = options.map;
-            this._startCoord = options.startCoord;
             this._destCoord = options.destCoord;
             this._wayPointObjects = options.wayPointObjects || [];
         }
         Trip.makeTrip = function (destCoord) {
             var options = {
                 map: app_1.default.mapService.map,
-                startCoord: app_1.default.currentTrip.startCoord,
                 destCoord: destCoord,
-                wayPointObjects: app_1.default.currentTrip.wayPointObjects || []
+                wayPointObjects: []
             };
             return new Trip(options);
         };
         Trip.prototype.copy = function () {
             var options = {
                 map: this._map,
-                startCoord: this._startCoord,
                 destCoord: this._destCoord,
                 wayPointObjects: []
             };
@@ -29,16 +26,6 @@ define(["require", "exports", "../app", "./waypoint-object"], function (require,
             });
             return new Trip(options);
         };
-        Object.defineProperty(Trip.prototype, "startCoord", {
-            get: function () {
-                return this._startCoord;
-            },
-            set: function (newCoord) {
-                this._startCoord = newCoord;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Trip.prototype, "destCoord", {
             get: function () {
                 return this._destCoord;

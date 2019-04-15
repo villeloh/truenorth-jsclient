@@ -9,11 +9,12 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
         }
         RouteService.prototype.fetchRoute = function (trip) {
             var that = this;
+            var startCoord = app_1.default.currentPos;
             var destCoord = trip.destCoord;
             if (destCoord === null)
                 return;
             var request = {
-                origin: trip.startCoord,
+                origin: startCoord,
                 destination: destCoord,
                 travelMode: app_1.default.travelMode,
                 optimizeWaypoints: false,

@@ -9,6 +9,7 @@ import Env from './misc/env';
 import { InfoHeader, MapStyleToggleButton, Menu } from './components/components';
 import UIBuilder from './misc/ui-builder';
 import VisualTrip from './dataclasses/visual-trip';
+import { Nullable } from './misc/types';
 
 // to be able to use the IIFE-enabled thingy... I'm sure there's a more proper way to do this, but it works for now.
 declare const GoogleMapsLoader: any;
@@ -39,7 +40,7 @@ export default class App {
 
   // speed and travel mode are not parts of Trip because they exist regardless if there's a current trip or not
   private static _speed: number; // km/h
-  private static _travelMode: any; // BICYCLING / WALKING
+  private static _travelMode: TravelMode; // BICYCLING / WALKING
 
   // they need the google object to be initialized, so it can't be done here
   private static _mapService: MapService;
@@ -51,10 +52,10 @@ export default class App {
 
   private static readonly _geoLocService: GeoLocService = new GeoLocService();
 
-  private static _prevTrip: Trip;
-  private static _currentTrip: Trip;
+  private static _prevTrip: Nullable<Trip>;
+  private static _plannedTrip: Nullable<Trip>;
 
-  private static _DEFAULT_TRIP: Trip;
+  // private static _DEFAULT_TRIP: Trip;
 
   static google: any; // I'm not sure if this is even needed. the loader loads the API and the global types
   // ensure that the correct calls can be made without typescript complaining about them.
@@ -71,7 +72,7 @@ export default class App {
   }
 
   // called down below in onDeviceReady
-  private static _initServices(): void {
+  private static _init(): void {
 
     GoogleMapsLoader.KEY = Env.API_KEY;
     GoogleMapsLoader.LANGUAGE = 'en';
@@ -88,32 +89,20 @@ export default class App {
       App._routeService = new RouteService(App.onRouteFetchSuccess, App.onRouteFetchFailure);
 
       App._speed = App.DEFAULT_SPEED;
-        
-      // _currentTrip should never be null (even though many of its members may be)
-      const defaultTripOptions: TripOptions = {
 
-        map: App._mapService.map, // this needs to be done here as we need the initialized google object for the map
-        startCoord: new LatLng(0,0),
-        destCoord: null
-      };
-
-      const defaultTrip = new Trip(defaultTripOptions);
-
-      App._currentTrip = defaultTrip;
-      App._DEFAULT_TRIP = defaultTrip;
-      App._prevTrip = App._currentTrip.copy(); // weird, but we need it to exist
-
+      App._plannedTrip = null;
+      App._prevTrip = null;
     
       App._posMarker = new Marker(App._mapService.map, App._currentPos, "", false);
       App._posMarker.setIcon(Marker.POS_MARKER_URL); 
 
       App._travelMode = App.TravelMode.BICYCLING;
 
-      UIBuilder.init();
+      UIBuilder.buildUI();
 
       App._geoLocService.start();
     }); // GoogleMapsLoader.load
-  } // _initServices
+  } // _init
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX API QUERY RESPONSES XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -128,17 +117,17 @@ export default class App {
     const visualTrip = new VisualTrip(fetchResult, successfulTrip.destCoord!, successfulTrip.getAllWayPointCoords());
     
     App.prevTrip = successfulTrip.copy(); // save the trip in case the next one is unsuccessful
-    // App.currentTrip = successfulTrip; // should be unnecessary, as it is already the same trip
+    // App.plannedTrip = successfulTrip; // should be unnecessary, as it is already the same trip
     App.mapService.renderTripOnMap(visualTrip);
 
-    // this happens internally in VisualTrip as well, when it stores the distance
-    // (it's more clear to do it explicitly here).
+    // this happens internally in VisualTrip as well, when it stores the distance,
+    // but it's more clear to do it explicitly here.
     const route: google.maps.DirectionsRoute = fetchResult.routes[0];
     const dist: number = Utils.distanceInKm(route);
 
-    // the trip duration can be always calculated based on the stored distance and current speed values. 
+    // the trip duration can always be calculated based on the stored distance and current speed values. 
     // because the speed can be changed at any time (via the speed input), and VisualTrip is meant to 
-    // contain only fresh data, the duration should never be directly stored in VisualTrip.
+    // contain only fresh data, the duration should never be stored directly in VisualTrip.
     const dura: number = Utils.calcDuration(dist, App.speed);
 
     InfoHeader.updateDistance(dist);
@@ -148,11 +137,11 @@ export default class App {
   // usually occurs when clicking on water, mountains, etc
   static onRouteFetchFailure(): void {
 
+    if (App.prevTrip === null) return;
     // restore a successful trip (in most situations; failure is harmless though)
-    App.currentTrip = App.prevTrip.copy(); 
-    App.prevTrip = App._DEFAULT_TRIP.copy(); // to prevent issues with clicking on water, etc
+    App.plannedTrip = App.prevTrip.copy();
 
-    App.routeService.fetchRoute(App.currentTrip); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
+    App.routeService.fetchRoute(App.plannedTrip); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
   }
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX UI ACTION RESPONSES XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -161,23 +150,28 @@ export default class App {
 
   static onGoogleMapLongPress(event: any): void {
 
+    // lots of exclamation marks here! if we have a visualTrip, 
+    // we also have a plannedTrip; if we don't, it will be created
+    // by this very method. so, there should be no problem, but a neater
+    // way to do things should eventually be found.
+
     if (App.hasVisualTrip) {
 
-      App.prevTrip = App.currentTrip.copy();
+      App.prevTrip = App.plannedTrip!.copy();
     }
 
     const destCoord: LatLng = Utils.latLngFromClickEvent(event);
 
     // on first click, or when the map has been cleared
-    if (!App.hasVisualTrip) {
+    if (App.hasVisualTrip) {
 
-      App.currentTrip = Trip.makeTrip(destCoord);
+      App.plannedTrip!.destCoord = destCoord;
     } else {
 
-      App.currentTrip.destCoord = destCoord;
+      App.plannedTrip = Trip.makeTrip(destCoord);
     }
 
-    App.routeService.fetchRoute(App.currentTrip);
+    App.routeService.fetchRoute(App.plannedTrip!);
   } // onGoogleMapLongPress
 
   static onGoogleMapDoubleClick(event: any): void {
@@ -186,14 +180,14 @@ export default class App {
     if (!App.hasVisualTrip) return;
 
     const clickedPos = Utils.latLngFromClickEvent(event);
-    App.currentTrip.addWayPointObject(clickedPos);
-    App.routeService.fetchRoute(App.currentTrip);
+    App.plannedTrip!.addWayPointObject(clickedPos);
+    App.routeService.fetchRoute(App.plannedTrip!);
   }
 
-  static onDestMarkerDragEnd(event:any): void {
+  static onDestMarkerDragEnd(event: any): void {
 
-    App.currentTrip.destCoord = Utils.latLngFromClickEvent(event);
-    App.routeService.fetchRoute(App.currentTrip);
+    App.plannedTrip!.destCoord = Utils.latLngFromClickEvent(event);
+    App.routeService.fetchRoute(App.plannedTrip!);
 
     App.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
 
@@ -212,9 +206,9 @@ export default class App {
   static onWayPointMarkerDragEnd(event: any): void {
 
     const latLng = Utils.latLngFromClickEvent(event);
-    App.currentTrip.updateWayPointObject(event.wpIndex, latLng);
+    App.plannedTrip!.updateWayPointObject(event.wpIndex, latLng);
 
-    App.routeService.fetchRoute(App.currentTrip);
+    App.routeService.fetchRoute(App.plannedTrip!);
 
     App.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
 
@@ -226,8 +220,8 @@ export default class App {
 
   static onWayPointMarkerDblClick(event: any): void {
 
-    App.currentTrip.removeWayPointObject(event.wpIndex);
-    App.routeService.fetchRoute(App.currentTrip);
+    App.plannedTrip!.removeWayPointObject(event.wpIndex);
+    App.routeService.fetchRoute(App.plannedTrip!);
   }
 
   // -------------------------------- OVERLAY UI CLICKS ---------------------------------------------------------------
@@ -241,7 +235,13 @@ export default class App {
 
     if (!App.hasVisualTrip) return;
 
-    App.prevTrip = App._DEFAULT_TRIP;
+    if (App.prevTrip) {
+
+      App.prevTrip.clear();
+    }
+    App.prevTrip = null;
+    App.plannedTrip!.clear(); // if there is a visualTrip, it exists
+    App.plannedTrip = null;
     App.mapService.clearTripFromMap();
     InfoHeader.reset();
   }
@@ -291,15 +291,18 @@ export default class App {
   // -------------------------------- GEOLOC --------------------------------------------------------------------------
 
   // called by GeoLocService each time it gets a new location
-  static onGeoLocSuccess(newPos: LatLng): void {
-
-    App.prevTrip.startCoord = newPos;
-    App.currentTrip.startCoord = newPos; // it needs to keep 'in sync' with the geoloc updates. reactive programming would be a big help here!
+  static onGeoLocSuccess(oldCoord: LatLng, newCoord: LatLng): void {
 
     App.posMarker.clearFromMap();
-    App.currentPos = newPos; // currentPos may be useless rn, but it could be used if moving to MobX / RxJs
-    App.posMarker.moveTo(newPos);
-  }
+    App.currentPos = newCoord;
+    App.posMarker.moveTo(newCoord);
+
+    // make the camera follow the user when moving rapidly enough
+    if (GeoLocService.diffIsOverCameraMoveThreshold(oldCoord, newCoord)) {
+
+      App.mapService.reCenter(newCoord); 
+    }
+  } // onGeoLocSuccess
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LIFECYCLE METHODS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -310,7 +313,7 @@ export default class App {
     document.addEventListener("pause", App._onPause, false);
     document.addEventListener("resume", App._onResume, false);
 
-    App._initServices();
+    App._init();
   } // onDeviceReady
 
   private static _onPause(): void {
@@ -346,22 +349,22 @@ export default class App {
     App._currentPos = newPos;
   }
 
-  static get currentTrip(): Trip {
+  static get plannedTrip(): Nullable<Trip> {
 
-    return App._currentTrip;
+    return App._plannedTrip;
   }
 
-  static set currentTrip(newTrip: Trip) {
+  static set plannedTrip(newTrip: Nullable<Trip>) {
 
-    App._currentTrip = newTrip;
+    App._plannedTrip = newTrip;
   }
 
-  static get prevTrip(): Trip {
+  static get prevTrip(): Nullable<Trip> {
 
     return App._prevTrip;
   }
 
-  static set prevTrip(newTrip: Trip) {
+  static set prevTrip(newTrip: Nullable<Trip>) {
 
     App._prevTrip = newTrip;
   }

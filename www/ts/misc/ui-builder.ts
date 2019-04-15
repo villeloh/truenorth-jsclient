@@ -7,7 +7,7 @@ import { InfoHeader, MenuButton, LocationButton, Menu, ClearButton } from '../co
 
 const UIBuilder = {
 
-  init: function(): void {
+  buildUI: function(): void {
 
     this._addLocationButton();
     this._addMenuButton();

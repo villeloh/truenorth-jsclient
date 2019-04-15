@@ -32,6 +32,7 @@ export default class RouteService {
     // this is the only convenient workaround.
     const that = this;
 
+    const startCoord = App.currentPos;
     const destCoord = trip.destCoord;
 
     // null destCoords sometimes reach this method (after clicking on water twice or more in a row).
@@ -47,7 +48,7 @@ export default class RouteService {
     const request: google.maps.DirectionsRequest = {
 
       //@ts-ignore (the custom LatLng type is missing some irrelevant methods)
-      origin: trip.startCoord,
+      origin: startCoord,
       //@ts-ignore (the custom LatLng type is missing some irrelevant methods)
       destination: destCoord,
       //@ts-ignore (again, my custom type is not to Google's liking)

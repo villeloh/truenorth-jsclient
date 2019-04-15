@@ -51,12 +51,7 @@ export default class GeoLocService {
     const newCoord = new LatLng(pos.coords.latitude, pos.coords.longitude);
     const oldCoord = App.currentPos;
     
-    App.onGeoLocSuccess(newCoord); // update _currentPos in App
-
-    if (this._diffIsOverCameraMoveThreshold(oldCoord, newCoord)) {
-
-      App.mapService.reCenter(newCoord); 
-    }
+    App.onGeoLocSuccess(oldCoord, newCoord); // update _currentPos in App
   } // _onSuccess
 
   // i'm not sure of its actual type
@@ -67,7 +62,7 @@ export default class GeoLocService {
   }
 
   // make the camera auto-follow the user only if the change in position is significant enough (i.e., they're cycling).
-  _diffIsOverCameraMoveThreshold(oldPos: LatLng, newPos: LatLng): boolean {
+  static diffIsOverCameraMoveThreshold(oldPos: LatLng, newPos: LatLng): boolean {
 
     const diff: number = oldPos.differenceFrom(newPos);
 

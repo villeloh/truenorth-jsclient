@@ -20,7 +20,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             console.log("called initialize");
             document.addEventListener('deviceready', App._onDeviceReady.bind(App), false);
         };
-        App._initServices = function () {
+        App._init = function () {
             GoogleMapsLoader.KEY = env_1.default.API_KEY;
             GoogleMapsLoader.LANGUAGE = 'en';
             GoogleMapsLoader.LIBRARIES = ['geometry', 'places'];
@@ -29,19 +29,12 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 App._mapService = new map_service_1.default();
                 App._routeService = new route_service_1.default(App.onRouteFetchSuccess, App.onRouteFetchFailure);
                 App._speed = App.DEFAULT_SPEED;
-                var defaultTripOptions = {
-                    map: App._mapService.map,
-                    startCoord: new latlng_1.default(0, 0),
-                    destCoord: null
-                };
-                var defaultTrip = new trip_1.Trip(defaultTripOptions);
-                App._currentTrip = defaultTrip;
-                App._DEFAULT_TRIP = defaultTrip;
-                App._prevTrip = App._currentTrip.copy();
+                App._plannedTrip = null;
+                App._prevTrip = null;
                 App._posMarker = new marker_1.default(App._mapService.map, App._currentPos, "", false);
                 App._posMarker.setIcon(marker_1.default.POS_MARKER_URL);
                 App._travelMode = App.TravelMode.BICYCLING;
-                ui_builder_1.default.init();
+                ui_builder_1.default.buildUI();
                 App._geoLocService.start();
             });
         };
@@ -59,33 +52,34 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             components_1.InfoHeader.updateDuration(dura);
         };
         App.onRouteFetchFailure = function () {
-            App.currentTrip = App.prevTrip.copy();
-            App.prevTrip = App._DEFAULT_TRIP.copy();
-            App.routeService.fetchRoute(App.currentTrip);
+            if (App.prevTrip === null)
+                return;
+            App.plannedTrip = App.prevTrip.copy();
+            App.routeService.fetchRoute(App.plannedTrip);
         };
         App.onGoogleMapLongPress = function (event) {
             if (App.hasVisualTrip) {
-                App.prevTrip = App.currentTrip.copy();
+                App.prevTrip = App.plannedTrip.copy();
             }
             var destCoord = utils_1.default.latLngFromClickEvent(event);
-            if (!App.hasVisualTrip) {
-                App.currentTrip = trip_1.Trip.makeTrip(destCoord);
+            if (App.hasVisualTrip) {
+                App.plannedTrip.destCoord = destCoord;
             }
             else {
-                App.currentTrip.destCoord = destCoord;
+                App.plannedTrip = trip_1.Trip.makeTrip(destCoord);
             }
-            App.routeService.fetchRoute(App.currentTrip);
+            App.routeService.fetchRoute(App.plannedTrip);
         };
         App.onGoogleMapDoubleClick = function (event) {
             if (!App.hasVisualTrip)
                 return;
             var clickedPos = utils_1.default.latLngFromClickEvent(event);
-            App.currentTrip.addWayPointObject(clickedPos);
-            App.routeService.fetchRoute(App.currentTrip);
+            App.plannedTrip.addWayPointObject(clickedPos);
+            App.routeService.fetchRoute(App.plannedTrip);
         };
         App.onDestMarkerDragEnd = function (event) {
-            App.currentTrip.destCoord = utils_1.default.latLngFromClickEvent(event);
-            App.routeService.fetchRoute(App.currentTrip);
+            App.plannedTrip.destCoord = utils_1.default.latLngFromClickEvent(event);
+            App.routeService.fetchRoute(App.plannedTrip);
             App.mapService.markerDragEventJustStopped = true;
             setTimeout(function () {
                 App.mapService.markerDragEventJustStopped = false;
@@ -96,16 +90,16 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         };
         App.onWayPointMarkerDragEnd = function (event) {
             var latLng = utils_1.default.latLngFromClickEvent(event);
-            App.currentTrip.updateWayPointObject(event.wpIndex, latLng);
-            App.routeService.fetchRoute(App.currentTrip);
+            App.plannedTrip.updateWayPointObject(event.wpIndex, latLng);
+            App.routeService.fetchRoute(App.plannedTrip);
             App.mapService.markerDragEventJustStopped = true;
             setTimeout(function () {
                 App.mapService.markerDragEventJustStopped = false;
             }, map_service_1.default.MARKER_DRAG_TIMEOUT);
         };
         App.onWayPointMarkerDblClick = function (event) {
-            App.currentTrip.removeWayPointObject(event.wpIndex);
-            App.routeService.fetchRoute(App.currentTrip);
+            App.plannedTrip.removeWayPointObject(event.wpIndex);
+            App.routeService.fetchRoute(App.plannedTrip);
         };
         App.onLocButtonClick = function () {
             App.mapService.reCenter(App.currentPos);
@@ -113,7 +107,8 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         App.onClearButtonClick = function () {
             if (!App.hasVisualTrip)
                 return;
-            App.prevTrip = App._DEFAULT_TRIP;
+            App.prevTrip = null;
+            App.plannedTrip = null;
             App.mapService.clearTripFromMap();
             components_1.InfoHeader.reset();
         };
@@ -146,8 +141,6 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.travelMode = event.target.value;
         };
         App.onGeoLocSuccess = function (newPos) {
-            App.prevTrip.startCoord = newPos;
-            App.currentTrip.startCoord = newPos;
             App.posMarker.clearFromMap();
             App.currentPos = newPos;
             App.posMarker.moveTo(newPos);
@@ -156,7 +149,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App._receivedEvent('deviceready');
             document.addEventListener("pause", App._onPause, false);
             document.addEventListener("resume", App._onResume, false);
-            App._initServices();
+            App._init();
         };
         App._onPause = function () {
             App._geoLocService.stop();
@@ -183,12 +176,12 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(App, "currentTrip", {
+        Object.defineProperty(App, "plannedTrip", {
             get: function () {
-                return App._currentTrip;
+                return App._plannedTrip;
             },
             set: function (newTrip) {
-                App._currentTrip = newTrip;
+                App._plannedTrip = newTrip;
             },
             enumerable: true,
             configurable: true

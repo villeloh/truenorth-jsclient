@@ -11,7 +11,6 @@ import WayPointObject from './waypoint-object';
 export interface TripOptions {
 
     readonly map: GoogleMap,
-    readonly startCoord: LatLng,
     readonly destCoord: Nullable<LatLng>, // it can be null in certain situations, mainly when clicking on water multiple times in a row
     readonly wayPointObjects?: Array<WayPointObject> // not all trips have waypoints
 } // TripOptions
@@ -19,7 +18,6 @@ export interface TripOptions {
 export class Trip {
 
   private _map: GoogleMap;
-  private _startCoord: LatLng;
   private _destCoord: Nullable<LatLng>;
   private _wayPointObjects: Array<WayPointObject>;
 
@@ -27,7 +25,6 @@ export class Trip {
 
     // object destructuring should be used here, but it doesn't want to play ball with 'this'
     this._map = options.map;
-    this._startCoord = options.startCoord;
     this._destCoord = options.destCoord;
     this._wayPointObjects = options.wayPointObjects || []; // to avoid 'undefined'
   } // constructor
@@ -37,9 +34,8 @@ export class Trip {
 
     const options: TripOptions = {
       map: App.mapService.map,
-      startCoord: App.currentTrip.startCoord,
       destCoord: destCoord,
-      wayPointObjects: App.currentTrip.wayPointObjects || []
+      wayPointObjects: []
     }
     return new Trip(options);
   } // makeTrip
@@ -50,7 +46,6 @@ export class Trip {
     const options: TripOptions = {
 
       map: this._map,
-      startCoord: this._startCoord,
       destCoord: this._destCoord,
       wayPointObjects: []
     };
@@ -61,17 +56,6 @@ export class Trip {
 
     return new Trip(options);
   } // copy
-
-  get startCoord(): LatLng {
-
-    return this._startCoord;
-  }
-
-  // called every time the user's position updates
-  set startCoord(newCoord: LatLng) {
-
-    this._startCoord = newCoord;
-  }
 
   get destCoord(): Nullable<LatLng> {
 
