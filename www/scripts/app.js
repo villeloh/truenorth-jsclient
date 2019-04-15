@@ -1,4 +1,4 @@
-define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./dataclasses/latlng", "./services/map-service", "./services/geoloc-service", "./services/route-service", "./misc/utils", "./misc/env", "./components/menu", "./components/info-header", "./components/map-style-toggle-button", "./misc/ui", "./dataclasses/visual-trip"], function (require, exports, marker_1, trip_1, latlng_1, map_service_1, geoloc_service_1, route_service_1, utils_1, env_1, menu_1, info_header_1, map_style_toggle_button_1, ui_1, visual_trip_1) {
+define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./dataclasses/latlng", "./services/map-service", "./services/geoloc-service", "./services/route-service", "./misc/utils", "./misc/env", "./components/components", "./misc/ui-builder", "./dataclasses/visual-trip"], function (require, exports, marker_1, trip_1, latlng_1, map_service_1, geoloc_service_1, route_service_1, utils_1, env_1, components_1, ui_builder_1, visual_trip_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var TravelMode;
@@ -18,9 +18,9 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         });
         App.initialize = function () {
             console.log("called initialize");
-            document.addEventListener('deviceready', App.onDeviceReady.bind(App), false);
+            document.addEventListener('deviceready', App._onDeviceReady.bind(App), false);
         };
-        App.initServices = function () {
+        App._initServices = function () {
             GoogleMapsLoader.KEY = env_1.default.API_KEY;
             GoogleMapsLoader.LANGUAGE = 'en';
             GoogleMapsLoader.LIBRARIES = ['geometry', 'places'];
@@ -41,7 +41,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 App._posMarker = new marker_1.default(App._mapService.map, App._currentPos, "", false);
                 App._posMarker.setIcon(marker_1.default.POS_MARKER_URL);
                 App._travelMode = App.TravelMode.BICYCLING;
-                ui_1.default.init();
+                ui_builder_1.default.init();
                 App._geoLocService.start();
             });
         };
@@ -55,8 +55,8 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             var route = fetchResult.routes[0];
             var dist = utils_1.default.distanceInKm(route);
             var dura = utils_1.default.calcDuration(dist, App.speed);
-            info_header_1.default.updateDistance(dist);
-            info_header_1.default.updateDuration(dura);
+            components_1.InfoHeader.updateDistance(dist);
+            components_1.InfoHeader.updateDuration(dura);
         };
         App.onRouteFetchFailure = function () {
             App.currentTrip = App.prevTrip.copy();
@@ -115,22 +115,22 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 return;
             App.prevTrip = App._DEFAULT_TRIP;
             App.mapService.clearTripFromMap();
-            info_header_1.default.reset();
+            components_1.InfoHeader.reset();
         };
         App.onMenuButtonClick = function (event) {
-            menu_1.default.toggleVisibility(event);
+            components_1.Menu.toggleVisibility(event);
         };
         App.onMapStyleToggleButtonClick = function (event) {
             var textHolderDiv = event.target;
             var value = textHolderDiv.innerText;
             switch (value) {
-                case map_style_toggle_button_1.default.NORMAL_TXT:
+                case components_1.MapStyleToggleButton.NORMAL_TXT:
                     App.mapService.map.setMapTypeId(google.maps.MapTypeId.ROADMAP);
                     break;
-                case map_style_toggle_button_1.default.SAT_TXT:
+                case components_1.MapStyleToggleButton.SAT_TXT:
                     App.mapService.map.setMapTypeId(google.maps.MapTypeId.HYBRID);
                     break;
-                case map_style_toggle_button_1.default.TERRAIN_TXT:
+                case components_1.MapStyleToggleButton.TERRAIN_TXT:
                     App.mapService.map.setMapTypeId(google.maps.MapTypeId.TERRAIN);
                     break;
                 default:
@@ -152,11 +152,11 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.currentPos = newPos;
             App.posMarker.moveTo(newPos);
         };
-        App.onDeviceReady = function () {
+        App._onDeviceReady = function () {
             App._receivedEvent('deviceready');
             document.addEventListener("pause", App._onPause, false);
             document.addEventListener("resume", App._onResume, false);
-            App.initServices();
+            App._initServices();
         };
         App._onPause = function () {
             App._geoLocService.stop();

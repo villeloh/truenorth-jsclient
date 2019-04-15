@@ -50,6 +50,7 @@ export default class RouteService {
       origin: trip.startCoord,
       //@ts-ignore (the custom LatLng type is missing some irrelevant methods)
       destination: destCoord,
+      //@ts-ignore (again, my custom type is not to Google's liking)
       travelMode: App.travelMode, // comes from the travel mode toggle button
       optimizeWaypoints: false,
       avoidHighways: true,

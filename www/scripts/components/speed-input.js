@@ -1,4 +1,4 @@
-define(["require", "exports", "../app", "../misc/utils", "../components/info-header"], function (require, exports, app_1, utils_1, info_header_1) {
+define(["require", "exports", "../app", "../misc/utils", "../components/components"], function (require, exports, app_1, utils_1, components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var SpeedInput = {
@@ -30,7 +30,7 @@ define(["require", "exports", "../app", "../misc/utils", "../components/info-hea
             if (!app_1.default.hasVisualTrip)
                 return;
             var newDura = utils_1.default.calcDuration(app_1.default.mapService.visualTrip.distance, app_1.default.speed);
-            info_header_1.default.updateDuration(newDura);
+            components_1.InfoHeader.updateDuration(newDura);
         },
     };
     exports.default = SpeedInput;

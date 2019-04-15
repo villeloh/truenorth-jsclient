@@ -1,5 +1,4 @@
 import { Nullable, GoogleMap } from './../misc/types';
-import { TripOptions } from './trip';
 import App from '../app';
 import LatLng from './latlng';
 import WayPointObject from './waypoint-object';

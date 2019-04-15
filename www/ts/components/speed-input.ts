@@ -1,6 +1,6 @@
 import App from '../app';
 import Utils from '../misc/utils';
-import InfoHeader from '../components/info-header';
+import { InfoHeader } from '../components/components';
 
 /**
  * A simple input box for giving the estimated (average) cycling speed.
@@ -54,7 +54,7 @@ const SpeedInput = {
       App.speed = 0;
     }
 
-    if (!App.hasVisualTrip) return; // the planned trip always has a speed, but it's only used if there's a possible trip that's being displayed
+    if (!App.hasVisualTrip) return; // theere is always a speed value, but it's only used if there's a successfully fetched trip that's being displayed
 
     // update the top screen info header with the new duration.
     // Note: it seems the typescript compiler is not smart enough to recognize a null check by a method in another class
@@ -63,6 +63,5 @@ const SpeedInput = {
   }, // onValueChange
 
 }; // SpeedInput
-
 
 export default SpeedInput;

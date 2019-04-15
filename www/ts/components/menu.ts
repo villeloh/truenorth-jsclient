@@ -1,9 +1,5 @@
-import MapStyleToggleButton from '../components/map-style-toggle-button';
-import CyclingLayerToggleButton from '../components/cycling-layer-toggle-button';
-import TravelModeToggleButton from '../components/travel-mode-toggle-button';
-import SpeedInput from '../components/speed-input';
-import MenuButton from '../components/menu-button';
-import UI from '../misc/ui';
+import UIBuilder from '../misc/ui-builder';
+import { MapStyleToggleButton, CyclingLayerToggleButton, TravelModeToggleButton, SpeedInput, MenuButton } from '../components/components';
 
 /**
  * Make the main right hand corner menu (containing the map type controls etc).
@@ -72,13 +68,13 @@ const Menu = {
     if (Menu.isVisible) {
 
       Menu.isVisible = false;
-      UI.removeElement(Menu.DIV_ID);
+      UIBuilder.removeElement(Menu.DIV_ID);
       menuBtnTextHolderDiv.textContent = MenuButton.CLOSED_SYMBOL;
       menuBtnTextHolderDiv.style.fontSize = '26px'; // the symbols for the open and closed menu are of different sizes in the same font, so the other one has to be made larger
     } else {
 
       Menu.isVisible = true;
-      UI.addMenu();
+      UIBuilder.addMenu();
       menuBtnTextHolderDiv.textContent = MenuButton.OPEN_SYMBOL;
       menuBtnTextHolderDiv.style.fontSize = '20px';
     } // if-else
@@ -86,4 +82,4 @@ const Menu = {
 
 }; // Menu
 
-export default Menu;
+export default Menu; 

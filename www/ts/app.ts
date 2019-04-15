@@ -6,19 +6,12 @@ import GeoLocService from './services/geoloc-service';
 import RouteService from './services/route-service';
 import Utils from './misc/utils';
 import Env from './misc/env';
-import Menu from './components/menu'; // TODO: combine the UI elements in one module, in order to have a more concise import
-import InfoHeader from './components/info-header';
-import MapStyleToggleButton from './components/map-style-toggle-button';
-import UI from './misc/ui';
+import { InfoHeader, MapStyleToggleButton, Menu } from './components/components';
+import UIBuilder from './misc/ui-builder';
 import VisualTrip from './dataclasses/visual-trip';
 
 // to be able to use the IIFE-enabled thingy... I'm sure there's a more proper way to do this, but it works for now.
 declare const GoogleMapsLoader: any;
-
-// not needed atm it seems.
-// to be able to use the google maps types in typescript
-// /// <reference path="google.d.ts"/>
-// import * as whatever from 'google.maps'; // it doesn't work because the actual google maps api file is dl'ded from the net (I guess)
 
 /**
  * Overall holder/central hub for the app, containing the responses to ui actions and route fetches.
@@ -31,24 +24,6 @@ enum TravelMode {
   WALKING = 'WALKING',
   BICYCLING = 'BICYCLING'
 }
-
-/*
-// needed in order to make Cordova work.
-const AppContainer = {
-
-  // app 'constructor'
-  initialize(): void {
-
-    console.log("called initialize");
-
-    document.addEventListener('deviceready', App.onDeviceReady.bind(App), false);
-  }
-};
-
-window.onload = function () {
-  
-  AppContainer.initialize();
-} */
 
 // app needs to be globally accessible (otherwise I'd have to pass it to almost everything, which is pointless & hopelessly wordy),
 // so I'm making all things in it static.
@@ -66,7 +41,7 @@ export default class App {
   private static _speed: number; // km/h
   private static _travelMode: any; // BICYCLING / WALKING
 
-
+  // they need the google object to be initialized, so it can't be done here
   private static _mapService: MapService;
   private static _routeService: RouteService;
 
@@ -92,11 +67,11 @@ export default class App {
 
     console.log("called initialize");
 
-    document.addEventListener('deviceready', App.onDeviceReady.bind(App), false);
+    document.addEventListener('deviceready', App._onDeviceReady.bind(App), false);
   }
 
   // called down below in onDeviceReady
-  private static initServices(): void {
+  private static _initServices(): void {
 
     GoogleMapsLoader.KEY = Env.API_KEY;
     GoogleMapsLoader.LANGUAGE = 'en';
@@ -134,7 +109,7 @@ export default class App {
 
       App._travelMode = App.TravelMode.BICYCLING;
 
-      UI.init();
+      UIBuilder.init();
 
       App._geoLocService.start();
     }); // GoogleMapsLoader.load
@@ -328,14 +303,14 @@ export default class App {
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LIFECYCLE METHODS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  static onDeviceReady(): void {
+  private static _onDeviceReady(): void {
 
     App._receivedEvent('deviceready');
 
     document.addEventListener("pause", App._onPause, false);
     document.addEventListener("resume", App._onResume, false);
 
-    App.initServices();
+    App._initServices();
   } // onDeviceReady
 
   private static _onPause(): void {
@@ -411,12 +386,12 @@ export default class App {
     App._speed = newSpeed;
   }
 
-  static get travelMode(): google.maps.TravelMode {
+  static get travelMode(): TravelMode {
 
     return App._travelMode;
   }
 
-  static set travelMode(newMode: google.maps.TravelMode) {
+  static set travelMode(newMode: TravelMode) {
 
     App._travelMode = newMode;
   }

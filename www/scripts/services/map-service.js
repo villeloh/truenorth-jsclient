@@ -1,4 +1,4 @@
-define(["require", "exports", "../misc/click-handler", "./route-renderer", "../components/cycling-layer-toggle-button", "../dataclasses/latlng", "../app"], function (require, exports, click_handler_1, route_renderer_1, cycling_layer_toggle_button_1, latlng_1, app_1) {
+define(["require", "exports", "../misc/click-handler", "./route-renderer", "../components/components", "../dataclasses/latlng", "../app"], function (require, exports, click_handler_1, route_renderer_1, components_1, latlng_1, app_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var MapService = (function () {
@@ -34,12 +34,12 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
         MapService.prototype.toggleBikeLayer = function (event) {
             var toggleBtn = event.target.parentElement;
             if (this._bikeLayerOn) {
-                cycling_layer_toggle_button_1.default.applyOffStyles(toggleBtn);
+                components_1.CyclingLayerToggleButton.applyOffStyles(toggleBtn);
                 this._bikeLayer.setMap(null);
                 this._bikeLayerOn = false;
             }
             else {
-                cycling_layer_toggle_button_1.default.applyOnStyles(toggleBtn);
+                components_1.CyclingLayerToggleButton.applyOnStyles(toggleBtn);
                 this._bikeLayer.setMap(this._map);
                 this._bikeLayerOn = true;
             }

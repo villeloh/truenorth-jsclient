@@ -1,16 +1,11 @@
-
 import App from '../app';
-import MenuButton from '../components/menu-button';
-import Menu from '../components/menu';
-import LocationButton from '../components/location-button';
-import InfoHeader from '../components/info-header';
-import ClearButton from '../components/clear-button';
+import { InfoHeader, MenuButton, LocationButton, Menu, ClearButton } from '../components/components';
 
 /**
  * For adding elements to the custom UI. The UI logic is contained elsewhere, in the relevant files.
  */
 
-const UI = {
+const UIBuilder = {
 
   init: function(): void {
 
@@ -87,6 +82,6 @@ const UI = {
     element!.parentNode!.removeChild(element!);
   }
 
-}; // UI
+}; // UIBuilder
 
-export default UI;
+export default UIBuilder;

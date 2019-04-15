@@ -1,7 +1,7 @@
 import { GoogleMap, Nullable } from './../misc/types';
 import ClickHandler from '../misc/click-handler';
 import RouteRenderer from './route-renderer';
-import CyclingLayerToggleButton from '../components/cycling-layer-toggle-button';
+import { CyclingLayerToggleButton } from '../components/components';
 import LatLng from '../dataclasses/latlng';
 import App from '../app';
 import VisualTrip from '../dataclasses/visual-trip';
