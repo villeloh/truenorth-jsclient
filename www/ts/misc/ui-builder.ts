@@ -49,9 +49,9 @@ const UIBuilder = {
   _addLocationButton: function(): void {
 
     const buttonHolderDiv = document.createElement('div');
-    LocationButton.addTo(buttonHolderDiv);
+    const locButton = LocationButton.build();
+    buttonHolderDiv.appendChild(locButton);
 
-    // buttonHolderDiv.index = 1; // wtf does this do ?? is it the same as z-index ?
     App.mapService.addUIControl(App.google.maps.ControlPosition.RIGHT_BOTTOM, buttonHolderDiv);
   },
 

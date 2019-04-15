@@ -1,7 +1,7 @@
 define(["require", "exports", "../app"], function (require, exports, app_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var CyclingLayerToggleButton = {
+    const CyclingLayerToggleButton = {
         BORDER_ON: '2px solid green',
         BORDER_OFF: '2px solid #808080',
         BG_COLOR_ON: '#7CFFAC',
@@ -10,9 +10,9 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
         INNER_DIV_ID: 'cyc-layer-btn-inner',
         TEXT: 'C.LAYER',
         addTo: function (parentDiv) {
-            var outerDiv = document.createElement('div');
+            const outerDiv = document.createElement('div');
             outerDiv.id = CyclingLayerToggleButton.OUTER_DIV_ID;
-            var innerDiv = document.createElement('div');
+            const innerDiv = document.createElement('div');
             innerDiv.id = CyclingLayerToggleButton.INNER_DIV_ID;
             innerDiv.innerHTML = CyclingLayerToggleButton.TEXT;
             outerDiv.addEventListener('click', app_1.default.onCyclingLayerToggleButtonClick);
@@ -20,7 +20,7 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
             parentDiv.appendChild(outerDiv);
         },
         setInitialStyles: function () {
-            var toggleBtn = document.getElementById(CyclingLayerToggleButton.OUTER_DIV_ID);
+            const toggleBtn = document.getElementById(CyclingLayerToggleButton.OUTER_DIV_ID);
             if (app_1.default.mapService.bikeLayerOn) {
                 CyclingLayerToggleButton.applyOnStyles(toggleBtn);
             }

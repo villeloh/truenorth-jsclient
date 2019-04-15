@@ -1,19 +1,19 @@
 define(["require", "exports", "../app"], function (require, exports, app_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var RouteService = (function () {
-        function RouteService(onFetchSuccessCallback, onFetchFailureCallback) {
+    class RouteService {
+        constructor(onFetchSuccessCallback, onFetchFailureCallback) {
             this.onFetchSuccessCallback = onFetchSuccessCallback;
             this.onFetchFailureCallback = onFetchFailureCallback;
             this._directionsService = new google.maps.DirectionsService();
         }
-        RouteService.prototype.fetchRoute = function (trip) {
-            var that = this;
-            var startCoord = app_1.default.currentPos;
-            var destCoord = trip.destCoord;
+        fetchRoute(trip) {
+            const that = this;
+            const startCoord = app_1.default.currentPos;
+            const destCoord = trip.destCoord;
             if (destCoord === null)
                 return;
-            var request = {
+            const request = {
                 origin: startCoord,
                 destination: destCoord,
                 travelMode: app_1.default.travelMode,
@@ -30,8 +30,7 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
                     that.onFetchFailureCallback();
                 }
             });
-        };
-        return RouteService;
-    }());
+        }
+    }
     exports.default = RouteService;
 });

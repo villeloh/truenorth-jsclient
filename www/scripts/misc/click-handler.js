@@ -8,30 +8,21 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
         ClickType[ClickType["LONG_START"] = 2] = "LONG_START";
         ClickType[ClickType["LONG_END"] = 3] = "LONG_END";
     })(ClickType || (ClickType = {}));
-    var ClickHandler = (function () {
-        function ClickHandler() {
+    class ClickHandler {
+        constructor() {
             this._isLongPress = false;
             this._doubleClickInProgress = false;
         }
-        Object.defineProperty(ClickHandler, "ClickType", {
-            get: function () {
-                return ClickType;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(ClickHandler.prototype, "isLongPress", {
-            get: function () {
-                return this._isLongPress;
-            },
-            set: function (value) {
-                this._isLongPress = value;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        ClickHandler.prototype.handle = function (event) {
-            var _this = this;
+        static get ClickType() {
+            return ClickType;
+        }
+        get isLongPress() {
+            return this._isLongPress;
+        }
+        set isLongPress(value) {
+            this._isLongPress = value;
+        }
+        handle(event) {
             switch (event.id) {
                 case ClickHandler.ClickType.SINGLE:
                     this._gMapClickEvent = event;
@@ -39,14 +30,14 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
                 case ClickHandler.ClickType.DOUBLE:
                     app_1.default.onGoogleMapDoubleClick(event);
                     this._doubleClickInProgress = true;
-                    setTimeout(function () {
-                        _this._doubleClickInProgress = false;
+                    setTimeout(() => {
+                        this._doubleClickInProgress = false;
                     }, ClickHandler._DOUBLE_CLICK_TIMEOUT);
                     break;
                 case ClickHandler.ClickType.LONG_START:
                     this._isLongPress = false;
-                    setTimeout(function () {
-                        _this._isLongPress = true;
+                    setTimeout(() => {
+                        this._isLongPress = true;
                     }, ClickHandler._LONG_PRESS_TIMEOUT);
                     break;
                 case ClickHandler.ClickType.LONG_END:
@@ -58,11 +49,10 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
                     console.log("error handling click (a Very Bad Thing)!");
                     break;
             }
-        };
-        ClickHandler._DOUBLE_CLICK_TIMEOUT = 300;
-        ClickHandler._SINGLE_CLICK_TIMEOUT = 300;
-        ClickHandler._LONG_PRESS_TIMEOUT = 1500;
-        return ClickHandler;
-    }());
+        }
+    }
+    ClickHandler._DOUBLE_CLICK_TIMEOUT = 300;
+    ClickHandler._SINGLE_CLICK_TIMEOUT = 300;
+    ClickHandler._LONG_PRESS_TIMEOUT = 1500;
     exports.default = ClickHandler;
 });

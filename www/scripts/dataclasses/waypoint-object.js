@@ -1,17 +1,15 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var WayPointObject = (function () {
-        function WayPointObject(latLng, stopover) {
-            if (stopover === void 0) { stopover = true; }
+    class WayPointObject {
+        constructor(latLng, stopover = true) {
             this.stopover = stopover;
             this.location = latLng;
         }
-        WayPointObject.prototype.toString = function () {
-            return "WP Object: ( lat.: " + this.location.lat + ", lng.: " + this.location.lng + " )";
-        };
+        toString() {
+            return `WP Object: ( lat.: ${this.location.lat}, lng.: ${this.location.lng} )`;
+        }
         ;
-        return WayPointObject;
-    }());
+    }
     exports.default = WayPointObject;
 });

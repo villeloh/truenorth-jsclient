@@ -1,5 +1,5 @@
 import Marker from './dataclasses/marker';
-import { Trip, TripOptions } from './dataclasses/trip';
+import { Trip } from './dataclasses/trip';
 import LatLng from './dataclasses/latlng';
 import MapService from './services/map-service';
 import GeoLocService from './services/geoloc-service';
@@ -11,7 +11,7 @@ import UIBuilder from './misc/ui-builder';
 import VisualTrip from './dataclasses/visual-trip';
 import { Nullable } from './misc/types';
 
-// to be able to use the IIFE-enabled thingy... I'm sure there's a more proper way to do this, but it works for now.
+// to make typescript accept its existence... I'm sure there's a more proper way to do this, but it works for now.
 declare const GoogleMapsLoader: any;
 
 /**
@@ -20,6 +20,7 @@ declare const GoogleMapsLoader: any;
  */
 
 // can't use the proper google types here, as the google object has yet to be initialized
+// (side note: whose idea was it to prohibit enums inside classes in typescript? -.-)
 enum TravelMode {
 
   WALKING = 'WALKING',
@@ -30,8 +31,8 @@ enum TravelMode {
 // so I'm making all things in it static.
 export default class App {
 
-  static readonly MAX_SPEED = 50; // km/h  
-  static readonly DEFAULT_SPEED = 15; // km/h
+  static readonly MAX_SPEED = 50; // km/h
+  static readonly DEFAULT_SPEED = 15;
 
   static get TravelMode() {
 
@@ -55,13 +56,9 @@ export default class App {
   private static _prevTrip: Nullable<Trip>;
   private static _plannedTrip: Nullable<Trip>;
 
-  // private static _DEFAULT_TRIP: Trip;
-
-  static google: any; // I'm not sure if this is even needed. the loader loads the API and the global types
-  // ensure that the correct calls can be made without typescript complaining about them.
+  static google: any;
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX INIT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-
 
   // app 'constructor'
   static initialize(): void {
@@ -74,12 +71,15 @@ export default class App {
   // called down below in onDeviceReady
   private static _init(): void {
 
+    // the GoogleMapsLoader comes automatically from google.js in the lib folder
     GoogleMapsLoader.KEY = Env.API_KEY;
     GoogleMapsLoader.LANGUAGE = 'en';
     GoogleMapsLoader.LIBRARIES = ['geometry', 'places'];
 
     GoogleMapsLoader.load(function(google: any) {
 
+      // not sure if needed or not... I'm using just google.maps.x in most places; but there was one error 
+      // in MapService when I didn't do this
       App.google = google;
 
       // NOTE: the MapService needs to be created first, as a lot of other things depend on
@@ -162,11 +162,10 @@ export default class App {
 
     const destCoord: LatLng = Utils.latLngFromClickEvent(event);
 
-    // on first click, or when the map has been cleared
     if (App.hasVisualTrip) {
 
       App.plannedTrip!.destCoord = destCoord;
-    } else {
+    } else { // on first click, or when the map has been cleared
 
       App.plannedTrip = Trip.makeTrip(destCoord);
     }
@@ -244,7 +243,7 @@ export default class App {
     App.plannedTrip = null;
     App.mapService.clearTripFromMap();
     InfoHeader.reset();
-  }
+  } // onClearButtonClick
 
   // toggles the right-hand corner menu
   static onMenuButtonClick(event: any): void {

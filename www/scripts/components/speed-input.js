@@ -1,10 +1,10 @@
 define(["require", "exports", "../app", "../misc/utils", "../components/components"], function (require, exports, app_1, utils_1, components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var SpeedInput = {
+    const SpeedInput = {
         INPUT_ID: 'speed-input',
         addTo: function (parentDiv) {
-            var input = document.createElement('input');
+            const input = document.createElement('input');
             input.type = "number";
             input.id = SpeedInput.INPUT_ID;
             input.step = "1";
@@ -14,7 +14,7 @@ define(["require", "exports", "../app", "../misc/utils", "../components/componen
             parentDiv.appendChild(input);
         },
         onValueChange: function (event) {
-            var value = event.target.value;
+            const value = event.target.value;
             if (value > app_1.default.MAX_SPEED) {
                 event.target.value = app_1.default.MAX_SPEED;
             }
@@ -29,7 +29,7 @@ define(["require", "exports", "../app", "../misc/utils", "../components/componen
             }
             if (!app_1.default.hasVisualTrip)
                 return;
-            var newDura = utils_1.default.calcDuration(app_1.default.mapService.visualTrip.distance, app_1.default.speed);
+            const newDura = utils_1.default.calcDuration(app_1.default.mapService.visualTrip.distance, app_1.default.speed);
             components_1.InfoHeader.updateDuration(newDura);
         },
     };

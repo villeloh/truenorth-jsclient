@@ -2,7 +2,7 @@
     "compilerOptions": {
         "outDir": "./www/scripts",
         "allowJs": true,
-        "target": "es5",
+        "target": "es2015",
 		"module": "amd",
 		"allowSyntheticDefaultImports": true,
 		"strictNullChecks": true,

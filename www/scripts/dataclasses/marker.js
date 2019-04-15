@@ -1,13 +1,13 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var Marker = (function () {
-        function Marker(_map, _position, _label, _isDraggable) {
+    class Marker {
+        constructor(_map, _position, _label, _isDraggable) {
             this._map = _map;
             this._position = _position;
             this._label = _label;
             this._isDraggable = _isDraggable;
-            var markerOptions = {
+            const markerOptions = {
                 position: _position,
                 map: _map,
                 draggable: _isDraggable,
@@ -16,26 +16,26 @@ define(["require", "exports"], function (require, exports) {
             };
             this._googleMapMarker = new google.maps.Marker(markerOptions);
         }
-        Marker.makeDestMarker = function (destCoord) {
+        static makeDestMarker(destCoord) {
             return new Marker(null, destCoord, "", true);
-        };
-        Marker.makeWayPointMarker = function (coord, label) {
+        }
+        static makeWayPointMarker(coord, label) {
             return new Marker(null, coord, label, true);
-        };
-        Marker.prototype.addListener = function (eventName, callback) {
+        }
+        addListener(eventName, callback) {
             this._googleMapMarker.addListener(eventName, callback);
-        };
-        Marker.prototype.clearFromMap = function () {
+        }
+        clearFromMap() {
             this._googleMapMarker.setMap(null);
             google.maps.event.clearInstanceListeners(this._googleMapMarker);
-        };
-        Marker.prototype.showOnMap = function (map) {
+        }
+        showOnMap(map) {
             this._googleMapMarker.setMap(map);
             return this;
-        };
-        Marker.prototype.moveTo = function (newPos) {
+        }
+        moveTo(newPos) {
             this.clearFromMap();
-            var options = {
+            const options = {
                 position: newPos,
                 map: this._map,
                 draggable: this._isDraggable,
@@ -44,12 +44,11 @@ define(["require", "exports"], function (require, exports) {
                 icon: this._googleMapMarker.getIcon()
             };
             this._googleMapMarker = new google.maps.Marker(options);
-        };
-        Marker.prototype.setIcon = function (iconUrl) {
+        }
+        setIcon(iconUrl) {
             this._googleMapMarker.setIcon(iconUrl);
-        };
-        Marker.POS_MARKER_URL = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png';
-        return Marker;
-    }());
+        }
+    }
+    Marker.POS_MARKER_URL = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png';
     exports.default = Marker;
 });

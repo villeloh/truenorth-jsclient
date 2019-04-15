@@ -1,8 +1,8 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var RouteRenderer = (function () {
-        function RouteRenderer(_googleMap) {
+    class RouteRenderer {
+        constructor(_googleMap) {
             this._googleMap = _googleMap;
             this._renderer = new google.maps.DirectionsRenderer({
                 draggable: false,
@@ -20,15 +20,14 @@ define(["require", "exports"], function (require, exports) {
                 }
             });
         }
-        RouteRenderer.prototype.clearPolyLine = function () {
+        clearPolyLine() {
             this._renderer.setMap(null);
-        };
-        RouteRenderer.prototype.renderRouteOnMap = function (routeResult) {
+        }
+        renderRouteOnMap(routeResult) {
             this._renderer.setMap(this._googleMap);
             this._renderer.setDirections(routeResult);
-        };
-        RouteRenderer._ROUTE_COLOR = '#2B7CFF';
-        return RouteRenderer;
-    }());
+        }
+    }
+    RouteRenderer._ROUTE_COLOR = '#2B7CFF';
     exports.default = RouteRenderer;
 });

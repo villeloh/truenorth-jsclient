@@ -1,7 +1,7 @@
 define(["require", "exports", "../misc/ui-builder", "../components/components"], function (require, exports, ui_builder_1, components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var Menu = {
+    const Menu = {
         DIV_ID: 'menu',
         isVisible: false,
         addTo: function (parentDiv) {
@@ -16,26 +16,26 @@ define(["require", "exports", "../misc/ui-builder", "../components/components"],
             components_1.MapStyleToggleButton.addTo(parentDiv, components_1.MapStyleToggleButton.TERRAIN_TXT);
         },
         _addCyclingLayerToggleButton: function (parentDiv) {
-            var buttonHolderDiv = document.createElement('div');
+            const buttonHolderDiv = document.createElement('div');
             buttonHolderDiv.style.marginTop = '20%';
             components_1.CyclingLayerToggleButton.addTo(buttonHolderDiv);
             parentDiv.appendChild(buttonHolderDiv);
-            setTimeout(function () {
+            setTimeout(() => {
                 components_1.CyclingLayerToggleButton.setInitialStyles();
             }, 50);
         },
         _addTravelModeToggleButton: function (parentDiv) {
-            var buttonHolderDiv = document.createElement('div');
+            const buttonHolderDiv = document.createElement('div');
             components_1.TravelModeToggleButton.addTo(buttonHolderDiv);
             parentDiv.appendChild(buttonHolderDiv);
         },
         _addSpeedInput: function (parentDiv) {
-            var holderDiv = document.createElement('div');
+            const holderDiv = document.createElement('div');
             components_1.SpeedInput.addTo(holderDiv);
             parentDiv.appendChild(holderDiv);
         },
-        toggleVisibility: function (event) {
-            var menuBtnTextHolderDiv = event.target;
+        toggleVisibility: (event) => {
+            const menuBtnTextHolderDiv = event.target;
             if (Menu.isVisible) {
                 Menu.isVisible = false;
                 ui_builder_1.default.removeElement(Menu.DIV_ID);
