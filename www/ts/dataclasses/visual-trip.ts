@@ -1,5 +1,5 @@
 import { GoogleMap } from '../misc/types';
-
+import Utils from '../misc/utils';
 import LatLng from './latlng';
 import Marker from './marker';
 import App from '../app';
@@ -14,12 +14,20 @@ export default class VisualTrip {
   private _destMarker: Marker;
   private _wayPointMarkers: Array<Marker>;
 
+  // a computed value (this way it's not necessary to give it to the constructor)
+  private readonly _distance: number;
+
   constructor(
     private readonly _routeResult: google.maps.DirectionsResult, 
     private readonly _destCoord: LatLng, 
-    private readonly _wayPointCoords: Array<LatLng>, 
-    private readonly _distance: number, 
-    private readonly _duration: number) {
+    private readonly _wayPointCoords: Array<LatLng>
+    ) {
+
+    // the distance will need to be stored for the purpose of calculating new
+    // trip durations. it will only be accessed, never altered, which preserves 
+    // the immutability of VisualTrip. still, it's an ugly solution and a better one may be possible.
+    const route: google.maps.DirectionsRoute = this._routeResult.routes[0];
+    this._distance = Utils.distanceInKm(route);
 
     this._destMarker = Marker.makeDestMarker(this._destCoord); // visible right away
 
@@ -61,9 +69,6 @@ export default class VisualTrip {
 
   clearMarkersFromMap(): void {
 
-    // this.distance = null;
-    // this.duration = null;
-
     this._destMarker.clearFromMap();
     // this._destMarker = null;
     this._wayPointMarkers.map(marker => {
@@ -78,26 +83,11 @@ export default class VisualTrip {
 
     return this._distance;
   };
-/*
-  set distance(value: number) {
-
-    this._distance = value;
-  } */
-
-  get duration(): number {
-
-    return this._duration;
-  }
 
   // needed by the renderer for showing the trip on the map
   get routeResult(): google.maps.DirectionsResult {
 
     return this._routeResult;
   }
-/*
-  set duration(value: number) {
-
-    this._duration = value;
-  } */
     
 } // VisualTrip

@@ -49,13 +49,12 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             if (App.hasVisualTrip) {
                 App.mapService.clearTripFromMap();
             }
+            var visualTrip = new visual_trip_1.default(fetchResult, successfulTrip.destCoord, successfulTrip.getAllWayPointCoords());
+            App.prevTrip = successfulTrip.copy();
+            App.mapService.renderTripOnMap(visualTrip);
             var route = fetchResult.routes[0];
             var dist = utils_1.default.distanceInKm(route);
             var dura = utils_1.default.calcDuration(dist, App.speed);
-            var visualTrip = new visual_trip_1.default(fetchResult, successfulTrip.destCoord, successfulTrip.getAllWayPointCoords(), dist, dura);
-            App.prevTrip = successfulTrip.copy();
-            App.mapService.renderTripOnMap(visualTrip);
-            console.log("hasVisualTrip after setting it: " + App.hasVisualTrip);
             info_header_1.default.updateDistance(dist);
             info_header_1.default.updateDuration(dura);
         };

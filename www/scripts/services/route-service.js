@@ -12,10 +12,6 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
             var destCoord = trip.destCoord;
             if (destCoord === null)
                 return;
-            console.log("wps in fetch:");
-            trip.wayPointObjects.forEach(function (obj) {
-                console.log(obj.toString());
-            });
             var request = {
                 origin: trip.startCoord,
                 destination: destCoord,

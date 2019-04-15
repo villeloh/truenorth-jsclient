@@ -148,20 +148,23 @@ export default class App {
 
       App.mapService.clearTripFromMap(); // clear the old polyline and markers from the map
     }
-    
-    const route: google.maps.DirectionsRoute = fetchResult.routes[0];
-
-    const dist: number = Utils.distanceInKm(route);
-    const dura: number = Utils.calcDuration(dist, App.speed);
 
     // it always has a valid destCoord, since the fetch was successful
-    const visualTrip = new VisualTrip(fetchResult, successfulTrip.destCoord!, successfulTrip.getAllWayPointCoords(), dist, dura);
+    const visualTrip = new VisualTrip(fetchResult, successfulTrip.destCoord!, successfulTrip.getAllWayPointCoords());
     
     App.prevTrip = successfulTrip.copy(); // save the trip in case the next one is unsuccessful
     // App.currentTrip = successfulTrip; // should be unnecessary, as it is already the same trip
     App.mapService.renderTripOnMap(visualTrip);
 
-    console.log("hasVisualTrip after setting it: " + App.hasVisualTrip);
+    // this happens internally in VisualTrip as well, when it stores the distance
+    // (it's more clear to do it explicitly here).
+    const route: google.maps.DirectionsRoute = fetchResult.routes[0];
+    const dist: number = Utils.distanceInKm(route);
+
+    // the trip duration can be always calculated based on the stored distance and current speed values. 
+    // because the speed can be changed at any time (via the speed input), and VisualTrip is meant to 
+    // contain only fresh data, the duration should never be directly stored in VisualTrip.
+    const dura: number = Utils.calcDuration(dist, App.speed);
 
     InfoHeader.updateDistance(dist);
     InfoHeader.updateDuration(dura);

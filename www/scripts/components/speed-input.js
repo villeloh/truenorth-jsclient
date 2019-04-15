@@ -27,11 +27,11 @@ define(["require", "exports", "../app", "../misc/utils", "../components/info-hea
             else {
                 app_1.default.speed = 0;
             }
-            if (app_1.default.mapService.visualTrip === null)
+            if (!app_1.default.hasVisualTrip)
                 return;
             var newDura = utils_1.default.calcDuration(app_1.default.mapService.visualTrip.distance, app_1.default.speed);
             info_header_1.default.updateDuration(newDura);
-        }
+        },
     };
     exports.default = SpeedInput;
 });

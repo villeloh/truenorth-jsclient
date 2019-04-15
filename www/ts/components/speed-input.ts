@@ -54,13 +54,15 @@ const SpeedInput = {
       App.speed = 0;
     }
 
-    if (App.mapService.visualTrip === null) return; // the planned trip always has a speed, but it's only used if there's a possible trip that's being displayed
+    if (!App.hasVisualTrip) return; // the planned trip always has a speed, but it's only used if there's a possible trip that's being displayed
 
     // update the top screen info header with the new duration.
-    const newDura = Utils.calcDuration(App.mapService.visualTrip.distance, App.speed);
+    // Note: it seems the typescript compiler is not smart enough to recognize a null check by a method in another class
+    const newDura = Utils.calcDuration(App.mapService.visualTrip!.distance, App.speed);
     InfoHeader.updateDuration(newDura);
-  } // onValueChange
+  }, // onValueChange
 
 }; // SpeedInput
+
 
 export default SpeedInput;
