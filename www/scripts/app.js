@@ -1,4 +1,4 @@
-define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./dataclasses/latlng", "./services/map-service", "./services/geoloc-service", "./services/route-service", "./misc/utils", "./misc/env", "./components/components", "./misc/ui-builder", "./dataclasses/visual-trip"], function (require, exports, marker_1, trip_1, latlng_1, map_service_1, geoloc_service_1, route_service_1, utils_1, env_1, components_1, ui_builder_1, visual_trip_1) {
+define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./dataclasses/latlng", "./services/map-service", "./services/geoloc-service", "./services/route-service", "./misc/utils", "./misc/env", "./components/components", "./misc/ui-builder", "./dataclasses/visual-trip", "./services/elevation-service"], function (require, exports, marker_1, trip_1, latlng_1, map_service_1, geoloc_service_1, route_service_1, utils_1, env_1, components_1, ui_builder_1, visual_trip_1, elevation_service_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var TravelMode;
@@ -22,6 +22,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 App.google = google;
                 App._mapService = new map_service_1.default();
                 App._routeService = new route_service_1.default(App.onRouteFetchSuccess, App.onRouteFetchFailure);
+                App._elevationService = new elevation_service_1.default(App.onElevationFetchSuccess, App.onElevationFetchFailure);
                 App._speed = App.DEFAULT_SPEED;
                 App._plannedTrip = null;
                 App._prevTrip = null;
@@ -37,9 +38,9 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 App.mapService.clearTripFromMap();
             }
             const visualTrip = new visual_trip_1.default(fetchResult, successfulTrip.destCoord, successfulTrip.getAllWayPointCoords());
-            App.prevTrip = successfulTrip.copy();
-            App.mapService.renderTripOnMap(visualTrip);
             const route = fetchResult.routes[0];
+            App._elevationService.fetchElevations(visualTrip);
+            App.prevTrip = successfulTrip.copy();
             const dist = utils_1.default.distanceInKm(route);
             const dura = utils_1.default.calcDuration(dist, App.speed);
             components_1.InfoHeader.updateDistance(dist);
@@ -50,6 +51,13 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 return;
             App.plannedTrip = App.prevTrip.copy();
             App.routeService.fetchRoute(App.plannedTrip);
+        }
+        static onElevationFetchSuccess(visualTrip, resultsArray) {
+            const stepResolution = resultsArray[0].resolution;
+            const elevations = resultsArray.map(result => { return result.elevation; });
+            App.mapService.renderTripOnMap(visualTrip, elevations, stepResolution);
+        }
+        static onElevationFetchFailure() {
         }
         static onGoogleMapLongPress(event) {
             if (App.hasVisualTrip) {

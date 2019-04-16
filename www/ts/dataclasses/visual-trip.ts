@@ -14,8 +14,9 @@ export default class VisualTrip {
   private _destMarker: Marker;
   private _wayPointMarkers: Array<Marker>;
 
-  // a computed value (this way it's not necessary to give it to the constructor)
+  // a computed values (this way it's not necessary to give them to the constructor)
   private readonly _distance: number;
+  private readonly _routeStepStartCoords: Array<LatLng>; // used for obtaining elevation data and for rendering the route on the map
 
   constructor(
     private readonly _routeResult: google.maps.DirectionsResult, 
@@ -29,11 +30,15 @@ export default class VisualTrip {
     const route: google.maps.DirectionsRoute = this._routeResult.routes[0];
     this._distance = Utils.distanceInKm(route);
 
-    this._destMarker = Marker.makeDestMarker(this._destCoord); // visible right away
+    const stepArrays = route.legs.map(leg => { return leg.steps });
+    // @ts-ignore (complaint about the custom LatLng type)
+    this._routeStepStartCoords = stepArrays.map(stepArray => { return stepArray.map(step => { return step.start_location })}).reduce((arr, nextArr) => arr.concat(nextArr), []);
+
+    this._destMarker = Marker.makeDestMarker(this._destCoord);
 
     this._destMarker.addListener('dragend', App.onDestMarkerDragEnd);
-    // this._destMarker.addListener('dblclick', App.onDestMarkerDoubleClick); // disabling for now, as there are some issues with it. ideally this should be possible
     this._destMarker.addListener('click', App.onDestMarkerClick);
+    // this._destMarker.addListener('dblclick', App.onDestMarkerDoubleClick); // disabling for now, as there are some issues with it. ideally this should be possible
 
     this._wayPointMarkers = [];
 
@@ -89,6 +94,11 @@ export default class VisualTrip {
   get routeResult(): google.maps.DirectionsResult {
 
     return this._routeResult;
+  }
+
+  get routeStepStartCoords(): Array<LatLng> {
+
+    return this._routeStepStartCoords;
   }
     
 } // VisualTrip

@@ -96,14 +96,14 @@ export default class MapService {
     }
   } // toggleBikeLayer
 
-  renderTripOnMap(visualTrip: VisualTrip) {
+  renderTripOnMap(visualTrip: VisualTrip, elevations: Array<number>): void {
 
     this._visualTrip = visualTrip;
     this._visualTrip.showMarkersOnMap(this._map);
-    this._routeRenderer.renderRouteOnMap(visualTrip.routeResult);
+    this._routeRenderer.drawPolyLineFor(visualTrip, elevations);
   }
 
-  clearTripFromMap() {
+  clearTripFromMap(): void {
 
     if (this._visualTrip === null) return;
 

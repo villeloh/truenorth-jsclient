@@ -44,10 +44,10 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
                 this._bikeLayerOn = true;
             }
         }
-        renderTripOnMap(visualTrip) {
+        renderTripOnMap(visualTrip, elevations, stepResolution) {
             this._visualTrip = visualTrip;
             this._visualTrip.showMarkersOnMap(this._map);
-            this._routeRenderer.renderRouteOnMap(visualTrip.routeResult);
+            this._routeRenderer.drawPolyLineFor(visualTrip, elevations, stepResolution);
         }
         clearTripFromMap() {
             if (this._visualTrip === null)
