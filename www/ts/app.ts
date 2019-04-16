@@ -150,11 +150,8 @@ export default class App {
 
   static onGoogleMapLongPress(event: any): void {
 
-    // lots of exclamation marks here! if we have a visualTrip, 
-    // we also have a plannedTrip; if we don't, it will be created
-    // by this very method. so, there should be no problem, but a neater
-    // way to do things should eventually be found.
-
+    // if we have a visualTrip, we also have a plannedTrip; 
+    // if we don't, it will be created by this very method.
     if (App.hasVisualTrip) {
 
       App.prevTrip = App.plannedTrip!.copy();
@@ -162,15 +159,11 @@ export default class App {
 
     const destCoord: LatLng = Utils.latLngFromClickEvent(event);
 
-    if (App.hasVisualTrip) {
+    // this gets rid of all waypoints, but that is the preferred behavior 
+    // (if you want to keep them, just drag the dest marker)
+    App.plannedTrip = Trip.makeTrip(destCoord);
 
-      App.plannedTrip!.destCoord = destCoord;
-    } else { // on first click, or when the map has been cleared
-
-      App.plannedTrip = Trip.makeTrip(destCoord);
-    }
-
-    App.routeService.fetchRoute(App.plannedTrip!);
+    App.routeService.fetchRoute(App.plannedTrip);
   } // onGoogleMapLongPress
 
   static onGoogleMapDoubleClick(event: any): void {
@@ -196,9 +189,16 @@ export default class App {
     }, MapService.MARKER_DRAG_TIMEOUT);
   } // onDestMarkerDragEnd
 
-  static onDestMarkerTap(event: any): void {
+/*// disabling for now, due to some bizarre issues when double-clicking on the map (it adds a waypoint but moves the dest marker as well!)
+  // ideally, it should be possible to also clear the map with a double click on the dest marker.
+  static onDestMarkerDoubleClick(event: any): void {
+
+    App.clearTrips();
+  } */
+
+  static onDestMarkerClick(event: any): void {
     
-    console.log("tap event: " + JSON.stringify(event));
+    console.log("click event: " + JSON.stringify(event));
     // TODO: open an info window with place info
   }
 
@@ -232,17 +232,7 @@ export default class App {
 
   static onClearButtonClick(): void {
 
-    if (!App.hasVisualTrip) return;
-
-    if (App.prevTrip) {
-
-      App.prevTrip.clear();
-    }
-    App.prevTrip = null;
-    App.plannedTrip!.clear(); // if there is a visualTrip, it exists
-    App.plannedTrip = null;
-    App.mapService.clearTripFromMap();
-    InfoHeader.reset();
+    App.clearTrips();
   } // onClearButtonClick
 
   // toggles the right-hand corner menu
@@ -302,6 +292,24 @@ export default class App {
       App.mapService.reCenter(newCoord); 
     }
   } // onGeoLocSuccess
+
+// XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX HELPERS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+  // called on clear button click
+  static clearTrips() {
+    
+    if (!App.hasVisualTrip) return;
+
+    if (App.prevTrip) {
+
+      App.prevTrip.clear();
+    }
+    App.prevTrip = null;
+    App.plannedTrip!.clear(); // if there is a visualTrip, it exists
+    App.plannedTrip = null;
+    App.mapService.clearTripFromMap();
+    InfoHeader.reset();
+  } // clearTrips
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LIFECYCLE METHODS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 

@@ -1,30 +1,26 @@
 define(["require", "exports", "../app"], function (require, exports, app_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const TravelModeToggleButton = {
-        OUTER_DIV_ID: 'walk-cycle-btn-outer',
-        SELECT_ID: 'walk-cycle-btn-select',
-        CYCLE_TEXT: "cycle",
-        WALK_TEXT: "walk",
-        addTo: function (parentDiv) {
+    class TravelModeToggleButton {
+        static build() {
             const pickedOption = app_1.default.travelMode;
             let unpickedOption;
             let pickedText;
             let unpickedText;
             if (pickedOption === app_1.default.TravelMode.BICYCLING) {
                 unpickedOption = app_1.default.TravelMode.WALKING;
-                pickedText = TravelModeToggleButton.CYCLE_TEXT;
-                unpickedText = TravelModeToggleButton.WALK_TEXT;
+                pickedText = TravelModeToggleButton._CYCLE_TEXT;
+                unpickedText = TravelModeToggleButton._WALK_TEXT;
             }
             else {
                 unpickedOption = app_1.default.TravelMode.BICYCLING;
-                pickedText = TravelModeToggleButton.WALK_TEXT;
-                unpickedText = TravelModeToggleButton.CYCLE_TEXT;
+                pickedText = TravelModeToggleButton._WALK_TEXT;
+                unpickedText = TravelModeToggleButton._CYCLE_TEXT;
             }
             const outerDiv = document.createElement('div');
-            outerDiv.id = TravelModeToggleButton.OUTER_DIV_ID;
+            outerDiv.id = TravelModeToggleButton._OUTER_DIV_ID;
             const select = document.createElement('select');
-            select.id = TravelModeToggleButton.SELECT_ID;
+            select.id = TravelModeToggleButton._SELECT_ID;
             select.addEventListener('change', app_1.default.onTravelModeToggleButtonClick);
             const firstOption = document.createElement('option');
             firstOption.innerHTML = pickedText;
@@ -35,8 +31,12 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
             select.appendChild(firstOption);
             select.appendChild(secondOption);
             outerDiv.appendChild(select);
-            parentDiv.appendChild(outerDiv);
+            return outerDiv;
         }
-    };
+    }
+    TravelModeToggleButton._OUTER_DIV_ID = 'walk-cycle-btn-outer';
+    TravelModeToggleButton._SELECT_ID = 'walk-cycle-btn-select';
+    TravelModeToggleButton._CYCLE_TEXT = "cycle";
+    TravelModeToggleButton._WALK_TEXT = "walk";
     exports.default = TravelModeToggleButton;
 });

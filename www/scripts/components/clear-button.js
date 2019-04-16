@@ -1,11 +1,8 @@
 define(["require", "exports", "../app"], function (require, exports, app_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const ClearButton = {
-        _OUTER_DIV_ID: 'clear-btn-outer',
-        _INNER_DIV_ID: 'clear-btn-inner',
-        _TEXT: 'CLEAR',
-        addTo: function (parentDiv) {
+    class ClearButton {
+        static build() {
             const outerDiv = document.createElement('div');
             outerDiv.id = ClearButton._OUTER_DIV_ID;
             const innerDiv = document.createElement('div');
@@ -13,8 +10,11 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
             innerDiv.innerHTML = ClearButton._TEXT;
             outerDiv.appendChild(innerDiv);
             outerDiv.addEventListener('click', app_1.default.onClearButtonClick);
-            parentDiv.appendChild(outerDiv);
+            return outerDiv;
         }
-    };
+    }
+    ClearButton._OUTER_DIV_ID = 'clear-btn-outer';
+    ClearButton._INNER_DIV_ID = 'clear-btn-inner';
+    ClearButton._TEXT = 'CLEAR';
     exports.default = ClearButton;
 });

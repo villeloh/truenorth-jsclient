@@ -56,12 +56,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 App.prevTrip = App.plannedTrip.copy();
             }
             const destCoord = utils_1.default.latLngFromClickEvent(event);
-            if (App.hasVisualTrip) {
-                App.plannedTrip.destCoord = destCoord;
-            }
-            else {
-                App.plannedTrip = trip_1.Trip.makeTrip(destCoord);
-            }
+            App.plannedTrip = trip_1.Trip.makeTrip(destCoord);
             App.routeService.fetchRoute(App.plannedTrip);
         }
         static onGoogleMapDoubleClick(event) {
@@ -79,8 +74,8 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 App.mapService.markerDragEventJustStopped = false;
             }, map_service_1.default.MARKER_DRAG_TIMEOUT);
         }
-        static onDestMarkerTap(event) {
-            console.log("tap event: " + JSON.stringify(event));
+        static onDestMarkerClick(event) {
+            console.log("click event: " + JSON.stringify(event));
         }
         static onWayPointMarkerDragEnd(event) {
             const latLng = utils_1.default.latLngFromClickEvent(event);
@@ -99,16 +94,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.mapService.reCenter(App.currentPos);
         }
         static onClearButtonClick() {
-            if (!App.hasVisualTrip)
-                return;
-            if (App.prevTrip) {
-                App.prevTrip.clear();
-            }
-            App.prevTrip = null;
-            App.plannedTrip.clear();
-            App.plannedTrip = null;
-            App.mapService.clearTripFromMap();
-            components_1.InfoHeader.reset();
+            App.clearTrips();
         }
         static onMenuButtonClick(event) {
             components_1.Menu.toggleVisibility(event);
@@ -145,6 +131,18 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             if (geoloc_service_1.default.diffIsOverCameraMoveThreshold(oldCoord, newCoord)) {
                 App.mapService.reCenter(newCoord);
             }
+        }
+        static clearTrips() {
+            if (!App.hasVisualTrip)
+                return;
+            if (App.prevTrip) {
+                App.prevTrip.clear();
+            }
+            App.prevTrip = null;
+            App.plannedTrip.clear();
+            App.plannedTrip = null;
+            App.mapService.clearTripFromMap();
+            components_1.InfoHeader.reset();
         }
         static _onDeviceReady() {
             App._receivedEvent('deviceready');

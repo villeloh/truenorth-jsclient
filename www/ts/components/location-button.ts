@@ -13,16 +13,15 @@ export default class LocationButton {
  
   static build(): HTMLDivElement {
 
-    const outerDiv = document.createElement('div');
+    const outerDiv: HTMLDivElement = document.createElement('div');
     outerDiv.id = LocationButton._OUTER_DIV_ID;
 
-    const innerDiv = document.createElement('div');
+    const innerDiv: HTMLDivElement = document.createElement('div');
     innerDiv.id = LocationButton._INNER_DIV_ID;
 
     outerDiv.addEventListener('click', App.onLocButtonClick);
     
     outerDiv.appendChild(innerDiv);
-    // parentDiv.appendChild(outerDiv);
     return outerDiv;
   } // build
 

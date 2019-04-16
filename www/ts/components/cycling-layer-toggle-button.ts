@@ -5,37 +5,37 @@ import App from '../app';
  * the cycling layer can be applied on top of them.
  */
 
-const CyclingLayerToggleButton = {
+export default class CyclingLayerToggleButton {
 
-  BORDER_ON: '2px solid green',
-  BORDER_OFF: '2px solid #808080',
-  BG_COLOR_ON: '#7CFFAC',
-  BG_COLOR_OFF: '#fff',
+  private static readonly _BORDER_ON = '2px solid green';
+  private static readonly _BORDER_OFF = '2px solid #808080';
+  private static readonly _BG_COLOR_ON = '#7CFFAC';
+  private static readonly _BG_COLOR_OFF = '#fff';
 
-  OUTER_DIV_ID: 'cyc-layer-btn-outer',
-  INNER_DIV_ID: 'cyc-layer-btn-inner',
+  private static readonly _OUTER_DIV_ID = 'cyc-layer-btn-outer';
+  private static readonly _INNER_DIV_ID = 'cyc-layer-btn-inner';
 
-  TEXT: 'C.LAYER',
+  private static readonly _TEXT = 'C.LAYER';
 
-  addTo: function(parentDiv: any) {
+  static build(): HTMLDivElement {
 
-    const outerDiv = document.createElement('div');
-    outerDiv.id = CyclingLayerToggleButton.OUTER_DIV_ID;
-    const innerDiv = document.createElement('div');
-    innerDiv.id = CyclingLayerToggleButton.INNER_DIV_ID;
-    innerDiv.innerHTML = CyclingLayerToggleButton.TEXT;
+    const outerDiv: HTMLDivElement = document.createElement('div');
+    outerDiv.id = CyclingLayerToggleButton._OUTER_DIV_ID;
+
+    const innerDiv: HTMLDivElement = document.createElement('div');
+    innerDiv.id = CyclingLayerToggleButton._INNER_DIV_ID;
+    innerDiv.innerHTML = CyclingLayerToggleButton._TEXT;
+
     outerDiv.addEventListener('click', App.onCyclingLayerToggleButtonClick);
+
     outerDiv.appendChild(innerDiv);
-    parentDiv.appendChild(outerDiv);
-/*
-    parentDiv.innerHTML = `<div id=${CyclingLayerToggleButton.OUTER_DIV_ID} onclick="App.onCyclingLayerToggleButtonClick(event)">
-    <div id=${CyclingLayerToggleButton.INNER_DIV_ID}>${CyclingLayerToggleButton.TEXT}</div></div>`; */
-  },
+    return outerDiv;
+  } // build
 
   // called when recreating the menu; it's a way to 'recall' its correct state after destruction
-  setInitialStyles: function() {
+  static setInitialStyles(): void {
 
-    const toggleBtn = document.getElementById(CyclingLayerToggleButton.OUTER_DIV_ID);
+    const toggleBtn = document.getElementById(CyclingLayerToggleButton._OUTER_DIV_ID);
 
     if (App.mapService.bikeLayerOn) {
 
@@ -44,20 +44,17 @@ const CyclingLayerToggleButton = {
 
       CyclingLayerToggleButton.applyOffStyles(toggleBtn);
     } // if-else
-  }, // setInitialStyles
+  } // setInitialStyles
 
-  applyOffStyles: function(buttonDiv: any) {
+  static applyOffStyles(buttonDiv: any): void {
 
-    buttonDiv.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_OFF;
-    buttonDiv.style.border = CyclingLayerToggleButton.BORDER_OFF;
-  },
-
-  applyOnStyles: function(buttonDiv: any) {
-
-    buttonDiv.style.backgroundColor = CyclingLayerToggleButton.BG_COLOR_ON;
-    buttonDiv.style.border = CyclingLayerToggleButton.BORDER_ON;
+    buttonDiv.style.backgroundColor = CyclingLayerToggleButton._BG_COLOR_OFF;
+    buttonDiv.style.border = CyclingLayerToggleButton._BORDER_OFF;
   }
 
-}; // CyclingLayerToggleButton
+  static applyOnStyles(buttonDiv: any): void {
 
-export default CyclingLayerToggleButton;
+    buttonDiv.style.backgroundColor = CyclingLayerToggleButton._BG_COLOR_ON;
+    buttonDiv.style.border = CyclingLayerToggleButton._BORDER_ON;
+  }
+} // CyclingLayerToggleButton

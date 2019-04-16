@@ -5,18 +5,18 @@ import App from '../app';
  * Useful when there's no cycling route available (e.g. when there's tunnels on the route).
  */
 
-const TravelModeToggleButton = {
-  
-  OUTER_DIV_ID: 'walk-cycle-btn-outer',
-  SELECT_ID: 'walk-cycle-btn-select',
+export default class TravelModeToggleButton {
 
-  CYCLE_TEXT: "cycle",
-  WALK_TEXT: "walk",
+  private static readonly _OUTER_DIV_ID = 'walk-cycle-btn-outer';
+  private static readonly _SELECT_ID = 'walk-cycle-btn-select';
 
-  addTo: function(parentDiv: any) {
+  private static readonly _CYCLE_TEXT = "cycle";
+  private static readonly _WALK_TEXT = "walk";
+
+  static build(): HTMLDivElement {
 
     const pickedOption = App.travelMode;
-    let unpickedOption: any;
+    let unpickedOption: any; // can't use the TravelMode type in another class for some reason
     let pickedText: string;
     let unpickedText: string;
 
@@ -24,43 +24,34 @@ const TravelModeToggleButton = {
     if (pickedOption === App.TravelMode.BICYCLING) {
 
       unpickedOption = App.TravelMode.WALKING;
-      pickedText = TravelModeToggleButton.CYCLE_TEXT;
-      unpickedText = TravelModeToggleButton.WALK_TEXT;
+      pickedText = TravelModeToggleButton._CYCLE_TEXT;
+      unpickedText = TravelModeToggleButton._WALK_TEXT;
     } else {
 
       unpickedOption = App.TravelMode.BICYCLING;
-      pickedText = TravelModeToggleButton.WALK_TEXT;
-      unpickedText = TravelModeToggleButton.CYCLE_TEXT;
+      pickedText = TravelModeToggleButton._WALK_TEXT;
+      unpickedText = TravelModeToggleButton._CYCLE_TEXT;
     }
 
-    const outerDiv = document.createElement('div');
-    outerDiv.id = TravelModeToggleButton.OUTER_DIV_ID;
+    const outerDiv: HTMLDivElement = document.createElement('div');
+    outerDiv.id = TravelModeToggleButton._OUTER_DIV_ID;
 
-    const select = document.createElement('select');
-    select.id = TravelModeToggleButton.SELECT_ID;
+    const select: HTMLSelectElement = document.createElement('select');
+    select.id = TravelModeToggleButton._SELECT_ID;
     select.addEventListener('change', App.onTravelModeToggleButtonClick);
 
-    const firstOption = document.createElement('option');
+    const firstOption: HTMLOptionElement = document.createElement('option');
     firstOption.innerHTML = pickedText;
     firstOption.value = pickedOption;
     
-    const secondOption = document.createElement('option');
+    const secondOption: HTMLOptionElement = document.createElement('option');
     secondOption.innerHTML = unpickedText;
     secondOption.value = unpickedOption;
     
     select.appendChild(firstOption);
     select.appendChild(secondOption);
     outerDiv.appendChild(select);
-    parentDiv.appendChild(outerDiv);
-/*
-    parentDiv.innerHTML = `<div id=${TravelModeToggleButton.OUTER_DIV_ID}>
-    <select id=${TravelModeToggleButton.SELECT_ID} onchange="App.onTravelModeToggleButtonClick(event)">
-      <option value=${App.TravelMode.BICYCLING}>cycle</option>
-      <option value=${App.TravelMode.WALKING}>walk</option>
-    </select>
-    </div>`; */
-  } // addTo
+    return outerDiv;
+  } //build
   
-}; // TravelModeToggleButton
-
-export default TravelModeToggleButton;
+} // TravelModeToggleButton

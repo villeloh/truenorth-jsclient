@@ -7,35 +7,28 @@ import { InfoHeader } from '../components/components';
  * May change it to a slider for the final version.
  */
 
-const SpeedInput = {
+export default class SpeedInput {
 
-  INPUT_ID: 'speed-input',
+  private static readonly _INPUT_ID = 'speed-input';
 
-  addTo: function(parentDiv: any) {
+  static build(): HTMLInputElement {
 
-    const input = document.createElement('input');
+    const input: HTMLInputElement = document.createElement('input');
     input.type = "number";
-    input.id = SpeedInput.INPUT_ID;
+    input.id = SpeedInput._INPUT_ID;
     input.step = "1";
     input.max = App.MAX_SPEED+"";
     input.value = App.speed+"";
-    input.addEventListener('input', SpeedInput.onValueChange);
 
-    parentDiv.appendChild(input);
-    /*
-    parentDiv.innerHTML = `<input 
-      type="number" 
-      id=${SpeedInput.INPUT_ID} 
-      step=1
-      max=${App.MAX_SPEED} 
-      value=${App.speed} 
-      oninput="SpeedInput.onValueChange(event)"
-    >`; */
-  }, // addTo
+    input.addEventListener('input', SpeedInput.onValueChange);
+    return input;
+  } // build
 
   // technically it's a violation of the general design principle of the app to put this here, 
   // but I'm trying not to bloat App.ts and this is the best candidate to tuck away in its own file.
-  onValueChange: function(event: any): void {
+  static onValueChange(event: any): void {
+
+    // Note: the speed value and info header display logic is too convoluted atm; fix asap!
 
     const value = event.target.value;
 
@@ -54,14 +47,12 @@ const SpeedInput = {
       App.speed = 0;
     }
 
-    if (!App.hasVisualTrip) return; // theere is always a speed value, but it's only used if there's a successfully fetched trip that's being displayed
+    if (!App.hasVisualTrip) return; // there is always a speed value, but it's only used if there's a successfully fetched trip that's being displayed
 
     // update the top screen info header with the new duration.
     // Note: it seems the typescript compiler is not smart enough to recognize a null check by a method in another class
     const newDura = Utils.calcDuration(App.mapService.visualTrip!.distance, App.speed);
     InfoHeader.updateDuration(newDura);
-  }, // onValueChange
+  } // onValueChange
 
-}; // SpeedInput
-
-export default SpeedInput;
+} // SpeedInput

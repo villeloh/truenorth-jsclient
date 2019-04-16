@@ -1,19 +1,18 @@
 define(["require", "exports", "../app", "../misc/utils", "../components/components"], function (require, exports, app_1, utils_1, components_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const SpeedInput = {
-        INPUT_ID: 'speed-input',
-        addTo: function (parentDiv) {
+    class SpeedInput {
+        static build() {
             const input = document.createElement('input');
             input.type = "number";
-            input.id = SpeedInput.INPUT_ID;
+            input.id = SpeedInput._INPUT_ID;
             input.step = "1";
             input.max = app_1.default.MAX_SPEED + "";
             input.value = app_1.default.speed + "";
             input.addEventListener('input', SpeedInput.onValueChange);
-            parentDiv.appendChild(input);
-        },
-        onValueChange: function (event) {
+            return input;
+        }
+        static onValueChange(event) {
             const value = event.target.value;
             if (value > app_1.default.MAX_SPEED) {
                 event.target.value = app_1.default.MAX_SPEED;
@@ -31,7 +30,8 @@ define(["require", "exports", "../app", "../misc/utils", "../components/componen
                 return;
             const newDura = utils_1.default.calcDuration(app_1.default.mapService.visualTrip.distance, app_1.default.speed);
             components_1.InfoHeader.updateDuration(newDura);
-        },
-    };
+        }
+    }
+    SpeedInput._INPUT_ID = 'speed-input';
     exports.default = SpeedInput;
 });

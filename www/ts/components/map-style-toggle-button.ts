@@ -4,35 +4,29 @@ import App from '../app';
  * These buttons toggle the map's style (terrain / normal / satellite).
  */
 
-const MapStyleToggleButton = {
+export default class MapStyleToggleButton {
 
-  NORMAL_TXT: 'NORMAL',
-  TERRAIN_TXT: 'TERRAIN',
-  SAT_TXT: 'SAT.',
+  static readonly NORMAL_TXT = 'NORMAL';
+  static readonly TERRAIN_TXT = 'TERRAIN';
+  static readonly SAT_TXT = 'SAT.';
 
-  OUTER_DIV_CLASS: 'map-style-btn-outer',
-  INNER_DIV_CLASS: 'map-style-btn-inner',
+  private static readonly _OUTER_DIV_CLASS = 'map-style-btn-outer';
+  private static readonly _INNER_DIV_CLASS = 'map-style-btn-inner';
 
   // btnTxt should be one of the texts above ('NORMAL_TXT', etc)
-  addTo: function(parentDiv: any, btnText: string) {
-
+  static build(btnText: string): HTMLDivElement {
     
-    const outerDiv = document.createElement('div');
-    outerDiv.className = MapStyleToggleButton.OUTER_DIV_CLASS;
+    const outerDiv: HTMLDivElement = document.createElement('div');
+    outerDiv.className = MapStyleToggleButton._OUTER_DIV_CLASS;
 
-    const innerDiv = document.createElement('div');
-    innerDiv.className = MapStyleToggleButton.INNER_DIV_CLASS;
+    const innerDiv: HTMLDivElement = document.createElement('div');
+    innerDiv.className = MapStyleToggleButton._INNER_DIV_CLASS;
     innerDiv.innerHTML = btnText;
 
     outerDiv.addEventListener('click', App.onMapStyleToggleButtonClick);
     
     outerDiv.appendChild(innerDiv);
-    parentDiv.appendChild(outerDiv);
-/*
-    parentDiv.innerHTML += `<div class=${MapStyleToggleButton.OUTER_DIV_CLASS} onclick="App.onMapStyleToggleButtonClick(event)">
-    <div class=${MapStyleToggleButton.INNER_DIV_CLASS}>${btnText}</div></div>`; */
-  }
-  
-}; // MapStyleToggleButton
+    return outerDiv;
+  } // build
 
-export default MapStyleToggleButton;
+} // MapStyleToggleButton

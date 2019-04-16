@@ -6,31 +6,24 @@ import App from '../app';
  * So for now, this button clears the map and double clicks add waypoints.
  */
 
-const ClearButton = {
+export default class ClearButton {
 
-  _OUTER_DIV_ID: 'clear-btn-outer',
-  _INNER_DIV_ID: 'clear-btn-inner',
-  _TEXT: 'CLEAR',
+  private static readonly _OUTER_DIV_ID = 'clear-btn-outer';
+  private static readonly _INNER_DIV_ID = 'clear-btn-inner';
+  private static readonly _TEXT = 'CLEAR';
 
-  addTo: function(parentDiv: any) {
+  static build(): HTMLDivElement {
 
     const outerDiv: HTMLDivElement = document.createElement('div');
     outerDiv.id = ClearButton._OUTER_DIV_ID;
+
     const innerDiv: HTMLDivElement = document.createElement('div');
     innerDiv.id = ClearButton._INNER_DIV_ID;
     innerDiv.innerHTML = ClearButton._TEXT;
+    
     outerDiv.appendChild(innerDiv);
     outerDiv.addEventListener('click', App.onClearButtonClick);
-    parentDiv.appendChild(outerDiv);
-  }
-/*
-  addTo: function(parentDiv: any) {
+    return outerDiv;
+  } // build
 
-    parentDiv.innerHTML = `<div id=${ClearButton._OUTER_DIV_ID} onclick="App.onClearButtonClick()">
-      <div id=${ClearButton._INNER_DIV_ID}>${ClearButton._TEXT}</div>
-    </div>`;
-  } */
-
-}; // ClearButton
-
-export default ClearButton;
+} // ClearButton

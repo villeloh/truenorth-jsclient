@@ -32,7 +32,8 @@ export default class VisualTrip {
     this._destMarker = Marker.makeDestMarker(this._destCoord); // visible right away
 
     this._destMarker.addListener('dragend', App.onDestMarkerDragEnd);
-    this._destMarker.addListener('click', App.onDestMarkerTap);
+    // this._destMarker.addListener('dblclick', App.onDestMarkerDoubleClick); // disabling for now, as there are some issues with it. ideally this should be possible
+    this._destMarker.addListener('click', App.onDestMarkerClick);
 
     this._wayPointMarkers = [];
 
