@@ -1,6 +1,10 @@
 
 # Make-shift '.env file' for PERSONAL use
 env.ts
+env.js
+
+# built scripts folder
+scripts/
 
 # Dependency directories
 node_modules/
