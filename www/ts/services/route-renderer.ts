@@ -84,10 +84,6 @@ export default class RouteRenderer {
   // all values are in meters
   computeColor(elev1: number, elev2: number, distance: number): string {
 
-    console.log("elev1: " + elev1);
-    console.log("elev2: " + elev2);
-    console.log("dist: " + distance);
-
     const gradient = (elev2 - elev1) / distance; // %; negative means downhill
     let red = 0;
     let green = 0;
@@ -108,9 +104,6 @@ export default class RouteRenderer {
     red = red < 0 ? 0: red;     
     green = green > 255 ? 255: green;
     green = green < 0 ? 0: green;
-
-    console.log("red: " + red);
-    console.log("green: " + green);
 
     return `rgba(${red},${green},0,1)`; // note: later on, make an alternative option for color blind ppl!
   } // computeColor
