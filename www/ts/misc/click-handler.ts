@@ -1,7 +1,7 @@
 import App from '../app';
 
 /**
- * Differentiates between single and double clicks on the map, so that only the appropriate
+ * Differentiates between single, double and long clicks on the map, so that only the appropriate
  * event gets fired (wtf Google?).
  */
 

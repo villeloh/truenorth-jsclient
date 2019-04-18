@@ -71,7 +71,7 @@ export default class MapService {
     this._map.setCenter(newCoord);
   }
   
-  // called from ui.ts to add the map ui controls
+  // called from ui-builder.ts to add the map ui controls
   addUIControl(position: any, control: any): void {
 
     this._map.controls[position].push(control);
@@ -119,7 +119,7 @@ export default class MapService {
     return this._markerDragEventJustStopped;
   }
 
-  set markerDragEventJustStopped(value) {
+  set markerDragEventJustStopped(value: boolean) {
 
     this._markerDragEventJustStopped = value;
   }
@@ -146,24 +146,24 @@ export default class MapService {
 
   _setListeners(): void {
 
-    this.map.addListener('click', function(e) {
+    this.map.addListener('click', function(e: any) {
 
       e.id = ClickHandler.ClickType.SINGLE;
       App.mapService.clickHandler.handle(e);
     });
     
-    this.map.addListener('dblclick', function(e) { 
+    this.map.addListener('dblclick', function(e: any) { 
 
       e.id = ClickHandler.ClickType.DOUBLE;
       App.mapService.clickHandler.handle(e);
     });
 
-    this.map.addListener('heading_changed', function(e) {
+    this.map.addListener('heading_changed', function(e: any) {
 
       console.log("heading changed event: " + JSON.stringify(e)); // doesn't seem to work... read up on it
     });
 
-    this.map.addListener('zoom_changed', function(e) {
+    this.map.addListener('zoom_changed', function(e: any) {
 
       App.mapService.clickHandler.isLongPress = false; // 'this' doesn't work here because of lost context in html (I guess)
     });

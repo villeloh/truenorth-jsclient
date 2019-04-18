@@ -53,9 +53,8 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.routeService.fetchRoute(App.plannedTrip);
         }
         static onElevationFetchSuccess(visualTrip, resultsArray) {
-            const stepResolution = resultsArray[0].resolution;
             const elevations = resultsArray.map(result => { return result.elevation; });
-            App.mapService.renderTripOnMap(visualTrip, elevations, stepResolution);
+            App.mapService.renderTripOnMap(visualTrip, elevations);
         }
         static onElevationFetchFailure() {
         }
