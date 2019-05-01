@@ -1,10 +1,12 @@
 import App from '../app';
+import Button from './base-abstract/button';
+import { override } from '../misc/annotations';
 
 /**
  * These buttons toggle the map's style (terrain / normal / satellite).
  */
 
-export default class MapStyleToggleButton {
+export default class MapStyleToggleButton extends Button {
 
   static readonly NORMAL_TXT = 'NORMAL';
   static readonly TERRAIN_TXT = 'TERRAIN';
@@ -14,7 +16,8 @@ export default class MapStyleToggleButton {
   private static readonly _INNER_DIV_CLASS = 'map-style-btn-inner';
 
   // btnTxt should be one of the texts above ('NORMAL_TXT', etc)
-  static build(btnText: string): HTMLDivElement {
+  @override
+  static build(onClick: any, btnText: string): HTMLDivElement {
     
     const outerDiv: HTMLDivElement = document.createElement('div');
     outerDiv.className = MapStyleToggleButton._OUTER_DIV_CLASS;
@@ -23,7 +26,7 @@ export default class MapStyleToggleButton {
     innerDiv.className = MapStyleToggleButton._INNER_DIV_CLASS;
     innerDiv.innerHTML = btnText;
 
-    outerDiv.addEventListener('click', App.onMapStyleToggleButtonClick);
+    outerDiv.addEventListener('click', onClick);
     
     outerDiv.appendChild(innerDiv);
     return outerDiv;

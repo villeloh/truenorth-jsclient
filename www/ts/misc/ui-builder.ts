@@ -22,7 +22,7 @@ const UIBuilder = {
     const buttonHolderDiv = document.createElement('div');
     // buttonHolderDiv.id = MenuButton.DIV_ID; // it seems like it can just be an invisible holder, so no id is needed
     buttonHolderDiv.style.margin = '2.5%';
-    const menuBtn = MenuButton.build();
+    const menuBtn = MenuButton.build(App.onMenuButtonClick);
     buttonHolderDiv.appendChild(menuBtn);
     
     App.mapService.addUIControl(App.google.maps.ControlPosition.TOP_RIGHT, buttonHolderDiv);
@@ -52,7 +52,7 @@ const UIBuilder = {
   _addLocationButton: function(): void {
 
     const buttonHolderDiv: HTMLDivElement = document.createElement('div');
-    const locButton: HTMLDivElement = LocationButton.build();
+    const locButton: HTMLDivElement = LocationButton.build(App.onLocButtonClick);
     buttonHolderDiv.appendChild(locButton);
 
     App.mapService.addUIControl(App.google.maps.ControlPosition.RIGHT_BOTTOM, buttonHolderDiv);
@@ -62,7 +62,7 @@ const UIBuilder = {
 
     const buttonHolderDiv: HTMLDivElement = document.createElement('div');
     buttonHolderDiv.style.margin = '2.5%';
-    const clearBtn: HTMLDivElement = ClearButton.build();
+    const clearBtn: HTMLDivElement = ClearButton.build(App.onClearButtonClick);
     buttonHolderDiv.appendChild(clearBtn);
 
     App.mapService.addUIControl(App.google.maps.ControlPosition.TOP_LEFT, buttonHolderDiv);

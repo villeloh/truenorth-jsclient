@@ -32,7 +32,13 @@ export default class VisualTrip {
 
     const stepArrays = route.legs.map(leg => { return leg.steps });
     // @ts-ignore (complaint about the custom LatLng type)
-    this._routeStepStartCoords = stepArrays.map(stepArray => { return stepArray.map(step => { return step.start_location })}).reduce((arr, nextArr) => arr.concat(nextArr), []);
+    // used for fetching elevations. could be clearer (should have used for loops, ehh)...
+    this._routeStepStartCoords = stepArrays.map(stepArray => { 
+      
+      return stepArray.map(step => { 
+        
+        return step.start_location 
+      })}).reduce((arr, nextArr) => arr.concat(nextArr), []);
 
     this._destMarker = Marker.makeDestMarker(this._destCoord);
 

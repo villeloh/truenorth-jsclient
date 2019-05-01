@@ -10,6 +10,7 @@ import { InfoHeader, MapStyleToggleButton, Menu } from './components/components'
 import UIBuilder from './misc/ui-builder';
 import VisualTrip from './dataclasses/visual-trip';
 import { Nullable } from './misc/types';
+import { logCalls } from './misc/annotations'
 import ElevationService from './services/elevation-service';
 
 // to make typescript accept its existence... I'm sure there's a more proper way to do this, but it works for now.
@@ -64,8 +65,6 @@ export default class App {
 
   // app 'constructor'
   static initialize(): void {
-
-    console.log("called initialize");
 
     document.addEventListener('deviceready', App._onDeviceReady.bind(App), false);
   }

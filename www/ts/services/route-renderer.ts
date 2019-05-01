@@ -1,4 +1,5 @@
 import VisualTrip from "../dataclasses/visual-trip";
+import LatLng from "../dataclasses/latlng";
 
 /**
  * Renders routes on the map.
@@ -9,7 +10,9 @@ import VisualTrip from "../dataclasses/visual-trip";
 // making it instance-based.
 export default class RouteRenderer {
 
+  // TODO: use it if the elevations can't be obtained
   // private static readonly _DEFAULT_COLOR = '#2B7CFF'; // darkish blue
+
   private static readonly _MAX_GRADIENT = 10;
 
   private readonly _polyLines: Array<google.maps.Polyline>;
@@ -28,7 +31,7 @@ export default class RouteRenderer {
 
   drawPolyLineFor(visualTrip: VisualTrip, elevations: Array<number>): void {
 
-    const paths = [];
+    const paths: Array<Array<LatLng>> = [];
     const distances: Array<number> = [];
 
     // the legs from waypoint to waypoint
@@ -38,7 +41,8 @@ export default class RouteRenderer {
 
       for (let j = 0; j < legs[i].steps.length; j++) {
 
-        paths.push(legs[i].steps[j].path); // array of arrays of LatLngs
+        //@ts-ignore (custom LatLng type complaint)
+        paths.push(legs[i].steps[j].path);
         distances.push(legs[i].steps[j].distance.value);
       }
     }

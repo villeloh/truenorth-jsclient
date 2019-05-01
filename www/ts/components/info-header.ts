@@ -1,10 +1,12 @@
 import Utils from '../misc/utils';
+import { override } from '../misc/annotations';
+import UIElement from './base-abstract/ui-element';
 
 /**
  * A header that shows info about the current route (atm, distance and travel time to destination).
  */
 
-export default class InfoHeader {
+export default class InfoHeader extends UIElement {
 
   private static readonly _DEFAULT_DIST = '0.0 km';
   private static readonly _DEFAULT_DURA = 'n/a';
@@ -14,6 +16,7 @@ export default class InfoHeader {
   private static readonly _INNER_P_ID_DURA = 'info-header-p-dura';
   private static readonly _INNER_P_ID_DIVISOR = 'info-header-p-divisor';
 
+  @override
   static build(): HTMLDivElement {
 
     const outerDiv: HTMLDivElement = document.createElement('div');

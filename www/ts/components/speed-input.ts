@@ -1,17 +1,20 @@
 import App from '../app';
 import Utils from '../misc/utils';
 import { InfoHeader } from '../components/components';
+import UIElement from './base-abstract/ui-element';
+import { override } from '../misc/annotations';
 
 /**
  * A simple input box for giving the estimated (average) cycling speed.
  * May change it to a slider for the final version.
  */
 
-export default class SpeedInput {
+export default class SpeedInput extends UIElement {
 
   private static readonly _INPUT_ID = 'speed-input';
 
-  static build(): HTMLInputElement {
+  @override
+  static build(onValueChange: any): HTMLInputElement {
 
     const input: HTMLInputElement = document.createElement('input');
     input.type = "number";
@@ -20,7 +23,7 @@ export default class SpeedInput {
     input.max = App.MAX_SPEED+"";
     input.value = App.speed+"";
 
-    input.addEventListener('input', SpeedInput.onValueChange);
+    input.addEventListener('input', onValueChange);
     return input;
   } // build
 
@@ -28,7 +31,7 @@ export default class SpeedInput {
   // but I'm trying not to bloat App.ts and this is the best candidate to tuck away in its own file.
   static onValueChange(event: any): void {
 
-    // Note: the speed value and info header display logic is too convoluted atm; fix asap!
+    // TODO: the speed value and info header display logic is too convoluted atm; fix asap!
 
     const value = event.target.value;
 

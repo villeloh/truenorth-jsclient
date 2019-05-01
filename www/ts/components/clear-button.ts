@@ -1,18 +1,21 @@
-import App from '../app';
+import Button from './base-abstract/button';
+import { override } from '../misc/annotations';
 
 /**
- * A button to clear the map with. Ideally, a double-click would be used to clear the map, and single clicks
- * for adding waypoints. However, accidental touches are a serious issue when using the app on cycling trips.
- * So for now, this button clears the map and double clicks add waypoints.
+ * A button to clear the map with. 
  */
 
-export default class ClearButton {
+// NOTE: Ideally, a double-click would be used to clear the map, and single clicks
+// for adding waypoints. However, accidental touches are a serious issue when using the app on cycling trips.
+// So for now, this button clears the map and double clicks add waypoints.
+export default class ClearButton extends Button {
 
   private static readonly _OUTER_DIV_ID = 'clear-btn-outer';
   private static readonly _INNER_DIV_ID = 'clear-btn-inner';
   private static readonly _TEXT = 'CLEAR';
 
-  static build(): HTMLDivElement {
+  @override
+  static build(onClick: any): HTMLDivElement {
 
     const outerDiv: HTMLDivElement = document.createElement('div');
     outerDiv.id = ClearButton._OUTER_DIV_ID;
@@ -22,7 +25,7 @@ export default class ClearButton {
     innerDiv.innerHTML = ClearButton._TEXT;
     
     outerDiv.appendChild(innerDiv);
-    outerDiv.addEventListener('click', App.onClearButtonClick);
+    outerDiv.addEventListener('click', onClick);
     return outerDiv;
   } // build
 

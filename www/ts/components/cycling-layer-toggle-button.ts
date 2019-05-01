@@ -1,11 +1,12 @@
-import App from '../app';
+import Button from './base-abstract/button';
+import { override } from '../misc/annotations';
 
 /**
  * Button that toggles the cycling layer off/on. It's different from the MapStyleToggleButtons, because 
  * the cycling layer can be applied on top of them.
  */
 
-export default class CyclingLayerToggleButton {
+export default class CyclingLayerToggleButton extends Button {
 
   private static readonly _BORDER_ON = '2px solid green';
   private static readonly _BORDER_OFF = '2px solid #808080';
@@ -17,7 +18,8 @@ export default class CyclingLayerToggleButton {
 
   private static readonly _TEXT = 'C.LAYER';
 
-  static build(): HTMLDivElement {
+  @override
+  static build(onClick: any): HTMLDivElement {
 
     const outerDiv: HTMLDivElement = document.createElement('div');
     outerDiv.id = CyclingLayerToggleButton._OUTER_DIV_ID;
@@ -26,18 +28,18 @@ export default class CyclingLayerToggleButton {
     innerDiv.id = CyclingLayerToggleButton._INNER_DIV_ID;
     innerDiv.innerHTML = CyclingLayerToggleButton._TEXT;
 
-    outerDiv.addEventListener('click', App.onCyclingLayerToggleButtonClick);
+    outerDiv.addEventListener('click', onClick);
 
     outerDiv.appendChild(innerDiv);
     return outerDiv;
   } // build
 
   // called when recreating the menu; it's a way to 'recall' its correct state after destruction
-  static setInitialStyles(): void {
+  static setInitialStyles(bikeLayerOn: Boolean): void {
 
     const toggleBtn = document.getElementById(CyclingLayerToggleButton._OUTER_DIV_ID);
 
-    if (App.mapService.bikeLayerOn) {
+    if (bikeLayerOn) {
 
       CyclingLayerToggleButton.applyOnStyles(toggleBtn);
     } else {

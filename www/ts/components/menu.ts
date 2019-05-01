@@ -1,16 +1,22 @@
 import UIBuilder from '../misc/ui-builder';
 import { MapStyleToggleButton, CyclingLayerToggleButton, TravelModeToggleButton, SpeedInput, MenuButton } from '../components/components';
+import App from '../app';
+import UIElement from './base-abstract/ui-element';
+import { override } from '../misc/annotations';
 
 /**
  * Make the main right hand corner menu (containing the map type controls etc).
  */
 
-export default class Menu {
+// NOTE: technically, in order to decouple things, Menu should be handed the million different callbacks,
+// but the UI of the app is unlikely to change and the time resources are better spent elsewhere.
+export default class Menu extends UIElement {
 
   static readonly DIV_ID = 'menu';
 
   private static _isVisible = false;
 
+  @override
   static build(): HTMLDivElement {
 
     const parentDiv = document.createElement('div');
@@ -24,9 +30,9 @@ export default class Menu {
   // if called first, no extra holder div is needed
   private static _addMapStyleToggleButtons(parentDiv: any): void {
     
-    const normBtn: HTMLDivElement = MapStyleToggleButton.build(MapStyleToggleButton.NORMAL_TXT);
-    const satBtn: HTMLDivElement = MapStyleToggleButton.build(MapStyleToggleButton.SAT_TXT);
-    const terrainBtn: HTMLDivElement = MapStyleToggleButton.build(MapStyleToggleButton.TERRAIN_TXT);
+    const normBtn: HTMLDivElement = MapStyleToggleButton.build(App.onMapStyleToggleButtonClick, MapStyleToggleButton.NORMAL_TXT);
+    const satBtn: HTMLDivElement = MapStyleToggleButton.build(App.onMapStyleToggleButtonClick, MapStyleToggleButton.SAT_TXT);
+    const terrainBtn: HTMLDivElement = MapStyleToggleButton.build(App.onMapStyleToggleButtonClick, MapStyleToggleButton.TERRAIN_TXT);
     parentDiv.append(normBtn, satBtn, terrainBtn);
   } // addMapStyleToggleButtons
 
@@ -35,7 +41,7 @@ export default class Menu {
     const buttonHolderDiv: HTMLDivElement = document.createElement('div');
     buttonHolderDiv.style.marginTop = '20%'; // separate it from the other buttons
 
-    const cyclingLayerBtn: HTMLDivElement = CyclingLayerToggleButton.build();
+    const cyclingLayerBtn: HTMLDivElement = CyclingLayerToggleButton.build(App.onCyclingLayerToggleButtonClick);
     buttonHolderDiv.appendChild(cyclingLayerBtn);
     parentDiv.appendChild(buttonHolderDiv);
 
@@ -44,14 +50,14 @@ export default class Menu {
     // recreating it with every click.
     setTimeout(() => { // wait for the DOM to update...
       
-      CyclingLayerToggleButton.setInitialStyles(); 
+      CyclingLayerToggleButton.setInitialStyles(App.mapService.bikeLayerOn); // strong coupling, but to avoid it would be too convoluted
     }, 50);
   } // _addCyclingLayerToggleButton
 
   private static _addTravelModeToggleButton(parentDiv: any): void {
 
     const buttonHolderDiv: HTMLDivElement = document.createElement('div'); 
-    const toggleBtn: HTMLDivElement = TravelModeToggleButton.build();
+    const toggleBtn: HTMLDivElement = TravelModeToggleButton.build(App.onTravelModeToggleButtonClick);
     buttonHolderDiv.appendChild(toggleBtn);
     parentDiv.appendChild(buttonHolderDiv);
   }
@@ -59,7 +65,7 @@ export default class Menu {
   private static _addSpeedInput(parentDiv: any): void {
 
     const holderDiv: HTMLDivElement = document.createElement('div');
-    const speedInput: HTMLInputElement = SpeedInput.build();
+    const speedInput: HTMLInputElement = SpeedInput.build(SpeedInput.onValueChange);
     holderDiv.appendChild(speedInput);
     parentDiv.appendChild(holderDiv);
   }

@@ -1,8 +1,14 @@
-define(["require", "exports", "../app"], function (require, exports, app_1) {
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+define(["require", "exports", "../app", "./base-abstract/button", "../misc/annotations"], function (require, exports, app_1, button_1, annotations_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    class TravelModeToggleButton {
-        static build() {
+    class TravelModeToggleButton extends button_1.default {
+        static build(onChange) {
             const pickedOption = app_1.default.travelMode;
             let unpickedOption;
             let pickedText;
@@ -21,7 +27,7 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
             outerDiv.id = TravelModeToggleButton._OUTER_DIV_ID;
             const select = document.createElement('select');
             select.id = TravelModeToggleButton._SELECT_ID;
-            select.addEventListener('change', app_1.default.onTravelModeToggleButtonClick);
+            select.addEventListener('change', onChange);
             const firstOption = document.createElement('option');
             firstOption.innerHTML = pickedText;
             firstOption.value = pickedOption;
@@ -38,5 +44,8 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
     TravelModeToggleButton._SELECT_ID = 'walk-cycle-btn-select';
     TravelModeToggleButton._CYCLE_TEXT = "cycle";
     TravelModeToggleButton._WALK_TEXT = "walk";
+    __decorate([
+        annotations_1.override
+    ], TravelModeToggleButton, "build", null);
     exports.default = TravelModeToggleButton;
 });
