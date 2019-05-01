@@ -3,17 +3,23 @@ import Button from './base-abstract/button';
 import { override } from '../misc/annotations';
 
 /**
- * Make the main right-hand corner menu button.
+ * A button that toggles the main menu's visibility.
  */
 
 export default class MenuButton extends Button {
 
+  // it's far from ideal that these are being accessed from the outside.
+  // the problem would go away if we didn't have to destroy and recreate
+  // the menu with each open/close.
   static readonly CLOSED_SYMBOL = 'ˇ';
   static readonly OPEN_SYMBOL = '^';
 
   private static readonly _OUTER_DIV_ID = 'menu-btn-outer';
   private static readonly _INNER_DIV_ID = 'menu-btn-inner';
 
+  /**
+   * Static factory method that returns an HTMLDivElement.
+   */
   @override
   static build(onClick: any): HTMLDivElement {
 

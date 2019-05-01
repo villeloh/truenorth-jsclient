@@ -1,21 +1,24 @@
 import UIBuilder from '../misc/ui-builder';
-import { MapStyleToggleButton, CyclingLayerToggleButton, TravelModeToggleButton, SpeedInput, MenuButton } from '../components/components';
+import { MapStyleToggleButton, CyclingLayerToggleButton, TravelModeToggleButton, SpeedChooser, MenuButton } from '../components/components';
 import App from '../app';
 import UIElement from './base-abstract/ui-element';
 import { override } from '../misc/annotations';
 
 /**
- * Make the main right hand corner menu (containing the map type controls etc).
+ * The right-hand corner menu (containing the map type controls, etc).
  */
 
-// NOTE: technically, in order to decouple things, Menu should be handed the million different callbacks,
-// but the UI of the app is unlikely to change and the time resources are better spent elsewhere.
+// NOTE: technically, in order to decouple things, Menu should be handed the million different callbacks;
+// but the UI of the app is unlikely to change and the time resources are far better spent elsewhere.
 export default class Menu extends UIElement {
 
   static readonly DIV_ID = 'menu';
 
   private static _isVisible = false;
 
+  /**
+   * Static factory method that returns an HTMLDivElement.
+   */
   @override
   static build(): HTMLDivElement {
 
@@ -23,7 +26,7 @@ export default class Menu extends UIElement {
     Menu._addMapStyleToggleButtons(parentDiv);
     Menu._addCyclingLayerToggleButton(parentDiv);
     Menu._addTravelModeToggleButton(parentDiv);
-    Menu._addSpeedInput(parentDiv);
+    Menu._addSpeedChooser(parentDiv);
     return parentDiv;
   } // build
 
@@ -46,8 +49,7 @@ export default class Menu extends UIElement {
     parentDiv.appendChild(buttonHolderDiv);
 
     // this call is needed to 'remember' the state of the cycling layer button on each menu recreation...
-    // not ideal and should be fixed; the menu's visibility should be altered instead of destroying or
-    // recreating it with every click.
+    // not ideal and should be fixed.
     setTimeout(() => { // wait for the DOM to update...
       
       CyclingLayerToggleButton.setInitialStyles(App.mapService.bikeLayerOn); // strong coupling, but to avoid it would be too convoluted
@@ -62,12 +64,10 @@ export default class Menu extends UIElement {
     parentDiv.appendChild(buttonHolderDiv);
   }
 
-  private static _addSpeedInput(parentDiv: any): void {
+  private static _addSpeedChooser(parentDiv: any): void {
 
-    const holderDiv: HTMLDivElement = document.createElement('div');
-    const speedInput: HTMLInputElement = SpeedInput.build(SpeedInput.onValueChange);
-    holderDiv.appendChild(speedInput);
-    parentDiv.appendChild(holderDiv);
+    const speedChooser: HTMLDivElement = SpeedChooser.build(App.onSpeedChooserValueChange);
+    parentDiv.appendChild(speedChooser);
   }
 
   // technically, this removes / recreates the menu with each click.

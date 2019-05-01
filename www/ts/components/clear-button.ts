@@ -14,6 +14,9 @@ export default class ClearButton extends Button {
   private static readonly _INNER_DIV_ID = 'clear-btn-inner';
   private static readonly _TEXT = 'CLEAR';
 
+  /** 
+   * Static factory method that returns an HTMLDivElement.
+  */
   @override
   static build(onClick: any): HTMLDivElement {
 

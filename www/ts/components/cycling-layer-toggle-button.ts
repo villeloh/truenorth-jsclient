@@ -2,8 +2,8 @@ import Button from './base-abstract/button';
 import { override } from '../misc/annotations';
 
 /**
- * Button that toggles the cycling layer off/on. It's different from the MapStyleToggleButtons, because 
- * the cycling layer can be applied on top of them.
+ * A button that toggles the cycling layer on/off. (It's different from the MapStyleToggleButtons because 
+ * the cycling layer can be applied on top of them.)
  */
 
 export default class CyclingLayerToggleButton extends Button {
@@ -18,6 +18,9 @@ export default class CyclingLayerToggleButton extends Button {
 
   private static readonly _TEXT = 'C.LAYER';
 
+  /**
+   * Static factory method that returns an HTMLDivElement.
+   */
   @override
   static build(onClick: any): HTMLDivElement {
 
@@ -34,7 +37,9 @@ export default class CyclingLayerToggleButton extends Button {
     return outerDiv;
   } // build
 
-  // called when recreating the menu; it's a way to 'recall' its correct state after destruction
+  /**
+  * A way to 'recall' the menu's correct state after destruction & recreation.
+  */
   static setInitialStyles(bikeLayerOn: Boolean): void {
 
     const toggleBtn = document.getElementById(CyclingLayerToggleButton._OUTER_DIV_ID);
@@ -48,15 +53,22 @@ export default class CyclingLayerToggleButton extends Button {
     } // if-else
   } // setInitialStyles
 
+  /** 
+   * Style the cycling layer toggle button to indicate that it's in the 'off' state.
+  */
   static applyOffStyles(buttonDiv: any): void {
 
     buttonDiv.style.backgroundColor = CyclingLayerToggleButton._BG_COLOR_OFF;
     buttonDiv.style.border = CyclingLayerToggleButton._BORDER_OFF;
   }
 
+  /** 
+   * Style the cycling layer toggle button to indicate that it's in the 'on' state.
+  */
   static applyOnStyles(buttonDiv: any): void {
 
     buttonDiv.style.backgroundColor = CyclingLayerToggleButton._BG_COLOR_ON;
     buttonDiv.style.border = CyclingLayerToggleButton._BORDER_ON;
   }
+
 } // CyclingLayerToggleButton

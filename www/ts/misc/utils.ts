@@ -66,7 +66,7 @@ export default class Utils {
     return new LatLng(event.latLng.lat(), event.latLng.lng());
   }
 
-  // not being used atm, but keeping it in case it's needed later on
+  // not being used atm, but keeping it in case it's needed later on (for persistence it likely will be)
   /* decodePolyPoints: function(encodedPoints) {
 
     // console.log("decoded stuffs: " + app.google.maps.geometry.encoding.decodePath(encodedPoints));

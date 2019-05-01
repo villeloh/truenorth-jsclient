@@ -14,7 +14,7 @@ export default class VisualTrip {
   private _destMarker: Marker;
   private _wayPointMarkers: Array<Marker>;
 
-  // a computed values (this way it's not necessary to give them to the constructor)
+  // computed values (this way it's not necessary to give them to the constructor)
   private readonly _distance: number;
   private readonly _routeStepStartCoords: Array<LatLng>; // used for obtaining elevation data and for rendering the route on the map
 

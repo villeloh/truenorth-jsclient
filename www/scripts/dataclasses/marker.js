@@ -36,11 +36,11 @@ define(["require", "exports"], function (require, exports) {
         }
         static makePosMarker(map, coord) {
             const symbol = {
-                fillColor: this.POS_MARKER_COLOR,
+                fillColor: Marker.POS_MARKER_COLOR,
                 fillOpacity: 1,
                 path: google.maps.SymbolPath.CIRCLE,
                 scale: 5,
-                strokeColor: this.POS_MARKER_COLOR,
+                strokeColor: Marker.POS_MARKER_COLOR,
                 strokeWeight: 1
             };
             return new Marker(map, coord, "", false, symbol);

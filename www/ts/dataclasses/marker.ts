@@ -18,6 +18,8 @@ export default class Marker {
   private static readonly WAYPOINT_MARKER_COLOR = 'rgba(255,255,255,1)' // white
   private static readonly WAYPOINT_MARKER_STROKE = 'rgba(0,0,0,1)' // black
 
+  private static POS_MARKER_SYMBOL_DEFAULT: any; 
+
   private readonly _googleMapMarker: google.maps.Marker;
 
   constructor(
@@ -62,23 +64,22 @@ export default class Marker {
       scale: 8,
       strokeColor: this.WAYPOINT_MARKER_STROKE,
       strokeWeight: 1
-    }
+    }; // symbol
 
     return new Marker(null, coord, label, true, symbol);
   } // makeWayPointMarker
 
-  // App._mapService.map, App._currentPos, "", false
-  static makePosMarker(map: google.maps.Map, coord: LatLng) {
+  static makePosMarker(map: google.maps.Map, coord: LatLng): Marker {
 
     const symbol = {
 
-      fillColor: this.POS_MARKER_COLOR,
+      fillColor: Marker.POS_MARKER_COLOR,
       fillOpacity: 1,
-      path: google.maps.SymbolPath.CIRCLE, // todo: learn how to use svg paths
+      path: google.maps.SymbolPath.CIRCLE,
       scale: 5,
-      strokeColor: this.POS_MARKER_COLOR,
+      strokeColor: Marker.POS_MARKER_COLOR,
       strokeWeight: 1
-    }
+    }; // symbol
 
     return new Marker(map, coord, "", false, symbol)
   } // makePosMarker

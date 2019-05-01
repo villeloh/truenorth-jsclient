@@ -5,7 +5,7 @@ import LocationBtn from './location-button';
 import MapStyleToggleBtn from './map-style-toggle-button';
 import MenuBtn from './menu-button';
 import Mnu from './menu';
-import SpeedInpt from './speed-input';
+import SpeedChsr from './speed-chooser';
 import TravelModeToggleBtn from './travel-mode-toggle-button';
 
 /**
@@ -19,5 +19,5 @@ export const LocationButton = LocationBtn;
 export const MapStyleToggleButton = MapStyleToggleBtn;
 export const MenuButton = MenuBtn;
 export const Menu = Mnu;
-export const SpeedInput = SpeedInpt;
+export const SpeedChooser = SpeedChsr;
 export const TravelModeToggleButton = TravelModeToggleBtn;

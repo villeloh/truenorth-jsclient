@@ -6,11 +6,10 @@ import GeoLocService from './services/geoloc-service';
 import RouteService from './services/route-service';
 import Utils from './misc/utils';
 import Env from './misc/env';
-import { InfoHeader, MapStyleToggleButton, Menu } from './components/components';
+import { InfoHeader, MapStyleToggleButton, Menu, SpeedChooser } from './components/components';
 import UIBuilder from './misc/ui-builder';
 import VisualTrip from './dataclasses/visual-trip';
 import { Nullable } from './misc/types';
-import { logCalls } from './misc/annotations'
 import ElevationService from './services/elevation-service';
 
 // to make typescript accept its existence... I'm sure there's a more proper way to do this, but it works for now.
@@ -21,7 +20,7 @@ declare const GoogleMapsLoader: any;
  * @author Ville Lohkovuori (2019)
  */
 
-// can't use the proper google types here, as the google object has yet to be initialized
+// can't use the proper google maps types here, as the google object has yet to be initialized
 // (side note: whose idea was it to prohibit enums inside classes in typescript? -.-)
 enum TravelMode {
 
@@ -33,7 +32,8 @@ enum TravelMode {
 // so I'm making all things in it static.
 export default class App {
 
-  static readonly MAX_SPEED = 50; // km/h
+  static readonly MIN_SPEED = 1; // km/h
+  static readonly MAX_SPEED = 50;
   static readonly DEFAULT_SPEED = 15;
 
   static get TravelMode() {
@@ -296,6 +296,21 @@ export default class App {
 
     App.travelMode = event.target.value; 
   }
+
+  /**
+   * Updates the info header's duration value upon speed change (if the app has a VisualTrip atm).
+   */
+  static onSpeedChooserValueChange(event: any): void {
+
+    App.speed = event.target.value; // it's always valid due to the slider's min and max constraints
+    SpeedChooser.updateDisplayedSpeed(App.speed);
+
+    if (!App.hasVisualTrip) return; // there is always a speed value, but it's only used if there's a successfully fetched trip that's being displayed
+
+    // Note: it seems the typescript compiler is not smart enough to recognize a null check that's 'inside' another method
+    const newDura = Utils.calcDuration(App.mapService.visualTrip!.distance, App.speed);
+    InfoHeader.updateDuration(newDura);
+  } // onSpeedChooserValueChange
 
   // -------------------------------- GEOLOC --------------------------------------------------------------------------
 

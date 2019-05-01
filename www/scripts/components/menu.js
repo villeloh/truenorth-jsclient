@@ -13,7 +13,7 @@ define(["require", "exports", "../misc/ui-builder", "../components/components", 
             Menu._addMapStyleToggleButtons(parentDiv);
             Menu._addCyclingLayerToggleButton(parentDiv);
             Menu._addTravelModeToggleButton(parentDiv);
-            Menu._addSpeedInput(parentDiv);
+            Menu._addSpeedChooser(parentDiv);
             return parentDiv;
         }
         static _addMapStyleToggleButtons(parentDiv) {
@@ -38,11 +38,9 @@ define(["require", "exports", "../misc/ui-builder", "../components/components", 
             buttonHolderDiv.appendChild(toggleBtn);
             parentDiv.appendChild(buttonHolderDiv);
         }
-        static _addSpeedInput(parentDiv) {
-            const holderDiv = document.createElement('div');
-            const speedInput = components_1.SpeedInput.build(components_1.SpeedInput.onValueChange);
-            holderDiv.appendChild(speedInput);
-            parentDiv.appendChild(holderDiv);
+        static _addSpeedChooser(parentDiv) {
+            const speedChooser = components_1.SpeedChooser.build(app_1.default.onSpeedChooserValueChange);
+            parentDiv.appendChild(speedChooser);
         }
         static toggleVisibility(event) {
             const menuBtnTextHolderDiv = event.target;

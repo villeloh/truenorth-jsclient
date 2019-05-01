@@ -129,6 +129,14 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         static onTravelModeToggleButtonClick(event) {
             App.travelMode = event.target.value;
         }
+        static onSpeedChooserValueChange(event) {
+            App.speed = event.target.value;
+            components_1.SpeedChooser.updateDisplayedSpeed(App.speed);
+            if (!App.hasVisualTrip)
+                return;
+            const newDura = utils_1.default.calcDuration(App.mapService.visualTrip.distance, App.speed);
+            components_1.InfoHeader.updateDuration(newDura);
+        }
         static onGeoLocSuccess(oldCoord, newCoord) {
             App.posMarker.clearFromMap();
             App.currentPos = newCoord;
@@ -206,6 +214,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             return App._posMarker;
         }
     }
+    App.MIN_SPEED = 1;
     App.MAX_SPEED = 50;
     App.DEFAULT_SPEED = 15;
     App._currentPos = new latlng_1.default(0, 0);

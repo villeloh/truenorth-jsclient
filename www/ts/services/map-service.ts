@@ -43,7 +43,7 @@ export default class MapService {
       center: MapService._INITIAL_CENTER_COORDS,
       zoom: MapService._DEFAULT_ZOOM, 
       minZoom: MapService._MIN_ZOOM,
-      fullscreenControl: false, // missing from the typings, but it works when assigning to object
+      fullscreenControl: false, // missing from the typings, but it works when assigning to an object
       gestureHandling: 'greedy',
       mapTypeControl: false,
       // mapTypeControlOptions: { style: google.maps.MapTypeControlStyle.DROPDOWN_MENU },

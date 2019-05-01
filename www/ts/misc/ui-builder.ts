@@ -62,6 +62,7 @@ const UIBuilder = {
 
     const buttonHolderDiv: HTMLDivElement = document.createElement('div');
     buttonHolderDiv.style.margin = '2.5%';
+    buttonHolderDiv.style.zIndex = '99'; // to bring it on top of the InfoHeader (was overlapping it for some reason)
     const clearBtn: HTMLDivElement = ClearButton.build(App.onClearButtonClick);
     buttonHolderDiv.appendChild(clearBtn);
 

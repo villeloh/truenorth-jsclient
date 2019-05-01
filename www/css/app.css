@@ -169,6 +169,7 @@ h1 {
     border: 2px solid #808080;
     box-shadow: 0 2px 6px rgba(0,0,0,.3);
     width: 4.3rem;
+    /* margin: 0px 0px 0px 100px; to push it to the right-hand side of the containing div (NOTE: needs a defined width as well!) */
     height: 2.2rem;
     text-align: center;
     border-radius: 5%;
@@ -183,12 +184,14 @@ h1 {
     line-height: 38px;
   }
 
+  
   .map-style-btn-outer {
 
     background-color: #fff;
     border: 2px solid #808080;
     box-shadow: 0 2px 6px rgba(0,0,0,.3);
     width: 4.3rem;
+    /* margin: 0px 0px 0px 100px; to push them to the right-hand side of the containing div (NOTE: needs a defined width as well!) */
     height: 2.2rem;
     text-align: center;
     border-radius: 5%;
@@ -262,9 +265,34 @@ h1 {
     line-height: 38px;
   }
 
-  #speed-input {
+  #speed-chooser {
 
     margin-top: 20%;
     width: 70px;
     height: 30px;
+  }
+
+  .slider {
+    -webkit-appearance: none;  /* Override default CSS styles */
+    appearance: none;
+    width: 100%; /* Full-width */
+    height: 25px; /* Specified height */
+    background: #d3d3d3; /* Grey background */
+    outline: none; /* Remove outline */
+  }
+
+  .slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #4CAF50;
+  }
+  
+  .slider::-moz-range-thumb {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    background: #4CAF50;
   }

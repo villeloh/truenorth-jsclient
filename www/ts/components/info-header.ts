@@ -16,6 +16,9 @@ export default class InfoHeader extends UIElement {
   private static readonly _INNER_P_ID_DURA = 'info-header-p-dura';
   private static readonly _INNER_P_ID_DIVISOR = 'info-header-p-divisor';
 
+  /**
+   * Static factory method that returns an HTMLDivElement.
+   */
   @override
   static build(): HTMLDivElement {
 
@@ -38,6 +41,9 @@ export default class InfoHeader extends UIElement {
     return outerDiv;
   } // build
 
+  /**
+   * Resets the info header to its default state.
+   */
   static reset(): void {
 
     const innerDistP = document.getElementById(InfoHeader._INNER_P_ID_DIST);
@@ -46,6 +52,9 @@ export default class InfoHeader extends UIElement {
     innerDuraP!.textContent = InfoHeader._DEFAULT_DURA;
   }
 
+  /**
+   * Updates the distance value (in km) shown in the info header.
+   */
   static updateDistance(value: number): void {
 
     const innerP = document.getElementById(InfoHeader._INNER_P_ID_DIST);
@@ -54,6 +63,9 @@ export default class InfoHeader extends UIElement {
     innerP!.textContent = distToDisplay;
   }
 
+  /**
+   * Updates the duration value (in hours/minutes) shown in the info header.
+   */
   static updateDuration(valueInDecimH: number): void {
 
     const innerP = document.getElementById(InfoHeader._INNER_P_ID_DURA);

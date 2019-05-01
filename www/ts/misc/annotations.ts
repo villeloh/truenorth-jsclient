@@ -22,6 +22,6 @@ export function override(target: any, methodName: string, descriptor: PropertyDe
 
   if(typeof baseType[methodName] !== 'function') {
 
-      throw new Error('Method ' + methodName + ' of ' + target.constructor.name + ' does not override any base class method');
+      throw new Error('Method ' + methodName + ' of ' + target.constructor.name + ' does not override any direct base class method');
   }
 }

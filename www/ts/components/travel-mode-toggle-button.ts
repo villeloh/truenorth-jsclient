@@ -15,6 +15,9 @@ export default class TravelModeToggleButton extends Button {
   private static readonly _CYCLE_TEXT = "cycle";
   private static readonly _WALK_TEXT = "walk";
 
+  /**
+   * Static factory method that returns an HTMLDivElement.
+   */
   @override
   static build(onChange: any): HTMLDivElement {
 
