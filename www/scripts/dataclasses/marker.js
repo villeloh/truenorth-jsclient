@@ -2,25 +2,48 @@ define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class Marker {
-        constructor(_map, _position, _label, _isDraggable) {
+        constructor(_map, _position, _label, _isDraggable, _icon) {
             this._map = _map;
             this._position = _position;
             this._label = _label;
             this._isDraggable = _isDraggable;
-            const markerOptions = {
+            this._icon = _icon;
+            let markerOptions = {
                 position: _position,
                 map: _map,
                 draggable: _isDraggable,
                 label: _label,
                 crossOnDrag: false
             };
+            if (_icon) {
+                markerOptions.icon = _icon;
+            }
             this._googleMapMarker = new google.maps.Marker(markerOptions);
         }
         static makeDestMarker(destCoord) {
             return new Marker(null, destCoord, "", true);
         }
         static makeWayPointMarker(coord, label) {
-            return new Marker(null, coord, label, true);
+            const symbol = {
+                fillColor: this.WAYPOINT_MARKER_COLOR,
+                fillOpacity: 1,
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 8,
+                strokeColor: this.WAYPOINT_MARKER_STROKE,
+                strokeWeight: 1
+            };
+            return new Marker(null, coord, label, true, symbol);
+        }
+        static makePosMarker(map, coord) {
+            const symbol = {
+                fillColor: this.POS_MARKER_COLOR,
+                fillOpacity: 1,
+                path: google.maps.SymbolPath.CIRCLE,
+                scale: 5,
+                strokeColor: this.POS_MARKER_COLOR,
+                strokeWeight: 1
+            };
+            return new Marker(map, coord, "", false, symbol);
         }
         addListener(eventName, callback) {
             this._googleMapMarker.addListener(eventName, callback);
@@ -45,10 +68,9 @@ define(["require", "exports"], function (require, exports) {
             };
             this._googleMapMarker = new google.maps.Marker(options);
         }
-        setIcon(iconUrl) {
-            this._googleMapMarker.setIcon(iconUrl);
-        }
     }
-    Marker.POS_MARKER_URL = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png';
+    Marker.POS_MARKER_COLOR = 'rgba(50,50,255,1)';
+    Marker.WAYPOINT_MARKER_COLOR = 'rgba(255,255,255,1)';
+    Marker.WAYPOINT_MARKER_STROKE = 'rgba(0,0,0,1)';
     exports.default = Marker;
 });

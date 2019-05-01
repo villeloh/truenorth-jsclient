@@ -1,10 +1,4 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./dataclasses/latlng", "./services/map-service", "./services/geoloc-service", "./services/route-service", "./misc/utils", "./misc/env", "./components/components", "./misc/ui-builder", "./dataclasses/visual-trip", "./misc/annotations", "./services/elevation-service"], function (require, exports, marker_1, trip_1, latlng_1, map_service_1, geoloc_service_1, route_service_1, utils_1, env_1, components_1, ui_builder_1, visual_trip_1, annotations_1, elevation_service_1) {
+define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./dataclasses/latlng", "./services/map-service", "./services/geoloc-service", "./services/route-service", "./misc/utils", "./misc/env", "./components/components", "./misc/ui-builder", "./dataclasses/visual-trip", "./services/elevation-service"], function (require, exports, marker_1, trip_1, latlng_1, map_service_1, geoloc_service_1, route_service_1, utils_1, env_1, components_1, ui_builder_1, visual_trip_1, elevation_service_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var TravelMode;
@@ -31,8 +25,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 App._speed = App.DEFAULT_SPEED;
                 App._plannedTrip = null;
                 App._prevTrip = null;
-                App._posMarker = new marker_1.default(App._mapService.map, App._currentPos, "", false);
-                App._posMarker.setIcon(marker_1.default.POS_MARKER_URL);
+                App._posMarker = marker_1.default.makePosMarker(App._mapService.map, App._currentPos);
                 App._travelMode = App.TravelMode.BICYCLING;
                 ui_builder_1.default.buildUI();
                 App._geoLocService.start();
@@ -217,12 +210,6 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
     App.DEFAULT_SPEED = 15;
     App._currentPos = new latlng_1.default(0, 0);
     App._geoLocService = new geoloc_service_1.default();
-    __decorate([
-        annotations_1.logCalls
-    ], App, "onGoogleMapLongPress", null);
-    __decorate([
-        annotations_1.logCalls
-    ], App, "onClearButtonClick", null);
     exports.default = App;
     App.initialize();
 });

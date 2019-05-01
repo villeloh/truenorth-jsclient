@@ -13,17 +13,22 @@ interface IGoogleMapListenerCallback {
 
 export default class Marker {
 
-  static readonly POS_MARKER_URL = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png';
+  // private static readonly POS_MARKER_URL = 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle_highlight.png';
+  private static readonly POS_MARKER_COLOR = 'rgba(50,50,255,1)' // blue
+  private static readonly WAYPOINT_MARKER_COLOR = 'rgba(255,255,255,1)' // white
+  private static readonly WAYPOINT_MARKER_STROKE = 'rgba(0,0,0,1)' // black
 
-  private _googleMapMarker: google.maps.Marker;
+  private readonly _googleMapMarker: google.maps.Marker;
 
   constructor(
     private _map: Nullable<GoogleMap>, 
     private _position: LatLng,
     private _label: string, 
-    private _isDraggable: boolean) {
+    private _isDraggable: boolean,
+    private _icon?: google.maps.Symbol
+    ) {
 
-    const markerOptions = {
+    let markerOptions: any = {
 
       position: _position,
       map: _map,
@@ -32,6 +37,10 @@ export default class Marker {
       crossOnDrag: false // it's not in the typedef file (too new? oversight?), but assigning to an object and then passing it seems to work
     };
 
+    if (_icon) {
+      markerOptions.icon = _icon // necessary because I don't know how to set the 'default' icon
+    }
+
     // @ts-ignore (it needs to accept a null map like a good little bitch)
     this._googleMapMarker = new google.maps.Marker(markerOptions);
   } // constructor
@@ -39,14 +48,40 @@ export default class Marker {
   // convenience factories, to avoid giving so many arguments (and making clear what's being created).
   // might replace these with optional arguments to the main constructor.
   static makeDestMarker(destCoord: LatLng): Marker {
-
+    
     return new Marker(null, destCoord, "", true);
   }
 
   static makeWayPointMarker(coord: LatLng, label: string): Marker {
 
-    return new Marker(null, coord, label, true);
-  }
+    const symbol = {
+
+      fillColor: this.WAYPOINT_MARKER_COLOR,
+      fillOpacity: 1,
+      path: google.maps.SymbolPath.CIRCLE, // todo: learn how to use svg paths
+      scale: 8,
+      strokeColor: this.WAYPOINT_MARKER_STROKE,
+      strokeWeight: 1
+    }
+
+    return new Marker(null, coord, label, true, symbol);
+  } // makeWayPointMarker
+
+  // App._mapService.map, App._currentPos, "", false
+  static makePosMarker(map: google.maps.Map, coord: LatLng) {
+
+    const symbol = {
+
+      fillColor: this.POS_MARKER_COLOR,
+      fillOpacity: 1,
+      path: google.maps.SymbolPath.CIRCLE, // todo: learn how to use svg paths
+      scale: 5,
+      strokeColor: this.POS_MARKER_COLOR,
+      strokeWeight: 1
+    }
+
+    return new Marker(map, coord, "", false, symbol)
+  } // makePosMarker
 
   addListener(eventName: string, callback: IGoogleMapListenerCallback): void {
 
@@ -88,11 +123,5 @@ export default class Marker {
     // @ts-ignore (warning about incompatible types, due to the icon field in options)
     this._googleMapMarker = new google.maps.Marker(options);
   } // moveTo
-
-  // the position marker needs this
-  setIcon(iconUrl: string): void {
-
-    this._googleMapMarker.setIcon(iconUrl);
-  }
 
 } // Marker

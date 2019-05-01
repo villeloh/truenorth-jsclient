@@ -95,8 +95,7 @@ export default class App {
       App._plannedTrip = null;
       App._prevTrip = null;
     
-      App._posMarker = new Marker(App._mapService.map, App._currentPos, "", false);
-      App._posMarker.setIcon(Marker.POS_MARKER_URL); 
+      App._posMarker = Marker.makePosMarker(App._mapService.map, App._currentPos);
 
       App._travelMode = App.TravelMode.BICYCLING;
 
