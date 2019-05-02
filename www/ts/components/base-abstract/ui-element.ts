@@ -8,11 +8,11 @@ export default class UIElement {
 
   // we can't have static methods in an interface, yet build() must be static 
   // due to the limitations of the 'plain js' component system. as a workaround,
-  // make sure every inheriting class overrides this method (and marks it with @override.
+  // make sure every inheriting class overrides this method (and marks it with @override).
   // NOTE: the callback should ofc be a function; the 'any' type is a workaround due to 
   // the annoying EventHandlerObject requirements.
   /**
-   * Static factory method that returns an HTMLElement.
+   * 'ABSTRACT'. DO NOT CALL THIS!
    */
   static build(actionCallback?: any, text?: String): HTMLElement {
 

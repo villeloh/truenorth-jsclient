@@ -30,7 +30,7 @@ export default class SpeedChooser extends UIElement {
 
     const displayP: HTMLParagraphElement = document.createElement('p');
     displayP.id = SpeedChooser._DISPLAY_P_ID;
-    displayP.textContent = `Speed: ${App.speed} km/h`;
+    displayP.textContent = `${App.speed} km/h`;
 
     holderDiv.appendChild(slider);
     holderDiv.appendChild(displayP);
@@ -40,7 +40,7 @@ export default class SpeedChooser extends UIElement {
   static updateDisplayedSpeed(newSpeed: number): void {
 
     const displayP = document.querySelector(`#${SpeedChooser._DISPLAY_P_ID}`) // can't use findElementById for some reason..?
-    displayP!.textContent = `Speed: ${newSpeed} km/h`;
+    displayP!.textContent = `${newSpeed} km/h`;
   }
 
 } // SpeedChooser

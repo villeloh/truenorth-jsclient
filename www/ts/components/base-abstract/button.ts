@@ -12,7 +12,7 @@ export default class Button extends UIElement {
   // It should be an abstract method, but they can't be static...
   // the workarounds that exist for this are way too much to bother with.
   /**
-   * Static factory method that returns an HTMLDivElement.
+   * 'ABSTRACT'. DO NOT CALL THIS!
    */
   @override
   static build(onClick: any, text?: String): HTMLDivElement {

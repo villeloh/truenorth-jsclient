@@ -5,7 +5,8 @@ import { InfoHeader, MenuButton, LocationButton, Menu, ClearButton } from '../co
  * For adding elements to the custom UI. The UI logic is contained elsewhere, in the relevant files.
  */
 
-// it can stay an object for now (as it has no private fields, I see no harm in that)
+// it can stay an object for now (as it has no private fields, I see no harm in that).
+// NOTE: once the styles are finalized, all style defs should be moved from this file to app.css.
 const UIBuilder = {
 
   buildUI: function(): void {
@@ -37,9 +38,9 @@ const UIBuilder = {
     menuHolderDiv.style.marginRight = '2.5%';
     menuHolderDiv.style.display = 'flex';
     menuHolderDiv.style.flexDirection = 'column';
-    menuHolderDiv.style.width = '30%';
-    menuHolderDiv.style.alignItems = 'flex-end';
-    menuHolderDiv.style.marginTop = '20%';
+    // menuHolderDiv.style.width = '30%';
+    menuHolderDiv.style.alignItems = 'center';
+    menuHolderDiv.style.marginTop = '20%'; // these are kludges that should be remedied at some point
     menuHolderDiv.style.marginBottom = '75%';
 
     const menu = Menu.build();
@@ -77,6 +78,10 @@ const UIBuilder = {
     holderDiv.style.marginTop = '1.5%';
     const infoHeader = InfoHeader.build();
     holderDiv.appendChild(infoHeader);
+    holderDiv.addEventListener('click', function(e: any) {
+
+      e.stopPropagation(); // to stop clicks from bubbling through to the underlying map (seems to work)
+    })
 
     App.mapService.addUIControl(App.google.maps.ControlPosition.TOP_CENTER, holderDiv);
   }, // _addInfoHeader
