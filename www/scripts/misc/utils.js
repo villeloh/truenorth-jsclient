@@ -2,36 +2,8 @@ define(["require", "exports", "../dataclasses/latlng"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class Utils {
-        static isValidSpeed(speedInKmH) {
-            if (speedInKmH < 1 || speedInKmH === "" || speedInKmH === null || speedInKmH === undefined) {
-                return false;
-            }
-            else {
-                return true;
-            }
-        }
-        static calcDuration(distance, speed) {
-            let duraInDecimHours;
-            if (Utils.isValidSpeed(speed)) {
-                duraInDecimHours = distance / speed;
-            }
-            else {
-                duraInDecimHours = 0;
-            }
-            return duraInDecimHours;
-        }
-        static formatDuration(duraInDecimHours, fallBackText) {
-            let text;
-            if (duraInDecimHours === 0) {
-                text = fallBackText;
-            }
-            else {
-                const hours = Math.trunc(duraInDecimHours);
-                const decimPart = duraInDecimHours - hours;
-                const minutes = Math.round(decimPart * 60);
-                text = `${hours} h ${minutes} m`;
-            }
-            return text;
+        static duraInDecimHours(distance, speed) {
+            return distance / speed;
         }
         static distanceInKm(route) {
             let total = 0;

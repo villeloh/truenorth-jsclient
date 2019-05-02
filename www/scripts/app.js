@@ -40,7 +40,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App._elevationService.fetchElevations(visualTrip);
             App.prevTrip = successfulTrip.copy();
             const dist = utils_1.default.distanceInKm(route);
-            const dura = utils_1.default.calcDuration(dist, App.speed);
+            const dura = utils_1.default.duraInDecimHours(dist, App.speed);
             components_1.InfoHeader.updateDistance(dist);
             components_1.InfoHeader.updateDuration(dura);
         }
@@ -134,7 +134,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             components_1.SpeedChooser.updateDisplayedSpeed(App.speed);
             if (!App.hasVisualTrip)
                 return;
-            const newDura = utils_1.default.calcDuration(App.mapService.visualTrip.distance, App.speed);
+            const newDura = utils_1.default.duraInDecimHours(App.mapService.visualTrip.distance, App.speed);
             components_1.InfoHeader.updateDuration(newDura);
         }
         static onGeoLocSuccess(oldCoord, newCoord) {

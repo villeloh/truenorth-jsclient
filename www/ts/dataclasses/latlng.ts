@@ -1,4 +1,3 @@
-import { Nullable } from '../misc/types';
 
 /**
  * For emulating the Google Maps LatLng format, with added, useful methods.
@@ -18,10 +17,10 @@ export default class LatLng {
     return `lat.: ${this.lat}, lng.: ${this.lng}`;
   }
 
+  // Used in GeoLocService for determining if the map should recenter when the user moves. 
   /**
   * Returns the absolute max difference (between lats or lngs) of two LatLng objects.
   */
-  // Used in GeoLocService for determining if the map should recenter when the user moves. 
   differenceFrom(anotherLatLng: LatLng): number {
 
     const absLatDiff: number = Math.abs(Math.abs(this.lat) - Math.abs(anotherLatLng.lat));

@@ -5,10 +5,9 @@ import Marker from './marker';
 import App from '../app';
 
 /**
- * A VisualTrip is used purely to visualize trips on the map; a new V.T. is given to 
+ * Used purely to visualize trips on the map; a new V.T. is given to 
  * the MapService with each new successful route fetch, ensuring fresh data.
  */
-
 export default class VisualTrip {
 
   private _destMarker: Marker;
@@ -26,13 +25,13 @@ export default class VisualTrip {
 
     // the distance will need to be stored for the purpose of calculating new
     // trip durations. it will only be accessed, never altered, which preserves 
-    // the immutability of VisualTrip. still, it's an ugly solution and a better one may be possible.
+    // the immutability of VisualTrip. still, it's an ugly solution and a better one should be sought.
     const route: google.maps.DirectionsRoute = this._routeResult.routes[0];
     this._distance = Utils.distanceInKm(route);
 
     const stepArrays = route.legs.map(leg => { return leg.steps });
     // @ts-ignore (complaint about the custom LatLng type)
-    // used for fetching elevations. could be clearer (should have used for loops, ehh)...
+    // used for fetching elevations. could be clearer (should have used for-loops, ehh)...
     this._routeStepStartCoords = stepArrays.map(stepArray => { 
       
       return stepArray.map(step => { 
@@ -70,6 +69,9 @@ export default class VisualTrip {
     } // for
   } // constructor
 
+  /**
+   * Shows the destination and waypoint markers on the given GoogleMap.
+  */
   showMarkersOnMap(map: GoogleMap): void {
 
     this._destMarker.showOnMap(map);
@@ -79,6 +81,10 @@ export default class VisualTrip {
     });
   }
 
+  /**
+   * Calls clearFromMap() on the destination and waypoint markers 
+   * and erases the waypoint markers.
+  */
   clearMarkersFromMap(): void {
 
     this._destMarker.clearFromMap();
@@ -102,6 +108,10 @@ export default class VisualTrip {
     return this._routeResult;
   }
 
+  /**
+   * Returns the start coordinates (LatLngs) of each 
+   * step of the contained RouteResult.
+  */
   get routeStepStartCoords(): Array<LatLng> {
 
     return this._routeStepStartCoords;

@@ -70,8 +70,24 @@ export default class InfoHeader extends UIElement {
 
     const innerP = document.getElementById(InfoHeader._INNER_P_ID_DURA);
 
-    // give it a fallback text to display if the value is invalid (not a number or less than 1)
-    innerP!.textContent = Utils.formatDuration(valueInDecimH, InfoHeader._DEFAULT_DURA);
+    const text = InfoHeader._formatDuration(valueInDecimH);
+    innerP!.textContent = text;
   } // updateDuration
+
+  // converts the duration to a more readable format (hours + minutes)
+  private static _formatDuration(duraInDecimHours: number): string {
+
+    // 0 is the only problematic value that could reach this point
+    if (duraInDecimHours === 0) {
+
+      return InfoHeader._DEFAULT_DURA; // arguably it's not 'formatting', but ehh, it's too convenient
+    } else {
+      
+      const hours = Math.trunc(duraInDecimHours);
+      const decimPart = duraInDecimHours - hours;
+      const minutes = Math.round(decimPart * 60);
+      return `${hours} h ${minutes} m`;
+    }
+  } // _formatDuration
 
 } // InfoHeader

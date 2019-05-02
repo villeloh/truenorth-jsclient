@@ -1,51 +1,52 @@
-import { Nullable, GoogleMap } from './../misc/types';
-import App from '../app';
+import { Nullable } from './../misc/types';
 import LatLng from './latlng';
 import WayPointObject from './waypoint-object';
 
+// after removing the redundant map field, this inteface doesn't do much;
+// could just use the regular Trip constructor with 1-2 arguments.
 /**
- * A Trip encapsulates all things that are needed to fetch routes (showing them is handled by VisualTrip).
- */
-
-// just make one and give it to the Trip constructor (Java Engineers: lul wut?!)
+ * The shape of the object that is given to the main Trip constructor.
+*/
 export interface TripOptions {
 
-    readonly map: GoogleMap,
     readonly destCoord: Nullable<LatLng>, // it can be null in certain situations, mainly when clicking on water multiple times in a row
     readonly wayPointObjects?: Array<WayPointObject> // not all trips have waypoints
 } // TripOptions
 
+/**
+ * Encapsulates all things that are needed for fetching routes.
+ */
 export class Trip {
 
-  private _map: GoogleMap;
   private _destCoord: Nullable<LatLng>;
   private _wayPointObjects: Array<WayPointObject>;
 
   constructor(options: TripOptions) {
 
-    // object destructuring should be used here, but it doesn't want to play ball with 'this'
-    this._map = options.map;
     this._destCoord = options.destCoord;
-    this._wayPointObjects = options.wayPointObjects || []; // to avoid 'undefined'
+    this._wayPointObjects = options.wayPointObjects || []; // to avoid 'undefined' later on
   } // constructor
 
-  // convenience factory method for use in App
+  /**
+   * Factory method (for fewer arguments).
+  */
   static makeTrip(destCoord: LatLng): Trip {
 
     const options: TripOptions = {
-      map: App.mapService.map,
+
       destCoord: destCoord,
       wayPointObjects: []
     }
     return new Trip(options);
   } // makeTrip
 
-  // needed in order not to cause an infinite loop of requests (at least I think this was the cause...)
+  /**
+  * Copies a Trip without reference (safe copy).
+  */
   copy(): Trip {
 
     const options: TripOptions = {
 
-      map: this._map,
       destCoord: this._destCoord,
       wayPointObjects: []
     };
@@ -82,7 +83,7 @@ export class Trip {
     this._wayPointObjects.splice(index, 1);
   }
 
-  get wayPointObjects(): Array<WayPointObject> { // or empty array, but whatever
+  get wayPointObjects(): Array<WayPointObject> { // or empty array
 
     return this._wayPointObjects;
   }
@@ -92,8 +93,10 @@ export class Trip {
     this._wayPointObjects = newArray;
   }
 
-  // for getting the plain latLngs inside the WayPointObjects
-  // (needed for rendering markers on the map)
+  // needed for rendering markers on the map
+  /**
+   * Returns the plain LatLngs inside the contained WayPointObjects.
+  */
   getAllWayPointCoords(): Array<LatLng> {
 
     return this._wayPointObjects.map(wpObj => {
@@ -102,7 +105,9 @@ export class Trip {
     });
   }
 
-  // not called anywhere atm; may be unnecessary.
+  /**
+  * Sets the destintation coordinate to null and removes the contained WayPointObjects. 
+  */
   clear(): void {
 
     this._destCoord = null;

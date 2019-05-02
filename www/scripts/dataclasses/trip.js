@@ -1,15 +1,13 @@
-define(["require", "exports", "../app", "./waypoint-object"], function (require, exports, app_1, waypoint_object_1) {
+define(["require", "exports", "./waypoint-object"], function (require, exports, waypoint_object_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class Trip {
         constructor(options) {
-            this._map = options.map;
             this._destCoord = options.destCoord;
             this._wayPointObjects = options.wayPointObjects || [];
         }
         static makeTrip(destCoord) {
             const options = {
-                map: app_1.default.mapService.map,
                 destCoord: destCoord,
                 wayPointObjects: []
             };
@@ -17,7 +15,6 @@ define(["require", "exports", "../app", "./waypoint-object"], function (require,
         }
         copy() {
             const options = {
-                map: this._map,
                 destCoord: this._destCoord,
                 wayPointObjects: []
             };

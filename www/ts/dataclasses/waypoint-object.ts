@@ -1,9 +1,8 @@
 import LatLng from './latlng';
 
 /**
- * For storing the inner waypoint objects that are needed by the fetchRoute method in RouteService.
+ * For storing waypoint coordinates in the format that is needed for route fetching.
  */
-
 export default class WayPointObject {
 
   readonly location: any;

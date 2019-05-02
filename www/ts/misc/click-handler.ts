@@ -1,10 +1,5 @@
 import App from '../app';
 
-/**
- * Differentiates between single, double and long clicks on the map, so that only the appropriate
- * event gets fired (wtf Google?).
- */
-
 enum ClickType {
 
   SINGLE,
@@ -13,6 +8,10 @@ enum ClickType {
   LONG_END
 }
 
+/**
+ * Differentiates between single, double and long clicks on the map, so that only the appropriate
+ * event gets fired.
+ */
 export default class ClickHandler {
 
   static get ClickType() {
@@ -28,20 +27,10 @@ export default class ClickHandler {
   private _doubleClickInProgress: boolean = false;
   private _gMapClickEvent: any;
 
-  constructor() {
-  }
-
-  get isLongPress(): boolean {
-
-    return this._isLongPress;
-  }
-
-  set isLongPress(value: boolean) {
-
-    this._isLongPress = value;
-  }
-
-  // i'm sure there's a simpler way to do this, but whatever, it works
+  /**
+   * Handle each click event (single, double, etc) according to 
+   * its specific logic (which depends on the interplay between Google Map events and regular DOM events).
+  */
   handle(event: any): void{
 
     switch (event.id) {
@@ -60,6 +49,7 @@ export default class ClickHandler {
         break;
       case ClickHandler.ClickType.DOUBLE:
 
+        // if there is an active destination, it adds a waypoint
         App.onGoogleMapDoubleClick(event);
 
         this._doubleClickInProgress = true;
@@ -80,17 +70,29 @@ export default class ClickHandler {
         break;
       case ClickHandler.ClickType.LONG_END:
 
-        // do not re-fetch if the marker drag event just did it
+        // do not re-fetch route if the marker drag event just did it
         if ( !this._isLongPress || App.mapService.markerDragEventJustStopped ) return;  
         
-        // set by the google map click event that fires just before this regular DOM event
+        // set by the google map click event (first case) that fires just before this regular DOM event.
+        // fetches new route
         App.onGoogleMapLongPress(this._gMapClickEvent);
         break; 
       default:
 
+        // it should be impossible
         console.log("error handling click (a Very Bad Thing)!");
         break;
     } // switch
   } // handle
+
+  get isLongPress(): boolean {
+
+    return this._isLongPress;
+  }
+
+  set isLongPress(value: boolean) {
+
+    this._isLongPress = value;
+  }
 
 } // ClickHandler

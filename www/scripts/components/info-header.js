@@ -4,7 +4,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-define(["require", "exports", "../misc/utils", "../misc/annotations", "./base-abstract/ui-element"], function (require, exports, utils_1, annotations_1, ui_element_1) {
+define(["require", "exports", "../misc/annotations", "./base-abstract/ui-element"], function (require, exports, annotations_1, ui_element_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class InfoHeader extends ui_element_1.default {
@@ -36,7 +36,19 @@ define(["require", "exports", "../misc/utils", "../misc/annotations", "./base-ab
         }
         static updateDuration(valueInDecimH) {
             const innerP = document.getElementById(InfoHeader._INNER_P_ID_DURA);
-            innerP.textContent = utils_1.default.formatDuration(valueInDecimH, InfoHeader._DEFAULT_DURA);
+            const text = InfoHeader._formatDuration(valueInDecimH);
+            innerP.textContent = text;
+        }
+        static _formatDuration(duraInDecimHours) {
+            if (duraInDecimHours === 0) {
+                return InfoHeader._DEFAULT_DURA;
+            }
+            else {
+                const hours = Math.trunc(duraInDecimHours);
+                const decimPart = duraInDecimHours - hours;
+                const minutes = Math.round(decimPart * 60);
+                return `${hours} h ${minutes} m`;
+            }
         }
     }
     InfoHeader._DEFAULT_DIST = '0.0 km';

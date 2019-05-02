@@ -133,7 +133,7 @@ export default class App {
     // the trip duration can always be calculated based on the stored distance and current speed values. 
     // because the speed can be changed at any time (via the speed input), and VisualTrip is meant to 
     // contain only fresh data, the duration should never be stored directly in VisualTrip.
-    const dura: number = Utils.calcDuration(dist, App.speed);
+    const dura: number = Utils.duraInDecimHours(dist, App.speed);
 
     InfoHeader.updateDistance(dist);
     InfoHeader.updateDuration(dura);
@@ -308,7 +308,7 @@ export default class App {
     if (!App.hasVisualTrip) return; // there is always a speed value, but it's only used if there's a successfully fetched trip that's being displayed
 
     // Note: it seems the typescript compiler is not smart enough to recognize a null check that's 'inside' another method
-    const newDura = Utils.calcDuration(App.mapService.visualTrip!.distance, App.speed);
+    const newDura = Utils.duraInDecimHours(App.mapService.visualTrip!.distance, App.speed);
     InfoHeader.updateDuration(newDura);
   } // onSpeedChooserValueChange
 

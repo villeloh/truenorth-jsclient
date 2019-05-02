@@ -4,10 +4,9 @@ import { override } from '../misc/annotations';
 import Slider from './base-abstract/slider';
 
 /**
- * A simple input box for giving the estimated (average) cycling speed (in km/h).
- * (May change it to a slider for the final version.)
+ * A slider for giving the estimated (average) cycling speed (in km/h).
+ * Also contains a paragraph element for displaying the chosen speed.
  */
-
 export default class SpeedChooser extends UIElement {
 
   private static readonly _HOLDER_DIV_ID = 'speed-chooser-holder-div';
@@ -37,34 +36,13 @@ export default class SpeedChooser extends UIElement {
     return holderDiv;
   } // build
 
+  /**
+   * Updates the speed that's displayed in the paragraph component of the SpeedChooser.
+  */
   static updateDisplayedSpeed(newSpeed: number): void {
 
-    const displayP = document.querySelector(`#${SpeedChooser._DISPLAY_P_ID}`) // can't use findElementById for some reason..?
+    const displayP = document.getElementById(SpeedChooser._DISPLAY_P_ID);
     displayP!.textContent = `${newSpeed} km/h`;
   }
 
 } // SpeedChooser
-
-
-
-
-/*
-export default class SpeedInput extends UIElement {
-
-  private static readonly _INPUT_ID = 'speed-input';
-
-  @override
-  static build(onValueChange: any): HTMLInputElement {
-
-    const input: HTMLInputElement = document.createElement('input');
-    input.type = "number";
-    input.id = SpeedInput._INPUT_ID;
-    input.step = "1";
-    input.max = App.MAX_SPEED+"";
-    input.value = App.speed+"";
-
-    input.addEventListener('input', onValueChange);
-    return input;
-  } // build
-
-} // SpeedInput */
