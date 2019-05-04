@@ -1,5 +1,4 @@
 
-
 // For logging and useful metadata about various things.
  
 /**
@@ -24,3 +23,16 @@ export function override(target: any, methodName: string, descriptor: PropertyDe
       throw new Error('Method ' + methodName + ' of ' + target.constructor.name + ' does not override any direct base class method');
   }
 } // override
+
+/*
+// usage: decorate setters with it in order to have reactive fetches.
+export function reactive(callback: Function, ...args: any): any { 
+
+  console.log("reactive outside");
+  return function(target: any, methodName: string, descriptor: PropertyDescriptor): any {
+
+    console.log("target: " + target);
+    callback(args);
+    console.log("reactive inside");
+  }
+} // reactive */

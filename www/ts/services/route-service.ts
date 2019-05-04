@@ -38,12 +38,6 @@ export default class RouteService {
     // null destCoords sometimes reach this method (after clicking on water twice or more in a row).
     // for now, it's an unavoidable side effect of the way the trip state is managed.
     if (destCoord === null) return;
-/*
-    console.log("wps in fetch:");
-    trip.wayPointObjects.forEach(obj => {
-
-      console.log(obj.toString());
-    }); */
 
     const request: google.maps.DirectionsRequest = {
 

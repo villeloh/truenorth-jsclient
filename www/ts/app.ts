@@ -151,7 +151,7 @@ export default class App {
     // restore a successful trip (in most situations; failure is harmless though)
     App.plannedTrip = App.prevTrip.copy();
 
-    App.routeService.fetchRoute(App.plannedTrip); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
+    // App.routeService.fetchRoute(App.plannedTrip); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
   }
 
   static onElevationFetchSuccess(visualTrip: VisualTrip, resultsArray: Array<google.maps.ElevationResult>): void {
@@ -175,8 +175,6 @@ export default class App {
 
   static onGoogleMapLongPress(event: any): void {
 
-    // if we have a visualTrip, we also have a plannedTrip; 
-    // if we don't, it will be created by this very method.
     if (App.hasVisualTrip) {
 
       App.prevTrip = App.plannedTrip!.copy();
@@ -186,9 +184,14 @@ export default class App {
 
     // this gets rid of all waypoints, but that is the preferred behavior 
     // (if you want to keep them, just drag the dest marker)
-    App.plannedTrip = Trip.makeTrip(destCoord);
 
-    App.routeService.fetchRoute(App.plannedTrip);
+    if (!App.plannedTrip) {
+
+      App.plannedTrip = Trip.makeTrip(destCoord);
+      App.routeService.fetchRoute(App.plannedTrip);
+    } else {
+      App.plannedTrip.destCoord = destCoord;
+    }
   } // onGoogleMapLongPress
 
   static onGoogleMapDoubleClick(event: any): void {

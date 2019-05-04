@@ -48,7 +48,6 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             if (App.prevTrip === null)
                 return;
             App.plannedTrip = App.prevTrip.copy();
-            App.routeService.fetchRoute(App.plannedTrip);
         }
         static onElevationFetchSuccess(visualTrip, resultsArray) {
             const elevations = resultsArray.map(result => { return result.elevation; });
@@ -61,8 +60,13 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 App.prevTrip = App.plannedTrip.copy();
             }
             const destCoord = utils_1.default.latLngFromClickEvent(event);
-            App.plannedTrip = trip_1.Trip.makeTrip(destCoord);
-            App.routeService.fetchRoute(App.plannedTrip);
+            if (!App.plannedTrip) {
+                App.plannedTrip = trip_1.Trip.makeTrip(destCoord);
+                App.routeService.fetchRoute(App.plannedTrip);
+            }
+            else {
+                App.plannedTrip.destCoord = destCoord;
+            }
         }
         static onGoogleMapDoubleClick(event) {
             if (!App.hasVisualTrip)

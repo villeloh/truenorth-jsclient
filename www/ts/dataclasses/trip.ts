@@ -2,12 +2,12 @@ import { Nullable } from './../misc/types';
 import LatLng from './latlng';
 import WayPointObject from './waypoint-object';
 
-// after removing the redundant map field, this inteface doesn't do much;
+// after removing the redundant map field, this interface doesn't do much;
 // could just use the regular Trip constructor with 1-2 arguments.
 /**
  * The shape of the object that is given to the main Trip constructor.
 */
-export interface TripOptions {
+export interface ITripOptions {
 
     readonly destCoord: Nullable<LatLng>, // it can be null in certain situations, mainly when clicking on water multiple times in a row
     readonly wayPointObjects?: Array<WayPointObject> // not all trips have waypoints
@@ -21,7 +21,7 @@ export class Trip {
   private _destCoord: Nullable<LatLng>;
   private _wayPointObjects: Array<WayPointObject>;
 
-  constructor(options: TripOptions) {
+  constructor(options: ITripOptions) {
 
     this._destCoord = options.destCoord;
     this._wayPointObjects = options.wayPointObjects || []; // to avoid 'undefined' later on
@@ -32,7 +32,7 @@ export class Trip {
   */
   static makeTrip(destCoord: LatLng): Trip {
 
-    const options: TripOptions = {
+    const options: ITripOptions = {
 
       destCoord: destCoord,
       wayPointObjects: []
@@ -45,7 +45,7 @@ export class Trip {
   */
   copy(): Trip {
 
-    const options: TripOptions = {
+    const options: ITripOptions = {
 
       destCoord: this._destCoord,
       wayPointObjects: []
@@ -106,7 +106,7 @@ export class Trip {
   }
 
   /**
-  * Sets the destintation coordinate to null and removes the contained WayPointObjects. 
+  * Sets the destination coordinate to null and removes the contained WayPointObjects. 
   */
   clear(): void {
 
