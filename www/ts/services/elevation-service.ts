@@ -39,7 +39,8 @@ export default class ElevationService {
     // working with callbacks is getting quite unwieldy, but i've no idea how to extract the 
     // resultsArray from this method, as it returns void and that cannot be changed.
     // @ts-ignore (shut up about the missing LatLng methods)
-    this._elevService.getElevationForLocations({ locations: visualTrip.routeStepStartCoords }, function(resultsArray: Array<google.maps.ElevationResult>, status: google.maps.ElevationStatus) {
+    this._elevService.getElevationForLocations({ locations: visualTrip.routeStepStartCoords }, 
+      function(resultsArray: Array<google.maps.ElevationResult>, status: google.maps.ElevationStatus) {
     
       if (status === google.maps.ElevationStatus.OK) {
       

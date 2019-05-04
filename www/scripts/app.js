@@ -1,4 +1,4 @@
-define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./dataclasses/latlng", "./services/map-service", "./services/geoloc-service", "./services/route-service", "./misc/utils", "./misc/env", "./components/components", "./misc/ui-builder", "./dataclasses/visual-trip", "./services/elevation-service"], function (require, exports, marker_1, trip_1, latlng_1, map_service_1, geoloc_service_1, route_service_1, utils_1, env_1, components_1, ui_builder_1, visual_trip_1, elevation_service_1) {
+define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./dataclasses/latlng", "./services/map-service", "./services/geoloc-service", "./services/route-service", "./misc/utils", "./misc/env", "./components/components", "./misc/ui-builder", "./dataclasses/visual-trip", "./services/elevation-service", "./misc/click-handler"], function (require, exports, marker_1, trip_1, latlng_1, map_service_1, geoloc_service_1, route_service_1, utils_1, env_1, components_1, ui_builder_1, visual_trip_1, elevation_service_1, click_handler_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var TravelMode;
@@ -74,9 +74,9 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         static onDestMarkerDragEnd(event) {
             App.plannedTrip.destCoord = utils_1.default.latLngFromClickEvent(event);
             App.routeService.fetchRoute(App.plannedTrip);
-            App.mapService.markerDragEventJustStopped = true;
+            App.clickHandler.markerDragEventJustStopped = true;
             setTimeout(() => {
-                App.mapService.markerDragEventJustStopped = false;
+                App.clickHandler.markerDragEventJustStopped = false;
             }, map_service_1.default.MARKER_DRAG_TIMEOUT);
         }
         static onDestMarkerClick(event) {
@@ -86,9 +86,9 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             const latLng = utils_1.default.latLngFromClickEvent(event);
             App.plannedTrip.updateWayPointObject(event.wpIndex, latLng);
             App.routeService.fetchRoute(App.plannedTrip);
-            App.mapService.markerDragEventJustStopped = true;
+            App.clickHandler.markerDragEventJustStopped = true;
             setTimeout(() => {
-                App.mapService.markerDragEventJustStopped = false;
+                App.clickHandler.markerDragEventJustStopped = false;
             }, map_service_1.default.MARKER_DRAG_TIMEOUT);
         }
         static onWayPointMarkerDblClick(event) {
@@ -213,12 +213,16 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         static get posMarker() {
             return App._posMarker;
         }
+        static get clickHandler() {
+            return this._clickHandler;
+        }
     }
     App.MIN_SPEED = 1;
     App.MAX_SPEED = 50;
     App.DEFAULT_SPEED = 15;
     App._currentPos = new latlng_1.default(0, 0);
     App._geoLocService = new geoloc_service_1.default();
+    App._clickHandler = new click_handler_1.default();
     exports.default = App;
     App.initialize();
 });

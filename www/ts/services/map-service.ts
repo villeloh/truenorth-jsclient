@@ -17,12 +17,9 @@ export default class MapService {
 
   static readonly MARKER_DRAG_TIMEOUT = 100; // ms
 
-  private static readonly _DEFAULT_ZOOM = 8;
+  private static readonly _DEFAULT_ZOOM = 11;
   private static readonly _MIN_ZOOM = 5;
   private static readonly _INITIAL_CENTER_COORDS = new LatLng(0,0);
-
-  // needed in ClickHandler in order not to fire a superfluous route fetch on long press 
-  private _markerDragEventJustStopped: boolean = false;
   
   mapHolderDiv: any; // too complicated with the proper type
 
@@ -31,8 +28,6 @@ export default class MapService {
 
   private readonly _map: any;
   private readonly _routeRenderer: RouteRenderer;
-
-  private readonly _clickHandler = new ClickHandler();
 
   private _visualTrip: Nullable<VisualTrip>;
 
@@ -46,7 +41,7 @@ export default class MapService {
       fullscreenControl: false, // missing from the typings, but it works when assigning to an object
       gestureHandling: 'greedy',
       mapTypeControl: false,
-      // mapTypeControlOptions: { style: google.maps.MapTypeControlStyle.DROPDOWN_MENU },
+      clickableIcons: false, // they're a nuisance due to misclicks; use regular Google Maps if you need place info
       rotateControl: false,
       scaleControl: false,
       tilt: 0,
@@ -63,7 +58,7 @@ export default class MapService {
 
     this._routeRenderer = new RouteRenderer(this._map);
 
-    this._setListeners();
+    this._setListeners(this._map, App.clickHandler);
   } // constructor
 
   reCenter(newCoord: LatLng): void {
@@ -114,24 +109,9 @@ export default class MapService {
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX GETTERS & SETTERS & INIT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-  get markerDragEventJustStopped(): boolean {
-
-    return this._markerDragEventJustStopped;
-  }
-
-  set markerDragEventJustStopped(value: boolean) {
-
-    this._markerDragEventJustStopped = value;
-  }
-
   get map(): GoogleMap {
 
     return this._map;
-  }
-  
-  get clickHandler(): ClickHandler {
-
-    return this._clickHandler;
   }
 
   get bikeLayerOn(): boolean {
@@ -144,43 +124,43 @@ export default class MapService {
     return this._visualTrip;
   }
 
-  _setListeners(): void {
+  _setListeners(map: GoogleMap, clickHandler: ClickHandler): void {
 
-    this.map.addListener('click', function(e: any) {
+    map.addListener('click', function(e: any) {
 
       e.id = ClickHandler.ClickType.SINGLE;
-      App.mapService.clickHandler.handle(e);
+      clickHandler.handle(e);
     });
     
-    this.map.addListener('dblclick', function(e: any) { 
+    map.addListener('dblclick', function(e: any) { 
 
       e.id = ClickHandler.ClickType.DOUBLE;
-      App.mapService.clickHandler.handle(e);
+      clickHandler.handle(e);
     });
 
-    this.map.addListener('heading_changed', function(e: any) {
+    map.addListener('heading_changed', function(e: any) {
 
       console.log("heading changed event: " + JSON.stringify(e)); // doesn't seem to work... read up on it
     });
 
-    this.map.addListener('zoom_changed', function(e: any) {
+    map.addListener('zoom_changed', function(e: any) {
 
-      App.mapService.clickHandler.isLongPress = false; // 'this' doesn't work here because of lost context in html (I guess)
+      clickHandler.isLongPress = false; // 'this' doesn't work here because of lost context in html (I guess)
     });
 
-    this.map.addListener('dragstart', function() {
+    map.addListener('dragstart', function() {
 
-      App.mapService.clickHandler.isLongPress = false;
+      clickHandler.isLongPress = false;
     });
 
-    this.map.addListener('drag', function() {
+    map.addListener('drag', function() {
 
-      App.mapService.clickHandler.isLongPress = false;
+      clickHandler.isLongPress = false;
     });
 
-    this.map.addListener('dragend', function() {
+    map.addListener('dragend', function() {
 
-      App.mapService.clickHandler.isLongPress = false;
+      clickHandler.isLongPress = false;
     });
     
     // DOM events seem to be the only option for listening for 'long press' type of events.
@@ -188,13 +168,13 @@ export default class MapService {
     App.google.maps.event.addDomListener(this.mapHolderDiv, 'touchstart', function(e: any) {
 
       e.id = ClickHandler.ClickType.LONG_START;
-      App.mapService.clickHandler.handle(e); 
+      clickHandler.handle(e); 
     });
 
     App.google.maps.event.addDomListener(this.mapHolderDiv, 'touchend', function(e: any) {
       
       e.id = ClickHandler.ClickType.LONG_END;
-      App.mapService.clickHandler.handle(e);
+      clickHandler.handle(e);
     });
   } // _setListeners
 

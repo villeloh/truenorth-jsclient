@@ -11,6 +11,7 @@ import UIBuilder from './misc/ui-builder';
 import VisualTrip from './dataclasses/visual-trip';
 import { Nullable } from './misc/types';
 import ElevationService from './services/elevation-service';
+import ClickHandler from './misc/click-handler';
 
 // to make typescript accept its existence... I'm sure there's a more proper way to do this, but it works for now.
 declare const GoogleMapsLoader: any;
@@ -58,6 +59,10 @@ export default class App {
 
   private static _prevTrip: Nullable<Trip>;
   private static _plannedTrip: Nullable<Trip>;
+
+  // it was previously in MapService; moved it here to remove
+  // some couplings. may yet move it back.
+  private static readonly _clickHandler = new ClickHandler();
 
   static google: any;
 
@@ -131,7 +136,7 @@ export default class App {
     const dist: number = Utils.distanceInKm(route);
 
     // the trip duration can always be calculated based on the stored distance and current speed values. 
-    // because the speed can be changed at any time (via the speed input), and VisualTrip is meant to 
+    // because the speed can be changed at any time (via the speed slider), and VisualTrip is meant to 
     // contain only fresh data, the duration should never be stored directly in VisualTrip.
     const dura: number = Utils.duraInDecimHours(dist, App.speed);
 
@@ -201,11 +206,11 @@ export default class App {
     App.plannedTrip!.destCoord = Utils.latLngFromClickEvent(event);
     App.routeService.fetchRoute(App.plannedTrip!);
 
-    App.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
+    App.clickHandler.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
 
     setTimeout(() => {
 
-      App.mapService.markerDragEventJustStopped = false;
+      App.clickHandler.markerDragEventJustStopped = false;
     }, MapService.MARKER_DRAG_TIMEOUT);
   } // onDestMarkerDragEnd
 
@@ -229,11 +234,11 @@ export default class App {
 
     App.routeService.fetchRoute(App.plannedTrip!);
 
-    App.mapService.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
+    App.clickHandler.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
 
     setTimeout(() => {
 
-      App.mapService.markerDragEventJustStopped = false;
+      App.clickHandler.markerDragEventJustStopped = false;
     }, MapService.MARKER_DRAG_TIMEOUT);
   } // onWayPointMarkerDragEnd
 
@@ -444,6 +449,11 @@ export default class App {
   static get posMarker(): Marker {
 
     return App._posMarker;
+  }
+  
+  static get clickHandler(): ClickHandler {
+
+    return this._clickHandler;
   }
 
 } // App

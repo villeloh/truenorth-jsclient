@@ -27,6 +27,9 @@ export default class ClickHandler {
   private _doubleClickInProgress: boolean = false;
   private _gMapClickEvent: any;
 
+  // needed in order not to fire a superfluous route fetch on long press 
+  private _markerDragEventJustStopped: boolean = false;
+
   /**
    * Handle each click event (single, double, etc) according to 
    * its specific logic (which depends on the interplay between Google Map events and regular DOM events).
@@ -71,7 +74,7 @@ export default class ClickHandler {
       case ClickHandler.ClickType.LONG_END:
 
         // do not re-fetch route if the marker drag event just did it
-        if ( !this._isLongPress || App.mapService.markerDragEventJustStopped ) return;  
+        if ( !this._isLongPress || this._markerDragEventJustStopped ) return;  
         
         // set by the google map click event (first case) that fires just before this regular DOM event.
         // fetches new route
@@ -93,6 +96,16 @@ export default class ClickHandler {
   set isLongPress(value: boolean) {
 
     this._isLongPress = value;
+  }
+
+  get markerDragEventJustStopped(): boolean {
+
+    return this._markerDragEventJustStopped;
+  }
+
+  set markerDragEventJustStopped(value: boolean) {
+
+    this._markerDragEventJustStopped = value;
   }
 
 } // ClickHandler

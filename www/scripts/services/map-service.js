@@ -3,9 +3,7 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
     Object.defineProperty(exports, "__esModule", { value: true });
     class MapService {
         constructor() {
-            this._markerDragEventJustStopped = false;
             this._bikeLayerOn = false;
-            this._clickHandler = new click_handler_1.default();
             const mapOptions = {
                 center: MapService._INITIAL_CENTER_COORDS,
                 zoom: MapService._DEFAULT_ZOOM,
@@ -13,6 +11,7 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
                 fullscreenControl: false,
                 gestureHandling: 'greedy',
                 mapTypeControl: false,
+                clickableIcons: false,
                 rotateControl: false,
                 scaleControl: false,
                 tilt: 0,
@@ -23,7 +22,7 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
             this._bikeLayer = new google.maps.BicyclingLayer();
             this._visualTrip = null;
             this._routeRenderer = new route_renderer_1.default(this._map);
-            this._setListeners();
+            this._setListeners(this._map, app_1.default.clickHandler);
         }
         reCenter(newCoord) {
             this._map.setCenter(newCoord);
@@ -56,17 +55,8 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
             this._visualTrip = null;
             this._routeRenderer.clearPolyLine();
         }
-        get markerDragEventJustStopped() {
-            return this._markerDragEventJustStopped;
-        }
-        set markerDragEventJustStopped(value) {
-            this._markerDragEventJustStopped = value;
-        }
         get map() {
             return this._map;
-        }
-        get clickHandler() {
-            return this._clickHandler;
         }
         get bikeLayerOn() {
             return this._bikeLayerOn;
@@ -74,42 +64,42 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
         get visualTrip() {
             return this._visualTrip;
         }
-        _setListeners() {
-            this.map.addListener('click', function (e) {
+        _setListeners(map, clickHandler) {
+            map.addListener('click', function (e) {
                 e.id = click_handler_1.default.ClickType.SINGLE;
-                app_1.default.mapService.clickHandler.handle(e);
+                clickHandler.handle(e);
             });
-            this.map.addListener('dblclick', function (e) {
+            map.addListener('dblclick', function (e) {
                 e.id = click_handler_1.default.ClickType.DOUBLE;
-                app_1.default.mapService.clickHandler.handle(e);
+                clickHandler.handle(e);
             });
-            this.map.addListener('heading_changed', function (e) {
+            map.addListener('heading_changed', function (e) {
                 console.log("heading changed event: " + JSON.stringify(e));
             });
-            this.map.addListener('zoom_changed', function (e) {
-                app_1.default.mapService.clickHandler.isLongPress = false;
+            map.addListener('zoom_changed', function (e) {
+                clickHandler.isLongPress = false;
             });
-            this.map.addListener('dragstart', function () {
-                app_1.default.mapService.clickHandler.isLongPress = false;
+            map.addListener('dragstart', function () {
+                clickHandler.isLongPress = false;
             });
-            this.map.addListener('drag', function () {
-                app_1.default.mapService.clickHandler.isLongPress = false;
+            map.addListener('drag', function () {
+                clickHandler.isLongPress = false;
             });
-            this.map.addListener('dragend', function () {
-                app_1.default.mapService.clickHandler.isLongPress = false;
+            map.addListener('dragend', function () {
+                clickHandler.isLongPress = false;
             });
             app_1.default.google.maps.event.addDomListener(this.mapHolderDiv, 'touchstart', function (e) {
                 e.id = click_handler_1.default.ClickType.LONG_START;
-                app_1.default.mapService.clickHandler.handle(e);
+                clickHandler.handle(e);
             });
             app_1.default.google.maps.event.addDomListener(this.mapHolderDiv, 'touchend', function (e) {
                 e.id = click_handler_1.default.ClickType.LONG_END;
-                app_1.default.mapService.clickHandler.handle(e);
+                clickHandler.handle(e);
             });
         }
     }
     MapService.MARKER_DRAG_TIMEOUT = 100;
-    MapService._DEFAULT_ZOOM = 8;
+    MapService._DEFAULT_ZOOM = 11;
     MapService._MIN_ZOOM = 5;
     MapService._INITIAL_CENTER_COORDS = new latlng_1.default(0, 0);
     exports.default = MapService;

@@ -12,15 +12,10 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
         constructor() {
             this._isLongPress = false;
             this._doubleClickInProgress = false;
+            this._markerDragEventJustStopped = false;
         }
         static get ClickType() {
             return ClickType;
-        }
-        get isLongPress() {
-            return this._isLongPress;
-        }
-        set isLongPress(value) {
-            this._isLongPress = value;
         }
         handle(event) {
             switch (event.id) {
@@ -41,7 +36,7 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
                     }, ClickHandler._LONG_PRESS_TIMEOUT);
                     break;
                 case ClickHandler.ClickType.LONG_END:
-                    if (!this._isLongPress || app_1.default.mapService.markerDragEventJustStopped)
+                    if (!this._isLongPress || this._markerDragEventJustStopped)
                         return;
                     app_1.default.onGoogleMapLongPress(this._gMapClickEvent);
                     break;
@@ -49,6 +44,18 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
                     console.log("error handling click (a Very Bad Thing)!");
                     break;
             }
+        }
+        get isLongPress() {
+            return this._isLongPress;
+        }
+        set isLongPress(value) {
+            this._isLongPress = value;
+        }
+        get markerDragEventJustStopped() {
+            return this._markerDragEventJustStopped;
+        }
+        set markerDragEventJustStopped(value) {
+            this._markerDragEventJustStopped = value;
         }
     }
     ClickHandler._DOUBLE_CLICK_TIMEOUT = 300;
