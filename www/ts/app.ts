@@ -147,12 +147,10 @@ export default class App {
   // usually occurs when clicking on water, mountains, etc
   static onRouteFetchFailure(): void {
 
-    console.log("failed to fetch route");
     if (App.prevTrip === null) return;
     // restore a successful trip (in most situations; failure is harmless though)
     App.plannedTrip = App.prevTrip.copy();
-
-    App.routeService.fetchRoute(App.plannedTrip); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
+    App.plannedTrip.autoRefetchRouteOnChange(); // we need to reactivate automatic fetches (putting them in the Trip constructor causes an infinite loop)
   }
 
   static onElevationFetchSuccess(visualTrip: VisualTrip, resultsArray: Array<google.maps.ElevationResult>): void {
@@ -176,19 +174,13 @@ export default class App {
 
   static onGoogleMapLongPress(event: any): void {
 
-    if (App.hasVisualTrip) {
-
-      App.prevTrip = App.plannedTrip!.copy();
-    }
-
     const destCoord: LatLng = Utils.latLngFromClickEvent(event);
 
     // this gets rid of all waypoints, but that is the preferred behavior 
     // (if you want to keep them, just drag the dest marker)
     App.plannedTrip = Trip.makeTrip(destCoord);
 
-    // uses mobx to automatically refetch the route whenever
-    // the dest coord or waypoints change.
+    // uses mobx to automatically refetch the route whenever the dest coord or waypoints change.
     App.plannedTrip.autoRefetchRouteOnChange();
   } // onGoogleMapLongPress
 

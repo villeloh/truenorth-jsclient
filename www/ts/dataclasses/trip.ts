@@ -37,7 +37,6 @@ export class Trip {
     this._wayPointObjects = observable.array(wpObjects, {});
   } // constructor
 
-  // redundant now, but I'm keeping it in case more fields are needed in the future.
   /**
    * Factory method (for fewer arguments).
   */
@@ -55,7 +54,7 @@ export class Trip {
   /**
    * Auto-fetches a new route every time the Trip's observable properties change.
   */
-  autoRefetchRouteOnChange() {
+  autoRefetchRouteOnChange(): void {
 
     this._disposer = autorun(
 
@@ -82,7 +81,7 @@ export class Trip {
     });
 
     return new Trip(options);
-  } // copy
+  } // copyAsReactiveTrip
 
   get destCoord(): Nullable<LatLng> {
 

@@ -45,11 +45,10 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             components_1.InfoHeader.updateDuration(dura);
         }
         static onRouteFetchFailure() {
-            console.log("failed to fetch route");
             if (App.prevTrip === null)
                 return;
             App.plannedTrip = App.prevTrip.copy();
-            App.routeService.fetchRoute(App.plannedTrip);
+            App.plannedTrip.autoRefetchRouteOnChange();
         }
         static onElevationFetchSuccess(visualTrip, resultsArray) {
             const elevations = resultsArray.map(result => { return result.elevation; });
@@ -58,9 +57,6 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         static onElevationFetchFailure() {
         }
         static onGoogleMapLongPress(event) {
-            if (App.hasVisualTrip) {
-                App.prevTrip = App.plannedTrip.copy();
-            }
             const destCoord = utils_1.default.latLngFromClickEvent(event);
             App.plannedTrip = trip_1.Trip.makeTrip(destCoord);
             App.plannedTrip.autoRefetchRouteOnChange();
