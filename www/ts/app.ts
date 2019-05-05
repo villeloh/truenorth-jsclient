@@ -129,7 +129,7 @@ export default class App {
     
     App.prevTrip = successfulTrip.copy(); // save the trip in case the next one is unsuccessful
     // App.plannedTrip = successfulTrip; // should be unnecessary, as it is already the same trip
-    // App.mapService.renderTripOnMap(visualTrip);
+    // App.mapService.renderTripOnMap(visualTrip); // do not reactivate! elevation fetch success callback calls it.
 
     // this happens internally in VisualTrip as well, when it stores the distance,
     // but it's more clear to do it explicitly here.
@@ -147,11 +147,12 @@ export default class App {
   // usually occurs when clicking on water, mountains, etc
   static onRouteFetchFailure(): void {
 
+    console.log("failed to fetch route");
     if (App.prevTrip === null) return;
     // restore a successful trip (in most situations; failure is harmless though)
     App.plannedTrip = App.prevTrip.copy();
 
-    // App.routeService.fetchRoute(App.plannedTrip); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
+    App.routeService.fetchRoute(App.plannedTrip); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
   }
 
   static onElevationFetchSuccess(visualTrip: VisualTrip, resultsArray: Array<google.maps.ElevationResult>): void {
@@ -184,14 +185,11 @@ export default class App {
 
     // this gets rid of all waypoints, but that is the preferred behavior 
     // (if you want to keep them, just drag the dest marker)
+    App.plannedTrip = Trip.makeTrip(destCoord);
 
-    if (!App.plannedTrip) {
-
-      App.plannedTrip = Trip.makeTrip(destCoord);
-      App.routeService.fetchRoute(App.plannedTrip);
-    } else {
-      App.plannedTrip.destCoord = destCoord;
-    }
+    // uses mobx to automatically refetch the route whenever
+    // the dest coord or waypoints change.
+    App.plannedTrip.autoRefetchRouteOnChange();
   } // onGoogleMapLongPress
 
   static onGoogleMapDoubleClick(event: any): void {
@@ -201,13 +199,11 @@ export default class App {
 
     const clickedPos = Utils.latLngFromClickEvent(event);
     App.plannedTrip!.addWayPointObject(clickedPos);
-    App.routeService.fetchRoute(App.plannedTrip!);
   }
 
   static onDestMarkerDragEnd(event: any): void {
 
     App.plannedTrip!.destCoord = Utils.latLngFromClickEvent(event);
-    App.routeService.fetchRoute(App.plannedTrip!);
 
     App.clickHandler.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
 
@@ -235,8 +231,6 @@ export default class App {
     const latLng = Utils.latLngFromClickEvent(event);
     App.plannedTrip!.updateWayPointObject(event.wpIndex, latLng);
 
-    App.routeService.fetchRoute(App.plannedTrip!);
-
     App.clickHandler.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
 
     setTimeout(() => {
@@ -248,7 +242,6 @@ export default class App {
   static onWayPointMarkerDblClick(event: any): void {
 
     App.plannedTrip!.removeWayPointObject(event.wpIndex);
-    App.routeService.fetchRoute(App.plannedTrip!);
   }
 
   // -------------------------------- OVERLAY UI CLICKS ---------------------------------------------------------------

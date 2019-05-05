@@ -4,6 +4,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 define(["require", "exports", "../misc/annotations", "./base-abstract/ui-element"], function (require, exports, annotations_1, ui_element_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -58,7 +61,10 @@ define(["require", "exports", "../misc/annotations", "./base-abstract/ui-element
     InfoHeader._INNER_P_ID_DURA = 'info-header-p-dura';
     InfoHeader._INNER_P_ID_DIVISOR = 'info-header-p-divisor';
     __decorate([
-        annotations_1.override
+        annotations_1.override,
+        __metadata("design:type", Function),
+        __metadata("design:paramtypes", []),
+        __metadata("design:returntype", HTMLDivElement)
     ], InfoHeader, "build", null);
     exports.default = InfoHeader;
 });

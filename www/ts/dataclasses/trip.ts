@@ -1,6 +1,8 @@
 import { Nullable } from './../misc/types';
 import LatLng from './latlng';
 import WayPointObject from './waypoint-object';
+import { observable, autorun, toJS } from 'mobx';
+import App from '../app';
 
 // after removing the redundant map field, this interface doesn't do much;
 // could just use the regular Trip constructor with 1-2 arguments.
@@ -18,15 +20,24 @@ export interface ITripOptions {
  */
 export class Trip {
 
+  //@ts-ignore (complaint about being "unable to resolve signature", bla bla bla)
+  @observable
   private _destCoord: Nullable<LatLng>;
+
+  // made observable in the constructor (doesn't work here)
   private _wayPointObjects: Array<WayPointObject>;
+
+  private _disposer: any;
 
   constructor(options: ITripOptions) {
 
     this._destCoord = options.destCoord;
-    this._wayPointObjects = options.wayPointObjects || []; // to avoid 'undefined' later on
+
+    const wpObjects = options.wayPointObjects || []; // to avoid 'undefined' later on
+    this._wayPointObjects = observable.array(wpObjects, {});
   } // constructor
 
+  // redundant now, but I'm keeping it in case more fields are needed in the future.
   /**
    * Factory method (for fewer arguments).
   */
@@ -39,6 +50,21 @@ export class Trip {
     }
     return new Trip(options);
   } // makeTrip
+
+  // it should take the callback as an argument, but that could lead to 'this' issues.
+  /**
+   * Auto-fetches a new route every time the Trip's observable properties change.
+  */
+  autoRefetchRouteOnChange() {
+
+    this._disposer = autorun(
+
+        () => {
+          toJS(this._wayPointObjects, {}); // typescript arrays can't be observed for some reason
+          App.routeService.fetchRoute(this);
+        }, {}
+      );
+  } // autoRefetchRouteOnChange
 
   /**
   * Copies a Trip without reference (safe copy).
@@ -106,10 +132,15 @@ export class Trip {
   }
 
   /**
-  * Sets the destination coordinate to null and removes the contained WayPointObjects. 
+  * Sets the destination coordinate to null, removes the contained WayPointObjects,
+  * and stops the automatic refetching of routes.
   */
   clear(): void {
 
+    if (this._disposer) {
+
+      this._disposer();
+    }
     this._destCoord = null;
     this._wayPointObjects.length = 0; // there is never a case where only the waypoints are cleared, so it's ok to do this here
   } // clear
