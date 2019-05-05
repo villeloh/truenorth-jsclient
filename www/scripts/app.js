@@ -48,6 +48,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             if (App.prevTrip === null)
                 return;
             App.plannedTrip = App.prevTrip.copy();
+            App.routeService.fetchRoute(App.plannedTrip);
         }
         static onElevationFetchSuccess(visualTrip, resultsArray) {
             const elevations = resultsArray.map(result => { return result.elevation; });

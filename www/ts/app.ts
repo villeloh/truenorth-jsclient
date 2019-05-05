@@ -151,7 +151,7 @@ export default class App {
     // restore a successful trip (in most situations; failure is harmless though)
     App.plannedTrip = App.prevTrip.copy();
 
-    // App.routeService.fetchRoute(App.plannedTrip); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
+    App.routeService.fetchRoute(App.plannedTrip); // we need to re-fetch because otherwise dragging the dest marker over water will leave it there
   }
 
   static onElevationFetchSuccess(visualTrip: VisualTrip, resultsArray: Array<google.maps.ElevationResult>): void {
