@@ -91,7 +91,7 @@ export default class MapService {
     }
   } // toggleBikeLayer
 
-  renderTripOnMap(visualTrip: VisualTrip, elevations: Array<number>): void {
+  renderTripOnMap(visualTrip: VisualTrip, elevations: Nullable<Array<number>>): void {
 
     this._visualTrip = visualTrip;
     this._visualTrip.showMarkersOnMap(this._map);

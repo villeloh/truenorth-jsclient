@@ -1,11 +1,6 @@
 import LatLng from '../dataclasses/latlng';
 import VisualTrip from '../dataclasses/visual-trip';
 
-/**
-* Used to retrieve elevation data for routes. (A VisualTrip uses the data to render 
-* differently colored polylines on the map.)
-*/
-
 interface IElevationRequestSuccessCallback {
 
   (visualTrip: VisualTrip, results: Array<google.maps.ElevationResult>): void;
@@ -13,9 +8,13 @@ interface IElevationRequestSuccessCallback {
 
 interface IElevationRequestFailureCallback {
 
-  (): void;
+  (visualTrip: VisualTrip): void;
 }
 
+// A VisualTrip uses the data to render differently colored polylines on the map.
+/**
+* Used to retrieve elevation data for routes. 
+*/
 export default class ElevationService {
 
   private readonly _elevService: google.maps.ElevationService;
@@ -49,7 +48,7 @@ export default class ElevationService {
       } else {
       
         console.log("Error fetching elevations: " + status);
-        that.failureCallback();
+        that.failureCallback(visualTrip);
       }
     }) // getElevationsForLocations
   } // fetchElevations

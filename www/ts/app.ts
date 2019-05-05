@@ -124,15 +124,12 @@ export default class App {
 
     const route: google.maps.DirectionsRoute = fetchResult.routes[0];
 
-    // fetch elevations for the trip (it's only rendered on the map when the elev. request is finished)
+    // fetch elevations for the trip (it's only rendered on the map when the elev. request is resolved)
     App._elevationService.fetchElevations(visualTrip);
     
     App.prevTrip = successfulTrip.copy(); // save the trip in case the next one is unsuccessful
-    // App.plannedTrip = successfulTrip; // should be unnecessary, as it is already the same trip
-    // App.mapService.renderTripOnMap(visualTrip); // do not reactivate! elevation fetch success callback calls it.
 
-    // this happens internally in VisualTrip as well, when it stores the distance,
-    // but it's more clear to do it explicitly here.
+    // this happens internally in VisualTrip as well, when it stores the distance, but it's more clear to do it explicitly here.
     const dist: number = Utils.distanceInKm(route);
 
     // the trip duration can always be calculated based on the stored distance and current speed values. 
@@ -158,14 +155,14 @@ export default class App {
     // the elevations could be part of the trip; but for that, the trip would have to be created here, 
     // as it's supposed to have only immutable data. and for that local creation, onElevationFetchSuccess would need a ton 
     // of superfluous arguments. the callback hell means that there are no neat solutions here.
-    const elevations = resultsArray.map(result => { return result.elevation });
+    const elevations = resultsArray.map(result => result.elevation);
 
     App.mapService.renderTripOnMap(visualTrip, elevations);
   }
 
-  static onElevationFetchFailure(): void {
+  static onElevationFetchFailure(visualTrip: VisualTrip): void {
 
-    // TODO: adopt some default coloring for the polyline
+    App.mapService.renderTripOnMap(visualTrip, null);
   }
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX UI ACTION RESPONSES XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX

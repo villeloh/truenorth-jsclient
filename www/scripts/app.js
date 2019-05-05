@@ -51,10 +51,11 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.plannedTrip.autoRefetchRouteOnChange();
         }
         static onElevationFetchSuccess(visualTrip, resultsArray) {
-            const elevations = resultsArray.map(result => { return result.elevation; });
+            const elevations = resultsArray.map(result => result.elevation);
             App.mapService.renderTripOnMap(visualTrip, elevations);
         }
-        static onElevationFetchFailure() {
+        static onElevationFetchFailure(visualTrip) {
+            App.mapService.renderTripOnMap(visualTrip, null);
         }
         static onGoogleMapLongPress(event) {
             const destCoord = utils_1.default.latLngFromClickEvent(event);

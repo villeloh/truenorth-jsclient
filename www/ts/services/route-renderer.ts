@@ -1,5 +1,6 @@
 import VisualTrip from "../dataclasses/visual-trip";
 import LatLng from "../dataclasses/latlng";
+import { Nullable } from "../misc/types";
 
 /**
  * Renders routes on the map.
@@ -14,6 +15,7 @@ export default class RouteRenderer {
   // private static readonly _DEFAULT_COLOR = '#2B7CFF'; // darkish blue
 
   private static readonly _MAX_GRADIENT = 10;
+  private static readonly _DEFAULT_COLOR = `rgba(100,100,255,1)`; // light blue
 
   private readonly _polyLines: Array<google.maps.Polyline>;
 
@@ -29,13 +31,45 @@ export default class RouteRenderer {
     this._polyLines.length = 0;
   }
 
-  drawPolyLineFor(visualTrip: VisualTrip, elevations: Array<number>): void {
-
-    const paths: Array<Array<LatLng>> = [];
-    const distances: Array<number> = [];
+  // elevations could be optional instead of Nullable, but that leads to awkward call syntax.
+  drawPolyLineFor(visualTrip: VisualTrip, elevations: Nullable<Array<number>>): void {
 
     // the legs from waypoint to waypoint
     const legs = visualTrip.routeResult.routes[0].legs;
+
+    elevations === null ? this._renderSinglePolyline(legs) : this._renderMultiplePolylines(legs, elevations);
+  } // drawPolyLineFor
+
+  private _renderSinglePolyline(legs: Array<google.maps.DirectionsLeg>): void {
+
+    const path: Array<LatLng> = [];
+
+    for (let i = 0; i < legs.length; i++) {
+
+      for (let j = 0; j < legs[i].steps.length; j++) {
+
+        //@ts-ignore (custom LatLng type complaint)
+        path.push(...legs[i].steps[j].path);
+      } // inner for
+    } // outer for
+
+    const polylineOptions = {
+
+      clickable: false,
+      geodesic: true,
+      map: this._googleMap,
+      path: path,
+      strokeColor: RouteRenderer._DEFAULT_COLOR,
+      strokeOpacity: 1,
+      strokeWeight: 4
+    } // polylineOptions
+    this._polyLines.push(new google.maps.Polyline(polylineOptions));
+  } // _renderSinglePolyline
+
+  private _renderMultiplePolylines(legs: Array<google.maps.DirectionsLeg>, elevations: Array<number>): void {
+
+    const paths: Array<Array<LatLng>> = [];
+    const distances: Array<number> = [];
 
     for (let i = 0; i < legs.length; i++) {
 
@@ -44,8 +78,8 @@ export default class RouteRenderer {
         //@ts-ignore (custom LatLng type complaint)
         paths.push(legs[i].steps[j].path);
         distances.push(legs[i].steps[j].distance.value);
-      }
-    }
+      } // inner for
+    } // outer for
 
     paths.forEach( (path, index) => {
 
@@ -63,10 +97,10 @@ export default class RouteRenderer {
         strokeColor: color,
         strokeOpacity: 1,
         strokeWeight: 4
-      }
+      } // polylineOptions
       this._polyLines.push(new google.maps.Polyline(polylineOptions));
-    });
-  } // drawPolyLineFor
+    }); // forEach
+  } // _renderMultiplePolylines
 
   // all values are in meters.
   // TODO: it could take some color enum values as arguments (e.g. RED and BLUE)
