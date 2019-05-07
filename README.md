@@ -21,5 +21,5 @@ For God's sake don't try to install it yet; I'll tell you when it's in a good en
 
 ## Images
 
-<img align="left" width="200" height="600" src="https://imgur.com/Cgiuzb7">
-<img align="right" width="200" height="600" src="https://imgur.com/nrE57e6">
+<img align="left" width="40%" height="600" src="https://i.imgur.com/Cgiuzb7.jpg">
+<img align="right" width="40%" height="600" src="https://i.imgur.com/nrE57e6.jpg">
