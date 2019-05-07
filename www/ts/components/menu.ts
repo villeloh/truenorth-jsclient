@@ -27,7 +27,7 @@ export default class Menu extends UIElement {
     Menu._addCyclingLayerToggleButton(parentDiv);
     Menu._addTravelModeToggleButton(parentDiv);
     Menu._addSpeedChooser(parentDiv);
-    parentDiv.addEventListener('click', function(e: any) {
+    parentDiv.addEventListener('touchend', function(e: any) {
 
       e.stopPropagation(); // to stop clicks from bubbling through to the underlying map (seems to work)
     })

@@ -98,7 +98,6 @@ define(["require", "exports", "../misc/click-handler", "./route-renderer", "../c
             });
         }
     }
-    MapService.MARKER_DRAG_TIMEOUT = 100;
     MapService._DEFAULT_ZOOM = 11;
     MapService._MIN_ZOOM = 5;
     MapService._INITIAL_CENTER_COORDS = new latlng_1.default(0, 0);

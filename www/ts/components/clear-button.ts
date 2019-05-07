@@ -29,6 +29,10 @@ export default class ClearButton extends Button {
     
     outerDiv.appendChild(innerDiv);
     outerDiv.addEventListener('click', onClick);
+    outerDiv.addEventListener('touchend', function(e: any) {
+
+      e.stopPropagation(); // to stop clicks from bubbling through to the underlying map (seems to work)
+    })
     return outerDiv;
   } // build
 

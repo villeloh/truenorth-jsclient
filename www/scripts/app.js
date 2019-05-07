@@ -48,41 +48,32 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             if (App.prevTrip === null)
                 return;
             App.plannedTrip = App.prevTrip.copy();
-            App.routeService.fetchRoute(App.plannedTrip);
+            App.plannedTrip.autoRefetchRouteOnChange();
         }
         static onElevationFetchSuccess(visualTrip, resultsArray) {
-            const elevations = resultsArray.map(result => { return result.elevation; });
+            const elevations = resultsArray.map(result => result.elevation);
             App.mapService.renderTripOnMap(visualTrip, elevations);
         }
-        static onElevationFetchFailure() {
+        static onElevationFetchFailure(visualTrip) {
+            App.mapService.renderTripOnMap(visualTrip, null);
         }
         static onGoogleMapLongPress(event) {
-            if (App.hasVisualTrip) {
-                App.prevTrip = App.plannedTrip.copy();
-            }
             const destCoord = utils_1.default.latLngFromClickEvent(event);
-            if (!App.plannedTrip) {
-                App.plannedTrip = trip_1.Trip.makeTrip(destCoord);
-                App.routeService.fetchRoute(App.plannedTrip);
-            }
-            else {
-                App.plannedTrip.destCoord = destCoord;
-            }
+            App.plannedTrip = trip_1.Trip.makeTrip(destCoord);
+            App.plannedTrip.autoRefetchRouteOnChange();
         }
         static onGoogleMapDoubleClick(event) {
             if (!App.hasVisualTrip)
                 return;
             const clickedPos = utils_1.default.latLngFromClickEvent(event);
             App.plannedTrip.addWayPointObject(clickedPos);
-            App.routeService.fetchRoute(App.plannedTrip);
         }
         static onDestMarkerDragEnd(event) {
             App.plannedTrip.destCoord = utils_1.default.latLngFromClickEvent(event);
-            App.routeService.fetchRoute(App.plannedTrip);
             App.clickHandler.markerDragEventJustStopped = true;
             setTimeout(() => {
                 App.clickHandler.markerDragEventJustStopped = false;
-            }, map_service_1.default.MARKER_DRAG_TIMEOUT);
+            }, click_handler_1.default.MARKER_DRAG_TIMEOUT);
         }
         static onDestMarkerClick(event) {
             console.log("click event: " + JSON.stringify(event));
@@ -90,21 +81,19 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         static onWayPointMarkerDragEnd(event) {
             const latLng = utils_1.default.latLngFromClickEvent(event);
             App.plannedTrip.updateWayPointObject(event.wpIndex, latLng);
-            App.routeService.fetchRoute(App.plannedTrip);
             App.clickHandler.markerDragEventJustStopped = true;
             setTimeout(() => {
                 App.clickHandler.markerDragEventJustStopped = false;
-            }, map_service_1.default.MARKER_DRAG_TIMEOUT);
+            }, click_handler_1.default.MARKER_DRAG_TIMEOUT);
         }
         static onWayPointMarkerDblClick(event) {
             App.plannedTrip.removeWayPointObject(event.wpIndex);
-            App.routeService.fetchRoute(App.plannedTrip);
         }
         static onLocButtonClick() {
             App.mapService.reCenter(App.currentPos);
         }
         static onClearButtonClick() {
-            App.clearTrips();
+            App._clearTrips();
         }
         static onMenuButtonClick(event) {
             components_1.Menu.toggleVisibility(event);
@@ -150,7 +139,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 App.mapService.reCenter(newCoord);
             }
         }
-        static clearTrips() {
+        static _clearTrips() {
             if (!App.hasVisualTrip)
                 return;
             if (App.prevTrip) {

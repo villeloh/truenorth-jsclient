@@ -18,6 +18,8 @@ export default class ClickHandler {
 
     return ClickType;
   }
+  
+  static readonly MARKER_DRAG_TIMEOUT = 100; // ms
 
   private static readonly _DOUBLE_CLICK_TIMEOUT: number = 300;
   private static readonly _SINGLE_CLICK_TIMEOUT: number = 300;

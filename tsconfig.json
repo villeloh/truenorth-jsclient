@@ -1,8 +1,10 @@
 {
-    "compilerOptions": {
-        "outDir": "./www/scripts",
-        "allowJs": true,
-        "target": "es2015",
+	"compilerOptions": {
+		"baseUrl": ".",
+		"paths": { "*": ["types/*"] },
+		"outDir": "./www/scripts",
+		"allowJs": true,
+		"target": "es2016",
 		"module": "amd",
 		"allowSyntheticDefaultImports": true,
 		"strictNullChecks": true,
@@ -10,15 +12,16 @@
 		"noImplicitThis": true,
 		"noImplicitAny": true,
 		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
 		"removeComments": true,
 		"suppressImplicitAnyIndexErrors": true,
 		"forceConsistentCasingInFileNames": true,
 		"lib": ["es2015", "dom"]
-    },
-    "include": [
-        "./www/**/*",
+	},
+	"include": [
+		"./www/**/*",
 		"typings/*.d.ts"
-    ],
+	],
 	"exclude": [
 		"node_modules",
 		"./www/scripts"

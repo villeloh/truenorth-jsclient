@@ -19,14 +19,14 @@ export default class VisualTrip {
 
   constructor(
     private readonly _routeResult: google.maps.DirectionsResult, 
-    private readonly _destCoord: LatLng, 
-    private readonly _wayPointCoords: Array<LatLng>
+    _destCoord: LatLng, 
+    _wayPointCoords: Array<LatLng>
     ) {
 
     // the distance will need to be stored for the purpose of calculating new
     // trip durations. it will only be accessed, never altered, which preserves 
     // the immutability of VisualTrip. still, it's an ugly solution and a better one should be sought.
-    const route: google.maps.DirectionsRoute = this._routeResult.routes[0];
+    const route: google.maps.DirectionsRoute = _routeResult.routes[0];
     this._distance = Utils.distanceInKm(route);
 
     const stepArrays = route.legs.map(leg => { return leg.steps });
@@ -39,7 +39,7 @@ export default class VisualTrip {
         return step.start_location 
       })}).reduce((arr, nextArr) => arr.concat(nextArr), []);
 
-    this._destMarker = Marker.makeDestMarker(this._destCoord);
+    this._destMarker = Marker.makeDestMarker(_destCoord);
 
     this._destMarker.addListener('dragend', App.onDestMarkerDragEnd);
     this._destMarker.addListener('click', App.onDestMarkerClick);
@@ -49,9 +49,9 @@ export default class VisualTrip {
 
     let labelNum = 1;
 
-    for (let i = 0; i < this._wayPointCoords.length; i++) {
+    for (let i = 0; i < _wayPointCoords.length; i++) {
 
-      const marker = Marker.makeWayPointMarker(this._wayPointCoords[i], labelNum+"");
+      const marker = Marker.makeWayPointMarker(_wayPointCoords[i], labelNum+"");
 
       labelNum++;
 
@@ -81,6 +81,9 @@ export default class VisualTrip {
     });
   }
 
+  // NOTE: this method's existence goes against VisualTrip's immutability.
+  // However, it's only called before setting the VisualTrip instance to null,
+  // so I'm letting it slide for now.
   /**
    * Calls clearFromMap() on the destination and waypoint markers 
    * and erases the waypoint markers.
@@ -91,7 +94,7 @@ export default class VisualTrip {
     // this._destMarker = null;
     this._wayPointMarkers.map(marker => {
       marker.clearFromMap();
-      return null;
+      return null; // this may in fact be unnecessary... investigate the results of disabling.
     });
 
     this._wayPointMarkers.length = 0;

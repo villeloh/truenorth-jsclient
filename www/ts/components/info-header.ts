@@ -24,6 +24,10 @@ export default class InfoHeader extends UIElement {
 
     const outerDiv: HTMLDivElement = document.createElement('div');
     outerDiv.id = InfoHeader._OUTER_DIV_ID;
+    outerDiv.addEventListener('touchend', function(e: any) {
+
+      e.stopPropagation(); // to stop clicks from bubbling through to the underlying map (seems to work)
+    })
 
     const p1: HTMLParagraphElement = document.createElement('p');
     p1.id = InfoHeader._INNER_P_ID_DIST;

@@ -15,7 +15,7 @@ interface IGoogleMapListenerCallback {
 export default class Marker {
 
   private static readonly POS_MARKER_COLOR = 'rgba(50,50,255,1)' // blue
-  private static readonly WAYPOINT_MARKER_COLOR = 'rgba(255,255,255,1)' // white
+  private static readonly WAYPOINT_MARKER_COLOR = 'rgba(190,255,255,1)' // light blue
   private static readonly WAYPOINT_MARKER_STROKE = 'rgba(0,0,0,1)' // black
 
   private readonly _googleMapMarker: google.maps.Marker;

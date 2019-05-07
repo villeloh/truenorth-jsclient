@@ -1,12 +1,10 @@
 import LatLng from '../dataclasses/latlng';
 import App from '../app';
 
+// TODO: handle not having GPS on / turning it off while using the app (rn it crashes the app)
 /**
  * Periodically updates the user's own position (via GPS).
  */
-
-// TODO: handle not having GPS on / turning it off while using the app (rn it crashes the app)
-
 export default class GeoLocService {
 
   private static readonly _CAMERA_MOVE_THRESHOLD = 0.001; // seems to work ok; could be fine-tuned
@@ -67,6 +65,6 @@ export default class GeoLocService {
     const diff: number = oldPos.differenceFrom(newPos);
 
     return diff > GeoLocService._CAMERA_MOVE_THRESHOLD;
-  } // _diffIsOverCameraMoveThreshold
+  } // diffIsOverCameraMoveThreshold
 
 } // GeoLocService

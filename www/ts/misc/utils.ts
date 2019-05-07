@@ -13,7 +13,7 @@ export default class Utils {
   static duraInDecimHours(distance: number, speed: number): number {
 
     return distance / speed; // both are always valid, so no checks are needed
-  } // calcDuration
+  } // duraInDecimHours
 
   /**
    * Takes a route object from a DirectionsService fetch result
@@ -36,6 +36,19 @@ export default class Utils {
   static latLngFromClickEvent(event: any): LatLng {
   
     return new LatLng(event.latLng.lat(), event.latLng.lng());
+  }
+
+  // ideally, this would work directly on numbers (as an extension function),
+  // but as this seems tricker to do in TS than in plain JS or Kotlin, I'm
+  // doing it the old-fashioned way for now.
+  /**
+   * Ensures that a number is within certain limits.
+  */
+  static clamp(num: number, min: number, max?: number): number {
+
+    if (num < min) return min;
+    if (max && num > max) return max; // let's make it optional for convenience
+    return num;
   }
 
   // not being used atm, but keeping it in case it's needed later on (for persistence it likely will be)

@@ -13,7 +13,8 @@
     "dependencies": {
         "cordova-android": "^7.1.4",
         "cordova-plugin-geolocation": "^4.0.1",
-        "cordova-plugin-whitelist": "^1.3.3"
+        "cordova-plugin-whitelist": "^1.3.3",
+        "mobx": "^5.9.4"
     },
     "cordova": {
         "plugins": {
