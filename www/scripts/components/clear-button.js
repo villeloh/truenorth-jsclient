@@ -19,6 +19,9 @@ define(["require", "exports", "./base-abstract/button", "../misc/annotations"], 
             innerDiv.innerHTML = ClearButton._TEXT;
             outerDiv.appendChild(innerDiv);
             outerDiv.addEventListener('click', onClick);
+            outerDiv.addEventListener('touchend', function (e) {
+                e.stopPropagation();
+            });
             return outerDiv;
         }
     }

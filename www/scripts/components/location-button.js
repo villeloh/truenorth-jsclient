@@ -17,6 +17,9 @@ define(["require", "exports", "./base-abstract/button", "../misc/annotations"], 
             const innerDiv = document.createElement('div');
             innerDiv.id = LocationButton._INNER_DIV_ID;
             outerDiv.addEventListener('click', onClick);
+            outerDiv.addEventListener('touchend', function (e) {
+                e.stopPropagation();
+            });
             outerDiv.appendChild(innerDiv);
             return outerDiv;
         }

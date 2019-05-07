@@ -31,6 +31,10 @@ export default class MenuButton extends Button {
     innerDiv.innerHTML = MenuButton.CLOSED_SYMBOL;
 
     outerDiv.addEventListener('click', onClick);
+    outerDiv.addEventListener('touchend', function(e: any) {
+
+      e.stopPropagation(); // to stop clicks from bubbling through to the underlying map (seems to work)
+    })
     
     outerDiv.appendChild(innerDiv);
     return outerDiv;

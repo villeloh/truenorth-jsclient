@@ -17,7 +17,7 @@ define(["require", "exports", "../misc/ui-builder", "../components/components", 
             Menu._addCyclingLayerToggleButton(parentDiv);
             Menu._addTravelModeToggleButton(parentDiv);
             Menu._addSpeedChooser(parentDiv);
-            parentDiv.addEventListener('click', function (e) {
+            parentDiv.addEventListener('touchend', function (e) {
                 e.stopPropagation();
             });
             return parentDiv;

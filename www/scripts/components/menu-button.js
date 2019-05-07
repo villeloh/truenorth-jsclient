@@ -18,6 +18,9 @@ define(["require", "exports", "./base-abstract/button", "../misc/annotations"], 
             innerDiv.id = MenuButton._INNER_DIV_ID;
             innerDiv.innerHTML = MenuButton.CLOSED_SYMBOL;
             outerDiv.addEventListener('click', onClick);
+            outerDiv.addEventListener('touchend', function (e) {
+                e.stopPropagation();
+            });
             outerDiv.appendChild(innerDiv);
             return outerDiv;
         }

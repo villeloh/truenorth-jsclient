@@ -23,6 +23,10 @@ export default class LocationButton extends Button {
     innerDiv.id = LocationButton._INNER_DIV_ID;
 
     outerDiv.addEventListener('click', onClick);
+    outerDiv.addEventListener('touchend', function(e: any) {
+
+      e.stopPropagation(); // to stop clicks from bubbling through to the underlying map (seems to work)
+    })
     
     outerDiv.appendChild(innerDiv);
     return outerDiv;
