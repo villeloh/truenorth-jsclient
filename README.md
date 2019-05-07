@@ -12,11 +12,11 @@ If you've ever tried to use Google Maps while cycling, you'll know my headaches.
 
 When finished, all of these headaches and more will be eliminated by the **TrueNorth** app.
 
-A clean & simple UI, with no bells or whistles, will help you get from point A to point B with a *minimum* of fuss on the way.
+* A clean & simple UI, with no bells or whistles, will help you get from point A to point B with a *minimum* of fuss on the way.
 
-You'll be able to add and remove waypoints and move the destination marker, yet avoid doing so by misclick. 
+* You'll be able to add and remove waypoints and move the destination marker, yet avoid doing so by misclick. 
 
-The app won't do your zooming for you, it can't talk to you, and you literally *CAN'T* spin the map around. As it says in the title, the North will always be *TRUE* with **TrueNorth**.
+* The app won't do your zooming for you, it can't talk to you, and you literally *CAN'T* spin the map around. As it says in the title, the North will always be *TRUE* with **TrueNorth**.
 
 ## Installation?
 
