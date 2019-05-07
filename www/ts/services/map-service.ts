@@ -15,8 +15,6 @@ import VisualTrip from '../dataclasses/visual-trip';
 // something that does things periodically, but for now this will have to do. 
 export default class MapService {
 
-  static readonly MARKER_DRAG_TIMEOUT = 100; // ms
-
   private static readonly _DEFAULT_ZOOM = 11;
   private static readonly _MIN_ZOOM = 5;
   private static readonly _INITIAL_CENTER_COORDS = new LatLng(0,0);

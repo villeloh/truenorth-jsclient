@@ -73,7 +73,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.clickHandler.markerDragEventJustStopped = true;
             setTimeout(() => {
                 App.clickHandler.markerDragEventJustStopped = false;
-            }, map_service_1.default.MARKER_DRAG_TIMEOUT);
+            }, click_handler_1.default.MARKER_DRAG_TIMEOUT);
         }
         static onDestMarkerClick(event) {
             console.log("click event: " + JSON.stringify(event));
@@ -84,7 +84,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.clickHandler.markerDragEventJustStopped = true;
             setTimeout(() => {
                 App.clickHandler.markerDragEventJustStopped = false;
-            }, map_service_1.default.MARKER_DRAG_TIMEOUT);
+            }, click_handler_1.default.MARKER_DRAG_TIMEOUT);
         }
         static onWayPointMarkerDblClick(event) {
             App.plannedTrip.removeWayPointObject(event.wpIndex);
@@ -93,7 +93,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.mapService.reCenter(App.currentPos);
         }
         static onClearButtonClick() {
-            App.clearTrips();
+            App._clearTrips();
         }
         static onMenuButtonClick(event) {
             components_1.Menu.toggleVisibility(event);
@@ -139,7 +139,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 App.mapService.reCenter(newCoord);
             }
         }
-        static clearTrips() {
+        static _clearTrips() {
             if (!App.hasVisualTrip)
                 return;
             if (App.prevTrip) {

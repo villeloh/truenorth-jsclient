@@ -16,7 +16,7 @@ export default class UIElement {
    */
   static build(actionCallback?: any, text?: String): HTMLElement {
 
-    return new HTMLElement()
+    return new HTMLElement();
   }
 
 } // UIElement

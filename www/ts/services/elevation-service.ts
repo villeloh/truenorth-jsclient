@@ -1,4 +1,3 @@
-import LatLng from '../dataclasses/latlng';
 import VisualTrip from '../dataclasses/visual-trip';
 
 interface IElevationRequestSuccessCallback {

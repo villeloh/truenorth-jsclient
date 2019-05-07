@@ -13,7 +13,7 @@ export default class Utils {
   static duraInDecimHours(distance: number, speed: number): number {
 
     return distance / speed; // both are always valid, so no checks are needed
-  } // calcDuration
+  } // duraInDecimHours
 
   /**
    * Takes a route object from a DirectionsService fetch result

@@ -17,7 +17,7 @@ export default class Button extends UIElement {
   @override
   static build(onClick: any, text?: String): HTMLDivElement {
     
-    return new HTMLDivElement()
+    return new HTMLDivElement();
   }
 
 } // Button

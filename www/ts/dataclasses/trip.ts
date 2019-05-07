@@ -59,7 +59,7 @@ export class Trip {
     this._disposer = autorun(
 
         () => {
-          toJS(this._wayPointObjects, {}); // typescript arrays can't be observed for some reason
+          toJS(this._wayPointObjects, {}); // a kludge to make it react to the array changes; fix asap
           App.routeService.fetchRoute(this);
         }, {}
       );

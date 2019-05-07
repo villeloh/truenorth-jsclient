@@ -81,6 +81,9 @@ export default class VisualTrip {
     });
   }
 
+  // NOTE: this method's existence goes against VisualTrip's immutability.
+  // However, it's only called before setting the VisualTrip instance to null,
+  // so I'm letting it slide for now.
   /**
    * Calls clearFromMap() on the destination and waypoint markers 
    * and erases the waypoint markers.
@@ -91,7 +94,7 @@ export default class VisualTrip {
     // this._destMarker = null;
     this._wayPointMarkers.map(marker => {
       marker.clearFromMap();
-      return null;
+      return null; // this may in fact be unnecessary... investigate the results of disabling.
     });
 
     this._wayPointMarkers.length = 0;

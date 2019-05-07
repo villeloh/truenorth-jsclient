@@ -58,6 +58,7 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
             this._markerDragEventJustStopped = value;
         }
     }
+    ClickHandler.MARKER_DRAG_TIMEOUT = 100;
     ClickHandler._DOUBLE_CLICK_TIMEOUT = 300;
     ClickHandler._SINGLE_CLICK_TIMEOUT = 300;
     ClickHandler._LONG_PRESS_TIMEOUT = 1500;

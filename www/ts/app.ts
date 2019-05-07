@@ -16,11 +16,6 @@ import ClickHandler from './misc/click-handler';
 // to make typescript accept its existence... I'm sure there's a more proper way to do this, but it works for now.
 declare const GoogleMapsLoader: any;
 
-/**
- * Overall holder/central hub for the app, containing the responses to ui actions and route fetches.
- * @author Ville Lohkovuori (2019)
- */
-
 // can't use the proper google maps types here, as the google object has yet to be initialized
 // (side note: whose idea was it to prohibit enums inside classes in typescript? -.-)
 enum TravelMode {
@@ -29,8 +24,12 @@ enum TravelMode {
   BICYCLING = 'BICYCLING'
 }
 
-// app needs to be globally accessible (otherwise I'd have to pass it to almost everything, which is pointless & hopelessly wordy),
+// App needs to be globally accessible (otherwise I'd have to pass it to almost everything, which is pointless & hopelessly wordy),
 // so I'm making all things in it static.
+/**
+ * Overall holder/central hub for the app, containing the responses to ui actions and API fetches.
+ * @author Ville Lohkovuori (2019)
+ */
 export default class App {
 
   static readonly MIN_SPEED = 1; // km/h
@@ -90,7 +89,7 @@ export default class App {
 
       // NOTE: the MapService needs to be created first, as a lot of other things depend on
       // the google map object within it already existing. (the map could be moved to App to 
-      // fix this, but it's not a priority atm)
+      // fix this, but i'm pretty sure that's a bad solution)
       App._mapService = new MapService();
       App._routeService = new RouteService(App.onRouteFetchSuccess, App.onRouteFetchFailure);
       App._elevationService = new ElevationService(App.onElevationFetchSuccess, App.onElevationFetchFailure);
@@ -199,14 +198,14 @@ export default class App {
     setTimeout(() => {
 
       App.clickHandler.markerDragEventJustStopped = false;
-    }, MapService.MARKER_DRAG_TIMEOUT);
+    }, ClickHandler.MARKER_DRAG_TIMEOUT);
   } // onDestMarkerDragEnd
 
 /*// disabling for now, due to some bizarre issues when double-clicking on the map (it adds a waypoint but moves the dest marker as well!)
   // ideally, it should be possible to also clear the map with a double click on the dest marker.
   static onDestMarkerDoubleClick(event: any): void {
 
-    App.clearTrips();
+    App._clearTrips();
   } */
 
   static onDestMarkerClick(event: any): void {
@@ -225,7 +224,7 @@ export default class App {
     setTimeout(() => {
 
       App.clickHandler.markerDragEventJustStopped = false;
-    }, MapService.MARKER_DRAG_TIMEOUT);
+    }, ClickHandler.MARKER_DRAG_TIMEOUT);
   } // onWayPointMarkerDragEnd
 
   static onWayPointMarkerDblClick(event: any): void {
@@ -242,7 +241,7 @@ export default class App {
 
   static onClearButtonClick(): void {
 
-    App.clearTrips();
+    App._clearTrips();
   } // onClearButtonClick
 
   // toggles the right-hand corner menu
@@ -321,7 +320,7 @@ export default class App {
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX HELPERS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   // called on clear button click
-  static clearTrips() {
+  private static _clearTrips() {
     
     if (!App.hasVisualTrip) return;
 
