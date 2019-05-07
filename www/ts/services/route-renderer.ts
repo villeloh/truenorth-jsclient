@@ -1,6 +1,7 @@
 import VisualTrip from "../dataclasses/visual-trip";
 import LatLng from "../dataclasses/latlng";
 import { Nullable } from "../misc/types";
+import Utils from "../misc/utils";
 
 /**
  * Renders routes on the map.
@@ -10,9 +11,6 @@ import { Nullable } from "../misc/types";
 // everything in this class could be static, I guess; but there's no harm in
 // making it instance-based.
 export default class RouteRenderer {
-
-  // TODO: use it if the elevations can't be obtained
-  // private static readonly _DEFAULT_COLOR = '#2B7CFF'; // darkish blue
 
   private static readonly _MAX_GRADIENT = 10;
   private static readonly _DEFAULT_COLOR = `rgba(100,100,255,1)`; // light blue
@@ -123,10 +121,8 @@ export default class RouteRenderer {
     uphillValue = 127 + steepness * 15000; // 15k is simply a ballpark figure that seems to produce good visuals; may need to decrease for steeper environments, though
     downhillValue = 127 - steepness * 15000;
 
-    uphillValue = uphillValue > 255 ? 255: uphillValue;
-    uphillValue = uphillValue < 0 ? 0: uphillValue;     
-    downhillValue = downhillValue > 255 ? 255: downhillValue;
-    downhillValue = downhillValue < 0 ? 0: downhillValue;
+    uphillValue = Utils.clamp(uphillValue, 0, 255); 
+    downhillValue = Utils.clamp(downhillValue, 0, 255);
 
     // atm, red for uphill, blue for downhill, magenta for level ground.
     // better for colorblind people, and works with the green cycling lane markings, 

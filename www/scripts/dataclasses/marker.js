@@ -70,7 +70,7 @@ define(["require", "exports"], function (require, exports) {
         }
     }
     Marker.POS_MARKER_COLOR = 'rgba(50,50,255,1)';
-    Marker.WAYPOINT_MARKER_COLOR = 'rgba(255,255,255,1)';
+    Marker.WAYPOINT_MARKER_COLOR = 'rgba(190,255,255,1)';
     Marker.WAYPOINT_MARKER_STROKE = 'rgba(0,0,0,1)';
     exports.default = Marker;
 });

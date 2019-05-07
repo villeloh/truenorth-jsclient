@@ -93,10 +93,6 @@ const UIBuilder = {
     holderDiv.style.marginTop = '1.5%';
     const infoHeader = InfoHeader.build();
     holderDiv.appendChild(infoHeader);
-    holderDiv.addEventListener('click', function(e: any) {
-
-      e.stopPropagation(); // to stop clicks from bubbling through to the underlying map (seems to work)
-    })
 
     App.mapService.addUIControl(App.google.maps.ControlPosition.TOP_CENTER, holderDiv);
   } // _addInfoHeader

@@ -1,4 +1,4 @@
-define(["require", "exports"], function (require, exports) {
+define(["require", "exports", "../misc/utils"], function (require, exports, utils_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class RouteRenderer {
@@ -71,10 +71,8 @@ define(["require", "exports"], function (require, exports) {
             }
             uphillValue = 127 + steepness * 15000;
             downhillValue = 127 - steepness * 15000;
-            uphillValue = uphillValue > 255 ? 255 : uphillValue;
-            uphillValue = uphillValue < 0 ? 0 : uphillValue;
-            downhillValue = downhillValue > 255 ? 255 : downhillValue;
-            downhillValue = downhillValue < 0 ? 0 : downhillValue;
+            uphillValue = utils_1.default.clamp(uphillValue, 0, 255);
+            downhillValue = utils_1.default.clamp(downhillValue, 0, 255);
             return `rgba(${uphillValue},0,${downhillValue},1)`;
         }
     }

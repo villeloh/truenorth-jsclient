@@ -38,6 +38,19 @@ export default class Utils {
     return new LatLng(event.latLng.lat(), event.latLng.lng());
   }
 
+  // ideally, this would work directly on numbers (as an extension function),
+  // but as this seems tricker to do in TS than in plain JS or Kotlin, I'm
+  // doing it the old-fashioned way for now.
+  /**
+   * Ensures that a number is within certain limits.
+  */
+  static clamp(num: number, min: number, max?: number): number {
+
+    if (num < min) return min;
+    if (max && num > max) return max; // let's make it optional for convenience
+    return num;
+  }
+
   // not being used atm, but keeping it in case it's needed later on (for persistence it likely will be)
   /* decodePolyPoints: function(encodedPoints) {
 

@@ -15,6 +15,13 @@ define(["require", "exports", "../dataclasses/latlng"], function (require, expor
         static latLngFromClickEvent(event) {
             return new latlng_1.default(event.latLng.lat(), event.latLng.lng());
         }
+        static clamp(num, min, max) {
+            if (num < min)
+                return min;
+            if (max && num > max)
+                return max;
+            return num;
+        }
     }
     exports.default = Utils;
 });
