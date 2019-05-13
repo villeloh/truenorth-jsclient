@@ -49,7 +49,7 @@ export default class RouteService {
       travelMode: App.travelMode, // comes from the travel mode toggle button
       optimizeWaypoints: false,
       avoidHighways: true,
-      waypoints: trip.wayPointObjects
+      waypoints: trip.getAllWpsAsAPIObjects()
     }; // request
   
     this._directionsService.route(request, function(result: google.maps.DirectionsResult, status: google.maps.DirectionsStatus) {

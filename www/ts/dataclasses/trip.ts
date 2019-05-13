@@ -1,6 +1,5 @@
 import { Nullable } from './../misc/types';
 import LatLng from './latlng';
-import WayPointObject from './waypoint-object';
 import { observable, autorun, toJS } from 'mobx';
 import App from '../app';
 
@@ -12,7 +11,7 @@ import App from '../app';
 export interface ITripOptions {
 
     readonly destCoord: Nullable<LatLng>, // it can be null in certain situations, mainly when clicking on water multiple times in a row
-    readonly wayPointObjects?: Array<WayPointObject> // not all trips have waypoints
+    readonly wayPoints?: Array<LatLng> // not all trips have waypoints
 } // TripOptions
 
 /**
@@ -25,7 +24,7 @@ export class Trip {
   private _destCoord: Nullable<LatLng>;
 
   // made observable in the constructor (doesn't work here)
-  private _wayPointObjects: Array<WayPointObject>;
+  private _wayPoints: Array<LatLng>;
 
   private _disposer: any;
 
@@ -33,8 +32,8 @@ export class Trip {
 
     this._destCoord = options.destCoord;
 
-    const wpObjects = options.wayPointObjects || []; // to avoid 'undefined' later on
-    this._wayPointObjects = observable.array(wpObjects, {});
+    const wps = options.wayPoints || []; // to avoid 'undefined' later on
+    this._wayPoints = observable.array(wps, {});
   } // constructor
 
   /**
@@ -45,7 +44,7 @@ export class Trip {
     const options: ITripOptions = {
 
       destCoord: destCoord,
-      wayPointObjects: []
+      wayPoints: []
     }
     return new Trip(options);
   } // makeTrip
@@ -59,7 +58,7 @@ export class Trip {
     this._disposer = autorun(
 
         () => {
-          toJS(this._wayPointObjects, {}); // a kludge to make it react to the array changes; fix asap
+          toJS(this._wayPoints, {}); // a kludge to make it react to the array changes; fix asap
           App.routeService.fetchRoute(this);
         }, {}
       );
@@ -73,11 +72,11 @@ export class Trip {
     const options: ITripOptions = {
 
       destCoord: this._destCoord,
-      wayPointObjects: []
+      wayPoints: []
     };
-    this._wayPointObjects.forEach(wpObj => { 
+    this._wayPoints.forEach(wp => { 
       
-      options.wayPointObjects!.push(wpObj); // why it needs the '!' is anyone's guess, as it's set directly above
+      options.wayPoints!.push(wp); // why it needs the '!' is anyone's guess, as it's set directly above
     });
 
     return new Trip(options);
@@ -93,42 +92,44 @@ export class Trip {
     this._destCoord = newCoord;
   }
 
-  addWayPointObject(latLng: LatLng): void {
+  addWayPoint(latLng: LatLng): void {
 
-    this._wayPointObjects.push(new WayPointObject(latLng));
+    this._wayPoints.push(latLng);
   }
 
-  updateWayPointObject(index: number, newCoord: LatLng): void {
+  updateWayPoint(index: number, newCoord: LatLng): void {
 
-    this._wayPointObjects[index] = new WayPointObject(newCoord); // WayPointObjects are immutable, so a new one must be created
+    this._wayPoints[index] = newCoord;
   }
 
-  removeWayPointObject(index: number): void {
+  removeWayPoint(index: number): void {
 
-    this._wayPointObjects.splice(index, 1);
+    this._wayPoints.splice(index, 1);
   }
 
-  get wayPointObjects(): Array<WayPointObject> { // or empty array
+  get wayPoints(): Array<LatLng> { // or empty array
 
-    return this._wayPointObjects;
+    return this._wayPoints;
   }
 
-  set wayPointObjects(newArray: Array<WayPointObject>) {
+  set wayPoints(newArray: Array<LatLng>) {
 
-    this._wayPointObjects = newArray;
+    this._wayPoints = newArray;
   }
 
-  // needed for rendering markers on the map
   /**
-   * Returns the plain LatLngs inside the contained WayPointObjects.
+   * Returns the waypoints in a format that's needed for route fetches.
   */
-  getAllWayPointCoords(): Array<LatLng> {
+  getAllWpsAsAPIObjects(): Array<google.maps.DirectionsWaypoint> {
 
-    return this._wayPointObjects.map(wpObj => {
+    return this._wayPoints.map(wp => {
 
-      return wpObj.location;
+      return {
+        stopover: true, // needed by the API (although it's useless)
+        location: wp
+      };
     });
-  }
+  } // getAllWpsAsAPIObjects
 
   /**
   * Sets the destination coordinate to null, removes the contained WayPointObjects,
@@ -141,7 +142,7 @@ export class Trip {
       this._disposer();
     }
     this._destCoord = null;
-    this._wayPointObjects.length = 0; // there is never a case where only the waypoints are cleared, so it's ok to do this here
+    this._wayPoints.length = 0; // there is never a case where only the waypoints are cleared, so it's ok to do this here
   } // clear
 
 } // Trip

@@ -7,35 +7,35 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "./waypoint-object", "mobx", "../app"], function (require, exports, waypoint_object_1, mobx_1, app_1) {
+define(["require", "exports", "mobx", "../app"], function (require, exports, mobx_1, app_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     class Trip {
         constructor(options) {
             this._destCoord = options.destCoord;
-            const wpObjects = options.wayPointObjects || [];
-            this._wayPointObjects = mobx_1.observable.array(wpObjects, {});
+            const wps = options.wayPoints || [];
+            this._wayPoints = mobx_1.observable.array(wps, {});
         }
         static makeTrip(destCoord) {
             const options = {
                 destCoord: destCoord,
-                wayPointObjects: []
+                wayPoints: []
             };
             return new Trip(options);
         }
         autoRefetchRouteOnChange() {
             this._disposer = mobx_1.autorun(() => {
-                mobx_1.toJS(this._wayPointObjects, {});
+                mobx_1.toJS(this._wayPoints, {});
                 app_1.default.routeService.fetchRoute(this);
             }, {});
         }
         copy() {
             const options = {
                 destCoord: this._destCoord,
-                wayPointObjects: []
+                wayPoints: []
             };
-            this._wayPointObjects.forEach(wpObj => {
-                options.wayPointObjects.push(wpObj);
+            this._wayPoints.forEach(wp => {
+                options.wayPoints.push(wp);
             });
             return new Trip(options);
         }
@@ -45,24 +45,27 @@ define(["require", "exports", "./waypoint-object", "mobx", "../app"], function (
         set destCoord(newCoord) {
             this._destCoord = newCoord;
         }
-        addWayPointObject(latLng) {
-            this._wayPointObjects.push(new waypoint_object_1.default(latLng));
+        addWayPoint(latLng) {
+            this._wayPoints.push(latLng);
         }
-        updateWayPointObject(index, newCoord) {
-            this._wayPointObjects[index] = new waypoint_object_1.default(newCoord);
+        updateWayPoint(index, newCoord) {
+            this._wayPoints[index] = newCoord;
         }
-        removeWayPointObject(index) {
-            this._wayPointObjects.splice(index, 1);
+        removeWayPoint(index) {
+            this._wayPoints.splice(index, 1);
         }
-        get wayPointObjects() {
-            return this._wayPointObjects;
+        get wayPoints() {
+            return this._wayPoints;
         }
-        set wayPointObjects(newArray) {
-            this._wayPointObjects = newArray;
+        set wayPoints(newArray) {
+            this._wayPoints = newArray;
         }
-        getAllWayPointCoords() {
-            return this._wayPointObjects.map(wpObj => {
-                return wpObj.location;
+        getAllWpsAsAPIObjects() {
+            return this._wayPoints.map(wp => {
+                return {
+                    stopover: true,
+                    location: wp
+                };
             });
         }
         clear() {
@@ -70,7 +73,7 @@ define(["require", "exports", "./waypoint-object", "mobx", "../app"], function (
                 this._disposer();
             }
             this._destCoord = null;
-            this._wayPointObjects.length = 0;
+            this._wayPoints.length = 0;
         }
     }
     __decorate([

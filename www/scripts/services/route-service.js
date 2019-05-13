@@ -19,7 +19,7 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
                 travelMode: app_1.default.travelMode,
                 optimizeWaypoints: false,
                 avoidHighways: true,
-                waypoints: trip.wayPointObjects
+                waypoints: trip.getAllWpsAsAPIObjects()
             };
             this._directionsService.route(request, function (result, status) {
                 if (status === google.maps.DirectionsStatus.OK) {

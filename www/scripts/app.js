@@ -35,7 +35,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             if (App.hasVisualTrip) {
                 App.mapService.clearTripFromMap();
             }
-            const visualTrip = new visual_trip_1.default(fetchResult, successfulTrip.destCoord, successfulTrip.getAllWayPointCoords());
+            const visualTrip = new visual_trip_1.default(fetchResult, successfulTrip.destCoord, successfulTrip.wayPoints);
             const route = fetchResult.routes[0];
             App._elevationService.fetchElevations(visualTrip);
             App.prevTrip = successfulTrip.copy();
@@ -66,7 +66,7 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             if (!App.hasVisualTrip)
                 return;
             const clickedPos = utils_1.default.latLngFromClickEvent(event);
-            App.plannedTrip.addWayPointObject(clickedPos);
+            App.plannedTrip.addWayPoint(clickedPos);
         }
         static onDestMarkerDragEnd(event) {
             App.plannedTrip.destCoord = utils_1.default.latLngFromClickEvent(event);
@@ -80,14 +80,14 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         }
         static onWayPointMarkerDragEnd(event) {
             const latLng = utils_1.default.latLngFromClickEvent(event);
-            App.plannedTrip.updateWayPointObject(event.wpIndex, latLng);
+            App.plannedTrip.updateWayPoint(event.wpIndex, latLng);
             App.clickHandler.markerDragEventJustStopped = true;
             setTimeout(() => {
                 App.clickHandler.markerDragEventJustStopped = false;
             }, click_handler_1.default.MARKER_DRAG_TIMEOUT);
         }
         static onWayPointMarkerDblClick(event) {
-            App.plannedTrip.removeWayPointObject(event.wpIndex);
+            App.plannedTrip.removeWayPoint(event.wpIndex);
         }
         static onLocButtonClick() {
             App.mapService.reCenter(App.currentPos);

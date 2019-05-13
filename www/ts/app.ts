@@ -119,7 +119,7 @@ export default class App {
     }
 
     // it always has a valid destCoord, since the fetch was successful
-    const visualTrip = new VisualTrip(fetchResult, successfulTrip.destCoord!, successfulTrip.getAllWayPointCoords());
+    const visualTrip = new VisualTrip(fetchResult, successfulTrip.destCoord!, successfulTrip.wayPoints);
 
     const route: google.maps.DirectionsRoute = fetchResult.routes[0];
 
@@ -186,7 +186,7 @@ export default class App {
     if (!App.hasVisualTrip) return;
 
     const clickedPos = Utils.latLngFromClickEvent(event);
-    App.plannedTrip!.addWayPointObject(clickedPos);
+    App.plannedTrip!.addWayPoint(clickedPos);
   }
 
   static onDestMarkerDragEnd(event: any): void {
@@ -217,7 +217,7 @@ export default class App {
   static onWayPointMarkerDragEnd(event: any): void {
 
     const latLng = Utils.latLngFromClickEvent(event);
-    App.plannedTrip!.updateWayPointObject(event.wpIndex, latLng);
+    App.plannedTrip!.updateWayPoint(event.wpIndex, latLng);
 
     App.clickHandler.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
 
@@ -229,7 +229,7 @@ export default class App {
 
   static onWayPointMarkerDblClick(event: any): void {
 
-    App.plannedTrip!.removeWayPointObject(event.wpIndex);
+    App.plannedTrip!.removeWayPoint(event.wpIndex);
   }
 
   // -------------------------------- OVERLAY UI CLICKS ---------------------------------------------------------------
