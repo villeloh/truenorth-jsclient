@@ -1,4 +1,3 @@
-import Utils from '../misc/utils';
 import { override } from '../misc/annotations';
 import UIElement from './base-abstract/ui-element';
 
