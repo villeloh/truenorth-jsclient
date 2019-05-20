@@ -6,6 +6,17 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         TravelMode["WALKING"] = "WALKING";
         TravelMode["BICYCLING"] = "BICYCLING";
     })(TravelMode || (TravelMode = {}));
+    var Change;
+    (function (Change) {
+        Change[Change["speed"] = 0] = "speed";
+        Change[Change["travelMode"] = 1] = "travelMode";
+        Change[Change["prevTrip"] = 2] = "prevTrip";
+        Change[Change["currentTrip"] = 3] = "currentTrip";
+        Change[Change["tripDuration"] = 4] = "tripDuration";
+        Change[Change["tripDistance"] = 5] = "tripDistance";
+        Change[Change["currentPos"] = 6] = "currentPos";
+        Change[Change["posMarker"] = 7] = "posMarker";
+    })(Change || (Change = {}));
     class App {
         static get TravelMode() {
             return TravelMode;
@@ -22,33 +33,33 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
                 App._mapService = new map_service_1.default();
                 App._routeService = new route_service_1.default(App.onRouteFetchSuccess, App.onRouteFetchFailure);
                 App._elevationService = new elevation_service_1.default(App.onElevationFetchSuccess, App.onElevationFetchFailure);
-                App._speed = App.DEFAULT_SPEED;
-                App._plannedTrip = null;
-                App._prevTrip = null;
-                App._posMarker = marker_1.default.makePosMarker(App._mapService.map, App._currentPos);
-                App._travelMode = App.TravelMode.BICYCLING;
+                App.setState(Change.speed, App.DEFAULT_SPEED);
+                App.setState(Change.travelMode, App.TravelMode.BICYCLING);
+                App.setState(Change.posMarker, marker_1.default.makePosMarker(App._mapService.map, App.state.currentPos));
                 ui_builder_1.default.buildUI();
                 App._geoLocService.start();
             });
         }
         static onRouteFetchSuccess(fetchResult, successfulTrip) {
+            App.setState(Change.prevTrip, successfulTrip.copy());
             if (App.hasVisualTrip) {
                 App.mapService.clearTripFromMap();
             }
             const visualTrip = new visual_trip_1.default(fetchResult, successfulTrip.destCoord, successfulTrip.wayPoints);
             const route = fetchResult.routes[0];
             App._elevationService.fetchElevations(visualTrip);
-            App.prevTrip = successfulTrip.copy();
             const dist = utils_1.default.distanceInKm(route);
-            const dura = utils_1.default.duraInDecimHours(dist, App.speed);
+            App.setState(Change.tripDistance, dist);
+            const dura = utils_1.default.duraInDecimHours(dist, App.state.speed);
+            App.setState(Change.tripDuration, dura);
             components_1.InfoHeader.updateDistance(dist);
             components_1.InfoHeader.updateDuration(dura);
         }
         static onRouteFetchFailure() {
-            if (App.prevTrip === null)
+            if (App.state.prevTrip === null)
                 return;
-            App.plannedTrip = App.prevTrip.copy();
-            App.plannedTrip.autoRefetchRouteOnChange();
+            App.setState(Change.currentTrip, App.state.prevTrip.copy());
+            App.state.currentTrip.autoRefetchRouteOnChange();
         }
         static onElevationFetchSuccess(visualTrip, resultsArray) {
             const elevations = resultsArray.map(result => result.elevation);
@@ -59,17 +70,17 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         }
         static onGoogleMapLongPress(event) {
             const destCoord = utils_1.default.latLngFromClickEvent(event);
-            App.plannedTrip = trip_1.Trip.makeTrip(destCoord);
-            App.plannedTrip.autoRefetchRouteOnChange();
+            App.setState(Change.currentTrip, trip_1.Trip.makeTrip(destCoord));
+            App.state.currentTrip.autoRefetchRouteOnChange();
         }
         static onGoogleMapDoubleClick(event) {
             if (!App.hasVisualTrip)
                 return;
             const clickedPos = utils_1.default.latLngFromClickEvent(event);
-            App.plannedTrip.addWayPoint(clickedPos);
+            App.state.currentTrip.addWayPoint(clickedPos);
         }
         static onDestMarkerDragEnd(event) {
-            App.plannedTrip.destCoord = utils_1.default.latLngFromClickEvent(event);
+            App.state.currentTrip.destCoord = utils_1.default.latLngFromClickEvent(event);
             App.clickHandler.markerDragEventJustStopped = true;
             setTimeout(() => {
                 App.clickHandler.markerDragEventJustStopped = false;
@@ -80,17 +91,17 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         }
         static onWayPointMarkerDragEnd(event) {
             const latLng = utils_1.default.latLngFromClickEvent(event);
-            App.plannedTrip.updateWayPoint(event.wpIndex, latLng);
+            App.state.currentTrip.updateWayPoint(event.wpIndex, latLng);
             App.clickHandler.markerDragEventJustStopped = true;
             setTimeout(() => {
                 App.clickHandler.markerDragEventJustStopped = false;
             }, click_handler_1.default.MARKER_DRAG_TIMEOUT);
         }
         static onWayPointMarkerDblClick(event) {
-            App.plannedTrip.removeWayPoint(event.wpIndex);
+            App.state.currentTrip.removeWayPoint(event.wpIndex);
         }
         static onLocButtonClick() {
-            App.mapService.reCenter(App.currentPos);
+            App.mapService.reCenter(App.state.currentPos);
         }
         static onClearButtonClick() {
             App._clearTrips();
@@ -121,20 +132,22 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
             App.mapService.toggleBikeLayer(event);
         }
         static onTravelModeToggleButtonClick(event) {
-            App.travelMode = event.target.value;
+            App.setState(Change.travelMode, event.target.value);
         }
         static onSpeedChooserValueChange(event) {
-            App.speed = event.target.value;
-            components_1.SpeedChooser.updateDisplayedSpeed(App.speed);
+            App.setState(Change.speed, event.target.value);
+            components_1.SpeedChooser.updateDisplayedSpeed(App.state.speed);
             if (!App.hasVisualTrip)
                 return;
-            const newDura = utils_1.default.duraInDecimHours(App.mapService.visualTrip.distance, App.speed);
+            const newDura = utils_1.default.duraInDecimHours(App.state.tripDistance, App.state.speed);
+            App.setState(Change.tripDuration, newDura);
             components_1.InfoHeader.updateDuration(newDura);
         }
         static onGeoLocSuccess(oldCoord, newCoord) {
-            App.posMarker.clearFromMap();
-            App.currentPos = newCoord;
-            App.posMarker.moveTo(newCoord);
+            const posMarker = App.state.posMarker;
+            posMarker.clearFromMap();
+            App.setState(Change.currentPos, newCoord);
+            posMarker.moveTo(newCoord);
             if (geoloc_service_1.default.diffIsOverCameraMoveThreshold(oldCoord, newCoord)) {
                 App.mapService.reCenter(newCoord);
             }
@@ -142,12 +155,12 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         static _clearTrips() {
             if (!App.hasVisualTrip)
                 return;
-            if (App.prevTrip) {
-                App.prevTrip.clear();
+            if (App.state.prevTrip) {
+                App.state.prevTrip.clear();
+                App.setState(Change.prevTrip, null);
             }
-            App.prevTrip = null;
-            App.plannedTrip.clear();
-            App.plannedTrip = null;
+            App.state.currentTrip.clear();
+            App.setState(Change.currentTrip, null);
             App.mapService.clearTripFromMap();
             components_1.InfoHeader.reset();
         }
@@ -165,47 +178,42 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
         }
         static _receivedEvent(id) {
         }
+        static setState(change, value) {
+            switch (change) {
+                case Change.speed:
+                    App.state.speed = value;
+                    break;
+                case Change.travelMode:
+                    App.state.travelMode = value;
+                    break;
+                case Change.prevTrip:
+                    App.state.prevTrip = value;
+                    break;
+                case Change.currentTrip:
+                    App.state.currentTrip = value;
+                    break;
+                case Change.tripDistance:
+                    App.state.tripDistance = value;
+                    break;
+                case Change.tripDuration:
+                    App.state.tripDuration = value;
+                    break;
+                case Change.currentPos:
+                    App.state.currentPos = value;
+                    break;
+                case Change.posMarker:
+                    App.state.posMarker = value;
+                    break;
+            }
+        }
         static get hasVisualTrip() {
             return App.mapService.visualTrip !== null;
-        }
-        static get currentPos() {
-            return App._currentPos;
-        }
-        static set currentPos(newPos) {
-            App._currentPos = newPos;
-        }
-        static get plannedTrip() {
-            return App._plannedTrip;
-        }
-        static set plannedTrip(newTrip) {
-            App._plannedTrip = newTrip;
-        }
-        static get prevTrip() {
-            return App._prevTrip;
-        }
-        static set prevTrip(newTrip) {
-            App._prevTrip = newTrip;
         }
         static get mapService() {
             return App._mapService;
         }
         static get routeService() {
             return App._routeService;
-        }
-        static get speed() {
-            return App._speed;
-        }
-        static set speed(newSpeed) {
-            App._speed = newSpeed;
-        }
-        static get travelMode() {
-            return App._travelMode;
-        }
-        static set travelMode(newMode) {
-            App._travelMode = newMode;
-        }
-        static get posMarker() {
-            return App._posMarker;
         }
         static get clickHandler() {
             return this._clickHandler;
@@ -214,7 +222,19 @@ define(["require", "exports", "./dataclasses/marker", "./dataclasses/trip", "./d
     App.MIN_SPEED = 1;
     App.MAX_SPEED = 50;
     App.DEFAULT_SPEED = 15;
-    App._currentPos = new latlng_1.default(0, 0);
+    App._initialPrevTrip = null;
+    App._initialCurrentTrip = null;
+    App._initialTravelMode = 'BICYCLING';
+    App.state = {
+        speed: 1,
+        travelMode: App._initialTravelMode,
+        prevTrip: App._initialPrevTrip,
+        currentTrip: App._initialCurrentTrip,
+        tripDuration: 0,
+        tripDistance: 0,
+        currentPos: new latlng_1.default(0, 0),
+        posMarker: null
+    };
     App._geoLocService = new geoloc_service_1.default();
     App._clickHandler = new click_handler_1.default();
     exports.default = App;

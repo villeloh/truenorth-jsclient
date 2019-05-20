@@ -12,7 +12,7 @@ define(["require", "exports", "../app", "./base-abstract/button", "../misc/annot
     Object.defineProperty(exports, "__esModule", { value: true });
     class TravelModeToggleButton extends button_1.default {
         static build(onChange) {
-            const pickedOption = app_1.default.travelMode;
+            const pickedOption = app_1.default.state.travelMode;
             let unpickedOption;
             let pickedText;
             let unpickedText;

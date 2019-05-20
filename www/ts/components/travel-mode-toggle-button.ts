@@ -21,7 +21,7 @@ export default class TravelModeToggleButton extends Button {
   @override
   static build(onChange: any): HTMLDivElement {
 
-    const pickedOption = App.travelMode;
+    const pickedOption = App.state.travelMode;
     let unpickedOption: any; // can't use the TravelMode type in another class for some reason
     let pickedText: string;
     let unpickedText: string;

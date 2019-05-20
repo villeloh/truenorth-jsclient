@@ -12,33 +12,17 @@ export default class VisualTrip {
 
   private _destMarker: Marker;
   private _wayPointMarkers: Array<Marker>;
-
+/*
   // computed values (this way it's not necessary to give them to the constructor)
   private readonly _distance: number;
-  private readonly _routeStepStartCoords: Array<LatLng>; // used for obtaining elevation data and for rendering the route on the map
+  private readonly _routeStepStartCoords: Array<LatLng>; // used for obtaining elevation data and for rendering the route on the map */
 
   constructor(
-    private readonly _routeResult: google.maps.DirectionsResult, 
+    private readonly _routeResult: google.maps.DirectionsResult, // needed for rendering & various calculations
     _destCoord: LatLng, 
     _wayPointCoords: Array<LatLng>
     ) {
-
-    // the distance will need to be stored for the purpose of calculating new
-    // trip durations. it will only be accessed, never altered, which preserves 
-    // the immutability of VisualTrip. still, it's an ugly solution and a better one should be sought.
-    const route: google.maps.DirectionsRoute = _routeResult.routes[0];
-    this._distance = Utils.distanceInKm(route);
-
-    const stepArrays = route.legs.map(leg => { return leg.steps });
-    // @ts-ignore (complaint about the custom LatLng type)
-    // used for fetching elevations. could be clearer (should have used for-loops, ehh)...
-    this._routeStepStartCoords = stepArrays.map(stepArray => { 
-      
-      return stepArray.map(step => { 
-        
-        return step.start_location 
-      })}).reduce((arr, nextArr) => arr.concat(nextArr), []);
-
+    
     this._destMarker = Marker.makeDestMarker(_destCoord);
 
     this._destMarker.addListener('dragend', App.onDestMarkerDragEnd);
@@ -100,24 +84,10 @@ export default class VisualTrip {
     this._wayPointMarkers.length = 0;
   } // clearFromMap
 
-  get distance(): number {
-
-    return this._distance;
-  };
-
   // needed by the renderer for showing the trip on the map
   get routeResult(): google.maps.DirectionsResult {
 
     return this._routeResult;
-  }
-
-  /**
-   * Returns the start coordinates (LatLngs) of each 
-   * step of the contained RouteResult.
-  */
-  get routeStepStartCoords(): Array<LatLng> {
-
-    return this._routeStepStartCoords;
   }
     
 } // VisualTrip

@@ -16,7 +16,7 @@ define(["require", "exports", "../dataclasses/latlng", "../app"], function (requ
         }
         _onSuccess(pos) {
             const newCoord = new latlng_1.default(pos.coords.latitude, pos.coords.longitude);
-            const oldCoord = app_1.default.currentPos;
+            const oldCoord = app_1.default.state.currentPos;
             app_1.default.onGeoLocSuccess(oldCoord, newCoord);
         }
         _onError(error) {

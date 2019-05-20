@@ -47,9 +47,9 @@ export default class GeoLocService {
   _onSuccess(pos: Position): void {
 
     const newCoord = new LatLng(pos.coords.latitude, pos.coords.longitude);
-    const oldCoord = App.currentPos;
+    const oldCoord = App.state.currentPos;
     
-    App.onGeoLocSuccess(oldCoord, newCoord); // update _currentPos in App
+    App.onGeoLocSuccess(oldCoord, newCoord); // update state.currentPos in App
   } // _onSuccess
 
   // i'm not sure of its actual type

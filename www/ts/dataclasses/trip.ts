@@ -135,7 +135,7 @@ export class Trip {
   * Sets the destination coordinate to null, removes the contained WayPointObjects,
   * and stops the automatic refetching of routes.
   */
-  clear(): void {
+  clear(): Trip {
 
     if (this._disposer) {
 
@@ -143,6 +143,7 @@ export class Trip {
     }
     this._destCoord = null;
     this._wayPoints.length = 0; // there is never a case where only the waypoints are cleared, so it's ok to do this here
+    return this;
   } // clear
 
 } // Trip

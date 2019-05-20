@@ -74,6 +74,7 @@ define(["require", "exports", "mobx", "../app"], function (require, exports, mob
             }
             this._destCoord = null;
             this._wayPoints.length = 0;
+            return this;
         }
     }
     __decorate([

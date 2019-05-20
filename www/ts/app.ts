@@ -24,6 +24,19 @@ enum TravelMode {
   BICYCLING = 'BICYCLING'
 }
 
+// for manipulating app state
+enum Change {
+
+  speed,
+  travelMode,
+  prevTrip,
+  currentTrip,
+  tripDuration,
+  tripDistance,
+  currentPos,
+  posMarker
+} // Change
+
 // App needs to be globally accessible (otherwise I'd have to pass it to almost everything, which is pointless & hopelessly wordy),
 // so I'm making all things in it static.
 /**
@@ -41,29 +54,35 @@ export default class App {
     return TravelMode;
   }
 
-  // speed and travel mode are not parts of Trip because they exist regardless if there's a current trip or not
-  private static _speed: number; // km/h
-  private static _travelMode: TravelMode; // BICYCLING / WALKING
+  // to give type info to object literal fields in App.state (haven't found any other way)
+  private static readonly _initialPrevTrip: Nullable<Trip> = null;
+  private static readonly _initialCurrentTrip: Nullable<Trip> = null;
+  private static readonly _initialTravelMode: string = 'BICYCLING'; // to prevent any init issues (might work without this)
+
+  // NOTE: outside of App, the setState function should
+  // always be used to manipulate the state (accessing it directly is fine)
+  static state = {
+
+    speed: 1,
+    travelMode: App._initialTravelMode,
+    prevTrip: App._initialPrevTrip, // 'planned' trip (not yet visible)
+    currentTrip: App._initialCurrentTrip, // ditto
+    tripDuration: 0, // duration of a *visible* trip (result of a route fetch)
+    tripDistance: 0, // distance of a visible trip
+    currentPos: new LatLng(0,0),
+    posMarker: null
+  }; // state
 
   // they need the google object to be initialized, so it can't be done here
   private static _mapService: MapService;
   private static _routeService: RouteService;
   private static _elevationService: ElevationService;
-
-  // periodically updated by the geoLocService 
-  private static _currentPos: LatLng = new LatLng(0,0);
-  private static _posMarker: Marker;
-
   private static readonly _geoLocService: GeoLocService = new GeoLocService();
 
-  private static _prevTrip: Nullable<Trip>;
-  private static _plannedTrip: Nullable<Trip>;
-
-  // it was previously in MapService; moved it here to remove
-  // some couplings. may yet move it back.
+  // it was previously in MapService; moved it here to remove some couplings
   private static readonly _clickHandler = new ClickHandler();
 
-  static google: any;
+  static google: any; // may be unnecessary
 
 // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX INIT XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -94,14 +113,9 @@ export default class App {
       App._routeService = new RouteService(App.onRouteFetchSuccess, App.onRouteFetchFailure);
       App._elevationService = new ElevationService(App.onElevationFetchSuccess, App.onElevationFetchFailure);
 
-      App._speed = App.DEFAULT_SPEED;
-
-      App._plannedTrip = null;
-      App._prevTrip = null;
-    
-      App._posMarker = Marker.makePosMarker(App._mapService.map, App._currentPos);
-
-      App._travelMode = App.TravelMode.BICYCLING;
+      App.setState(Change.speed, App.DEFAULT_SPEED);
+      App.setState(Change.travelMode, App.TravelMode.BICYCLING);
+      App.setState(Change.posMarker, Marker.makePosMarker(App._mapService.map, App.state.currentPos));
 
       UIBuilder.buildUI();
 
@@ -112,6 +126,8 @@ export default class App {
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX API QUERY RESPONSES XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
   static onRouteFetchSuccess(fetchResult: google.maps.DirectionsResult, successfulTrip: Trip): void {
+
+    App.setState(Change.prevTrip, successfulTrip.copy()); // save the trip in case the next one is unsuccessful
 
     if (App.hasVisualTrip) {
 
@@ -126,15 +142,11 @@ export default class App {
     // fetch elevations for the trip (it's only rendered on the map when the elev. request is resolved)
     App._elevationService.fetchElevations(visualTrip);
     
-    App.prevTrip = successfulTrip.copy(); // save the trip in case the next one is unsuccessful
+    const dist = Utils.distanceInKm(route);
+    App.setState(Change.tripDistance, dist);
 
-    // this happens internally in VisualTrip as well, when it stores the distance, but it's more clear to do it explicitly here.
-    const dist: number = Utils.distanceInKm(route);
-
-    // the trip duration can always be calculated based on the stored distance and current speed values. 
-    // because the speed can be changed at any time (via the speed slider), and VisualTrip is meant to 
-    // contain only fresh data, the duration should never be stored directly in VisualTrip.
-    const dura: number = Utils.duraInDecimHours(dist, App.speed);
+    const dura = Utils.duraInDecimHours(dist, App.state.speed);
+    App.setState(Change.tripDuration, dura);
 
     InfoHeader.updateDistance(dist);
     InfoHeader.updateDuration(dura);
@@ -143,11 +155,13 @@ export default class App {
   // usually occurs when clicking on water, mountains, etc
   static onRouteFetchFailure(): void {
 
-    if (App.prevTrip === null) return;
+    // if the first fetch is made to an invalid location (e.g. over water), 
+    // this leaves the marker hanging over water. not sure how to fix it atm.
+    if (App.state.prevTrip === null) return;
     // restore a successful trip (in most situations; failure is harmless though)
-    App.plannedTrip = App.prevTrip.copy();
-    App.plannedTrip.autoRefetchRouteOnChange(); // we need to reactivate automatic fetches (putting them in the Trip constructor causes an infinite loop)
-  }
+    App.setState(Change.currentTrip, App.state.prevTrip.copy());
+    App.state.currentTrip!.autoRefetchRouteOnChange(); // we need to reactivate automatic fetches (putting this in the Trip constructor causes an infinite loop)
+  } // onRouteFetchFailure
 
   static onElevationFetchSuccess(visualTrip: VisualTrip, resultsArray: Array<google.maps.ElevationResult>): void {
 
@@ -174,10 +188,10 @@ export default class App {
 
     // this gets rid of all waypoints, but that is the preferred behavior 
     // (if you want to keep them, just drag the dest marker)
-    App.plannedTrip = Trip.makeTrip(destCoord);
+    App.setState(Change.currentTrip, Trip.makeTrip(destCoord));
 
     // uses mobx to automatically refetch the route whenever the dest coord or waypoints change.
-    App.plannedTrip.autoRefetchRouteOnChange();
+    App.state.currentTrip!.autoRefetchRouteOnChange();
   } // onGoogleMapLongPress
 
   static onGoogleMapDoubleClick(event: any): void {
@@ -186,12 +200,12 @@ export default class App {
     if (!App.hasVisualTrip) return;
 
     const clickedPos = Utils.latLngFromClickEvent(event);
-    App.plannedTrip!.addWayPoint(clickedPos);
+    App.state.currentTrip!.addWayPoint(clickedPos);
   }
 
   static onDestMarkerDragEnd(event: any): void {
 
-    App.plannedTrip!.destCoord = Utils.latLngFromClickEvent(event);
+    App.state.currentTrip!.destCoord = Utils.latLngFromClickEvent(event);
 
     App.clickHandler.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
 
@@ -217,7 +231,7 @@ export default class App {
   static onWayPointMarkerDragEnd(event: any): void {
 
     const latLng = Utils.latLngFromClickEvent(event);
-    App.plannedTrip!.updateWayPoint(event.wpIndex, latLng);
+    App.state.currentTrip!.updateWayPoint(event.wpIndex, latLng);
 
     App.clickHandler.markerDragEventJustStopped = true; // needed in order not to tangle the logic with that of a long press
 
@@ -229,14 +243,14 @@ export default class App {
 
   static onWayPointMarkerDblClick(event: any): void {
 
-    App.plannedTrip!.removeWayPoint(event.wpIndex);
+    App.state.currentTrip!.removeWayPoint(event.wpIndex);
   }
 
   // -------------------------------- OVERLAY UI CLICKS ---------------------------------------------------------------
 
   static onLocButtonClick(): void {
 
-    App.mapService.reCenter(App.currentPos);
+    App.mapService.reCenter(App.state.currentPos);
   }
 
   static onClearButtonClick(): void {
@@ -283,7 +297,7 @@ export default class App {
 
   static onTravelModeToggleButtonClick(event: any): void {
 
-    App.travelMode = event.target.value; 
+    App.setState(Change.travelMode, event.target.value); 
   }
 
   /**
@@ -291,13 +305,14 @@ export default class App {
    */
   static onSpeedChooserValueChange(event: any): void {
 
-    App.speed = event.target.value; // it's always valid due to the slider's min and max constraints
-    SpeedChooser.updateDisplayedSpeed(App.speed);
+    App.setState(Change.speed, event.target.value); // it's always valid due to the slider's min and max constraints
+    SpeedChooser.updateDisplayedSpeed(App.state.speed);
 
-    if (!App.hasVisualTrip) return; // there is always a speed value, but it's only used if there's a successfully fetched trip that's being displayed
+    // there's always a speed value, but it's only used if there's a successfully fetched trip that's being displayed
+    if (!App.hasVisualTrip) return;
 
-    // Note: it seems the typescript compiler is not smart enough to recognize a null check that's 'inside' another method
-    const newDura = Utils.duraInDecimHours(App.mapService.visualTrip!.distance, App.speed);
+    const newDura = Utils.duraInDecimHours(App.state.tripDistance, App.state.speed);
+    App.setState(Change.tripDuration, newDura);
     InfoHeader.updateDuration(newDura);
   } // onSpeedChooserValueChange
 
@@ -305,10 +320,14 @@ export default class App {
 
   // called by GeoLocService each time it gets a new location
   static onGeoLocSuccess(oldCoord: LatLng, newCoord: LatLng): void {
+    
+    // need to cast because of an issue with type info 
+    // (the object literal can't be given the correct type thanks to init order issues)
+    const posMarker = App.state.posMarker! as Marker;
 
-    App.posMarker.clearFromMap();
-    App.currentPos = newCoord;
-    App.posMarker.moveTo(newCoord);
+    posMarker.clearFromMap(); 
+    App.setState(Change.currentPos, newCoord);
+    posMarker.moveTo(newCoord);
 
     // make the camera follow the user when moving rapidly enough
     if (GeoLocService.diffIsOverCameraMoveThreshold(oldCoord, newCoord)) {
@@ -324,13 +343,14 @@ export default class App {
     
     if (!App.hasVisualTrip) return;
 
-    if (App.prevTrip) {
+    if (App.state.prevTrip) {
 
-      App.prevTrip.clear();
+      App.state.prevTrip!.clear(); // violation of state management principles... see if it's ok to disable
+      App.setState(Change.prevTrip, null);
     }
-    App.prevTrip = null;
-    App.plannedTrip!.clear(); // if there is a visualTrip, it exists
-    App.plannedTrip = null;
+
+    App.state.currentTrip!.clear(); // if there is a visualTrip, it exists
+    App.setState(Change.currentTrip, null);
     App.mapService.clearTripFromMap();
     InfoHeader.reset();
   } // clearTrips
@@ -365,11 +385,46 @@ export default class App {
 
     // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX GETTERS & SETTERS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
+  /**
+   * For changing the app state. ONLY this function should be used to do it.
+  */
+  static setState(change: Change, value: any) {
+
+    switch(change) {
+
+      case Change.speed:
+        App.state.speed = value;
+        break;
+      case Change.travelMode:
+        App.state.travelMode = value;
+        break;
+      case Change.prevTrip:
+        App.state.prevTrip = value;
+        break;
+      case Change.currentTrip:
+        App.state.currentTrip = value;
+        break;
+      case Change.tripDistance:
+        App.state.tripDistance = value;
+        break;
+      case Change.tripDuration:
+        App.state.tripDuration = value;
+        break;
+      case Change.currentPos:
+        App.state.currentPos = value;
+        break;
+      case Change.posMarker:
+        App.state.posMarker = value;
+        break;
+    } // switch
+  } // setState
+
   static get hasVisualTrip(): boolean {
 
     return App.mapService.visualTrip !== null;
   }
 
+/*
   static get currentPos(): LatLng {
 
     return App._currentPos;
@@ -398,7 +453,7 @@ export default class App {
   static set prevTrip(newTrip: Nullable<Trip>) {
 
     App._prevTrip = newTrip;
-  }
+  } */
 
   static get mapService(): MapService {
 
@@ -410,16 +465,17 @@ export default class App {
     return App._routeService;
   }
 
+/*
   static get speed(): number {
 
     return App._speed;
   }
-
   static set speed(newSpeed: number) {
 
     App._speed = newSpeed;
-  }
+  } */
 
+  /*
   static get travelMode(): TravelMode {
 
     return App._travelMode;
@@ -428,12 +484,13 @@ export default class App {
   static set travelMode(newMode: TravelMode) {
 
     App._travelMode = newMode;
-  }
+  } */
 
+  /*
   static get posMarker(): Marker {
 
     return App._posMarker;
-  }
+  } */
   
   static get clickHandler(): ClickHandler {
 

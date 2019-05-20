@@ -26,18 +26,17 @@ export default class RouteService {
 
   // ideally, we'd return the trip (or null) from this method, but its async nature
   // makes this tricky. perhaps move to that approach later?
-  fetchRoute(trip: Trip) {
+  fetchRoute(trip: Trip): void {
+
+    const destCoord = trip.destCoord;
+
+    if (destCoord === null) return; // null destCoords sometimes reach this method (after clicking on water twice or more in a row)
+
+    const startCoord = App.state.currentPos;
 
     // Somehow the context is lost in the route fetch callbacks...
     // this is the only convenient workaround.
     const that = this;
-
-    const startCoord = App.currentPos;
-    const destCoord = trip.destCoord;
-
-    // null destCoords sometimes reach this method (after clicking on water twice or more in a row).
-    // for now, it's an unavoidable side effect of the way the trip state is managed.
-    if (destCoord === null) return;
 
     const request: google.maps.DirectionsRequest = {
 
@@ -46,7 +45,7 @@ export default class RouteService {
       //@ts-ignore (the custom LatLng type is missing some irrelevant methods)
       destination: destCoord,
       //@ts-ignore (again, my custom type is not to Google's liking)
-      travelMode: App.travelMode, // comes from the travel mode toggle button
+      travelMode: App.state.travelMode, // comes from the travel mode toggle button
       optimizeWaypoints: false,
       avoidHighways: true,
       waypoints: trip.getAllWpsAsAPIObjects()
@@ -64,7 +63,7 @@ export default class RouteService {
         console.log("Error fetching route: " + status);
         that.onFetchFailureCallback();
       }
-    }); // this._dirService.route
+    }); // this._directionsService.route
   } // fetchRoute
 
 } // RouteService

@@ -8,15 +8,15 @@ define(["require", "exports", "../app"], function (require, exports, app_1) {
             this._directionsService = new google.maps.DirectionsService();
         }
         fetchRoute(trip) {
-            const that = this;
-            const startCoord = app_1.default.currentPos;
             const destCoord = trip.destCoord;
             if (destCoord === null)
                 return;
+            const startCoord = app_1.default.state.currentPos;
+            const that = this;
             const request = {
                 origin: startCoord,
                 destination: destCoord,
-                travelMode: app_1.default.travelMode,
+                travelMode: app_1.default.state.travelMode,
                 optimizeWaypoints: false,
                 avoidHighways: true,
                 waypoints: trip.getAllWpsAsAPIObjects()

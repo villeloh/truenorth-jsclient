@@ -22,14 +22,14 @@ export default class SpeedChooser extends UIElement {
     const slider = Slider.build(onValueChange);
     slider.min = App.MIN_SPEED+"";
     slider.max = App.MAX_SPEED+"";
-    slider.value = App.speed+"";
+    slider.value = App.state.speed+"";
 
     const holderDiv: HTMLDivElement = document.createElement('div');
     holderDiv.id = SpeedChooser._HOLDER_DIV_ID;
 
     const displayP: HTMLParagraphElement = document.createElement('p');
     displayP.id = SpeedChooser._DISPLAY_P_ID;
-    displayP.textContent = `${App.speed} km/h`;
+    displayP.textContent = `${App.state.speed} km/h`;
 
     holderDiv.appendChild(slider);
     holderDiv.appendChild(displayP);

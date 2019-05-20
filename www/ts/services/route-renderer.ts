@@ -29,7 +29,7 @@ export default class RouteRenderer {
     this._polyLines.length = 0;
   }
 
-  // elevations could be optional instead of Nullable, but that leads to awkward call syntax.
+  // elevations could be optional instead of Nullable
   drawPolyLineFor(visualTrip: VisualTrip, elevations: Nullable<Array<number>>): void {
 
     // the legs from waypoint to waypoint
