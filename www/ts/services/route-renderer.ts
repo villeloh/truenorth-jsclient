@@ -109,6 +109,7 @@ export default class RouteRenderer {
     let uphillValue = 0;
     let downhillValue = 0;
 
+    // to make 'limit values', after which any further steepness increase / decrease is ignored when it comes to the resulting color 
     let steepness = gradient / RouteRenderer._MAX_GRADIENT;
     
     if (steepness > 1) {

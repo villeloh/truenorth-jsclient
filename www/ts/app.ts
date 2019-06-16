@@ -33,6 +33,8 @@ enum Change {
   currentTrip,
   tripDuration,
   tripDistance,
+  negTripElevs,
+  posTripElevs,
   currentPos,
   posMarker
 } // Change
@@ -69,11 +71,13 @@ export default class App {
     currentTrip: App._initialCurrentTrip, // ditto
     tripDuration: 0, // duration of a *visible* trip (result of a route fetch)
     tripDistance: 0, // distance of a visible trip
+    negTripElevs: 0, // negative elevation change (downhill total) of a visible trip
+    posTripElevs: 0, // positive elevation change (uphill total) of a visible trip
     currentPos: new LatLng(0,0),
     posMarker: null
   }; // state
 
-  // they need the google object to be initialized, so it can't be done here
+  // these need the google object to be initialized, so it can't be done here
   private static _mapService: MapService;
   private static _routeService: RouteService;
   private static _elevationService: ElevationService;
@@ -148,6 +152,7 @@ export default class App {
     const dura = Utils.duraInDecimHours(dist, App.state.speed);
     App.setState(Change.tripDuration, dura);
 
+    // TODO (perhaps): these could be auto-called when the state values change
     InfoHeader.updateDistance(dist);
     InfoHeader.updateDuration(dura);
   } // onRouteFetchSuccess
@@ -169,6 +174,11 @@ export default class App {
     // as it's supposed to have only immutable data. and for that local creation, onElevationFetchSuccess would need a ton 
     // of superfluous arguments. the callback hell means that there are no neat solutions here.
     const elevations = resultsArray.map(result => result.elevation);
+
+    // calculate the positive and negative elevation changes (and store them in App.state)
+    App._calculateElevTotals(elevations);
+
+    InfoHeader.updateElevations(App.state.posTripElevs, App.state.negTripElevs);
 
     App.mapService.renderTripOnMap(visualTrip, elevations);
   }
@@ -316,6 +326,14 @@ export default class App {
     InfoHeader.updateDuration(newDura);
   } // onSpeedChooserValueChange
 
+  /**
+   * Toggles between displaying distance/duration and upward/downward elevation changes.
+   */
+  static onInfoHeaderClick(): void {
+
+    InfoHeader.toggleDisplayState();
+  }
+
   // -------------------------------- GEOLOC --------------------------------------------------------------------------
 
   // called by GeoLocService each time it gets a new location
@@ -354,6 +372,28 @@ export default class App {
     App.mapService.clearTripFromMap();
     InfoHeader.reset();
   } // clearTrips
+
+  private static _calculateElevTotals(elevs: number[]): void {
+
+    let negTotal = 0;
+    let posTotal = 0;
+    let prevElev = elevs[0];
+    const size = elevs.length;
+
+    for (let i = 1; i < size; i++) {
+
+      const value = elevs[i];
+
+      if (prevElev - value == 0) continue;
+
+      prevElev - value < 0 ? posTotal += value : negTotal += value;
+      prevElev = value;
+    } // for
+
+    // technically it should return them, but ehh, whatever
+    App.setState(Change.posTripElevs, posTotal);
+    App.setState(Change.negTripElevs, negTotal);
+  } // _calculateElevTotals
 
   // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LIFECYCLE METHODS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
@@ -410,6 +450,12 @@ export default class App {
       case Change.tripDuration:
         App.state.tripDuration = value;
         break;
+      case Change.negTripElevs:
+          App.state.negTripElevs = value;
+          break;
+      case Change.posTripElevs:
+          App.state.posTripElevs = value;
+          break;
       case Change.currentPos:
         App.state.currentPos = value;
         break;

@@ -218,7 +218,7 @@ h1 {
     align-items: center;
   }
 
-  #info-header-p-dist {
+  #info-header-p-left {
 
     color: white;
     font-family: Roboto,Arial,sans-serif;
@@ -227,7 +227,7 @@ h1 {
     text-transform: none;
   }
 
-  #info-header-p-dura {
+  #info-header-p-right {
 
     color: white;
     font-family: Roboto,Arial,sans-serif;

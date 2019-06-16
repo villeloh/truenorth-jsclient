@@ -91,7 +91,7 @@ const UIBuilder = {
     holderDiv.style.width = '65%';
     holderDiv.style.height = '8%';
     holderDiv.style.marginTop = '1.5%';
-    const infoHeader = InfoHeader.build();
+    const infoHeader = InfoHeader.build(App.onInfoHeaderClick);
     holderDiv.appendChild(infoHeader);
 
     App.mapService.addUIControl(App.google.maps.ControlPosition.TOP_CENTER, holderDiv);
