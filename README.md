@@ -1,28 +1,45 @@
 # TrueNorth -- Cycling Made Easy
 
-If you've ever tried to use Google Maps while cycling, you'll know my headaches.
+If you've ever tried to use Google Maps while cycling, you'll know that it's far from ideal for that purpose.
+This Android app aims to avoid the worst pitfalls, while keeping all the useful features and adding a 
+few handy new ones.
 
-* Minimize the app and when you come back, the zoom level and/or map bearing has altered, throwing your sense of direction into orbit with a wicked side-spin? Check.
+##Current Features
 
-* A huge banner about recommended cafés blocking your view when you're rounding a tight corner? Check.
+* Map orientation can never change; North will always be up, hence the name of the app.
 
-* Can't add waypoints or move the destination marker in the mobile version, even though both features are sorely needed? Check.
+* No annoying popups about recommended cafés etc, nor any voice guidance.
 
-* A million clicks to cancel a route, but extremely easy to start a useless voice commentary to drown out your favorite riding music? Checkity-check McCheckFace.
+* Waypoints can be added with double-taps, moved around by dragging, and deleted with a double-tap.
 
-When finished, all of these headaches and more will be eliminated by the **TrueNorth** app.
+* Long-press or drag to alter the destination.
 
-* A clean & simple UI, with no bells or whistles, will help you get from point A to point B with a *minimum* of fuss on the way.
+* Route steepness is indicated by color (red for uphill, blue for downhill).
 
-* You'll be able to add and remove waypoints and move the destination marker, yet avoid doing so by misclick. 
+* Route length and travel time are shown in the top center of the screen.
 
-* The app won't do your zooming for you, it can't talk to you, and you literally *CAN'T* spin the map around. As it says in the title, the North will always be *TRUE* with **TrueNorth**.
+* Travel mode can be changed between cycling and walking (good for tunnels, where cycling mode doesn't work).
+
+* (Average) speed can be chosen between 1-50 km/h, altering the travel time.
+
+* Normal map view, satellite view and terrain view are available, just like in regular Google Maps.
+
+* Cancel the route easily with one button.
+
+##Planned Features
+
+* Moving the starting location (to plan for future routes).
+
+* Saving your favorite routes (locally at first; perhaps online later).
+
+* Optimization (the app runs slowly due to various things atm).
 
 ## Installation?
 
-For God's sake don't try to install it yet; I'll tell you when it's in a good enough shape for that. Better yet, I'll publish the app on the PlayStore for your no-mess, no-fuss, easy downloading pleasure.
+At present, the app is for personal use only. When I've polished it enough, I may make it available for more people.
 
-## Images
+## Media
 
 <img align="left" width="40%" height="600" src="https://i.imgur.com/Cgiuzb7.jpg">
 <img align="right" width="40%" height="600" src="https://i.imgur.com/nrE57e6.jpg">
+[![Video Demo](http://img.youtube.com/vi/p8bQWniHN2k/0.jpg)](http://www.youtube.com/watch?v=p8bQWniHN2k "Video Demo")

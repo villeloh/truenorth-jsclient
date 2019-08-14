@@ -390,7 +390,7 @@ export default class App {
       prevElev = value;
     } // for
 
-    // technically it should return them, but ehh, whatever
+    // technically it should return them... change asap
     App.setState(Change.posTripElevs, posTotal);
     App.setState(Change.negTripElevs, negTotal);
   } // _calculateElevTotals
