@@ -4,7 +4,7 @@ If you've ever tried to use Google Maps while cycling, you'll know that it's far
 This Android app aims to avoid the worst pitfalls, while keeping all the useful features and adding a 
 few handy new ones.
 
-##Current Features
+## Current Features
 
 * Map orientation can never change; North will always be up, hence the name of the app.
 
@@ -26,7 +26,7 @@ few handy new ones.
 
 * Cancel the route easily with one button.
 
-##Planned Features
+## Planned Features
 
 * Moving the starting location (to plan for future routes).
 
@@ -42,4 +42,5 @@ At present, the app is for personal use only. When I've polished it enough, I ma
 
 <img align="left" width="40%" height="600" src="https://i.imgur.com/Cgiuzb7.jpg">
 <img align="right" width="40%" height="600" src="https://i.imgur.com/nrE57e6.jpg">
+
 [![Video Demo](http://img.youtube.com/vi/p8bQWniHN2k/0.jpg)](http://www.youtube.com/watch?v=p8bQWniHN2k "Video Demo")
