@@ -11,7 +11,7 @@
     "author": "Ville Lohkovuori",
     "license": "Apache-2.0",
     "dependencies": {
-        "cordova-android": "^7.1.4",
+        "cordova-android": "^14.0.1",
         "cordova-plugin-geolocation": "^4.0.1",
         "cordova-plugin-whitelist": "^1.3.3",
         "mobx": "^5.9.4"
